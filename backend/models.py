@@ -59,6 +59,23 @@ class Code(BaseModel):
     memo: str = ""
 
 
+# Tipos de relación entre códigos (FR-038)
+RELATION_TYPES: dict[str, str] = {
+    "jerarquía": "contiene a",
+    "asociación": "se asocia con",
+    "causalidad": "influye en",
+    "contradicción": "tensiona con",
+}
+
+
+class Relation(BaseModel):
+    id: int
+    source: str  # nombre de código
+    target: str  # nombre de código
+    type: str
+    created_at: str = Field(default_factory=now_iso)
+
+
 class Project(BaseModel):
     id: str = Field(default_factory=new_id)
     name: str
@@ -67,6 +84,8 @@ class Project(BaseModel):
     documents: list[Document] = Field(default_factory=list)
     codes: list[Code] = Field(default_factory=list)
     next_code_id: int = 1
+    relations: list[Relation] = Field(default_factory=list)
+    next_relation_id: int = 1
 
     def summary(self) -> dict:
         return {
@@ -151,6 +170,27 @@ class CodeUpdate(BaseModel):
             if not v:
                 raise ValueError("El nombre del código no puede estar vacío")
         return v
+
+
+class RelationCreate(BaseModel):
+    source: str = Field(min_length=1)
+    target: str = Field(min_length=1)
+    type: str
+
+    @field_validator("type")
+    @classmethod
+    def valid_type(cls, v: str) -> str:
+        if v not in RELATION_TYPES:
+            raise ValueError(
+                f"Tipo de relación inválido: {v!r}. Usa: {', '.join(RELATION_TYPES)}"
+            )
+        return v
+
+    @model_validator(mode="after")
+    def distinct_ends(self) -> "RelationCreate":
+        if self.source == self.target:
+            raise ValueError("Una relación requiere dos códigos distintos")
+        return self
 
 
 class ConfirmPayload(BaseModel):

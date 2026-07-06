@@ -73,6 +73,20 @@ Invariantes:
 - Edición (FR-030): mutables `name`, `domain`, `memo`. `doc_id/start/end/quote` inmutables.
 - Eliminación (FR-031): quita el registro; el re-render del Canvas elimina su resaltado.
 
+## Relation (cierre v1)
+
+| campo | tipo | reglas |
+|-------|------|--------|
+| id | int | secuencial por proyecto (`next_relation_id`) |
+| source | str | nombre de código existente en `codes` |
+| target | str | nombre de código existente; `target != source` |
+| type | str | `jerarquía` \| `asociación` \| `causalidad` \| `contradicción` |
+| created_at | str ISO-8601 | |
+
+Invariantes: sin duplicados exactos (source, target, type); poda automática cuando un
+nombre desaparece del proyecto (delete/rename/reset/eliminación de documento).
+`Project` incorpora `relations: list[Relation]` y `next_relation_id: int`.
+
 ## Transiciones de estado
 
 ```

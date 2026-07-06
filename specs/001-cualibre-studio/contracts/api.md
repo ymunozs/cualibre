@@ -44,6 +44,18 @@ Errores: `{ "detail": "<mensaje claro en español>" }` con el status indicado.
 | GET | `/api/export.csv` | — | `text/csv; charset=utf-8` con BOM, `Content-Disposition: attachment; filename="cualibre_<proyecto>.csv"` (FR-021/022) |
 | GET | `/api/literature` | `q=<términos>` | `{results: [{title, year, cited_by_count, doi}]}`; `502` con mensaje amigable si falla la red (FR-024) |
 
+## Relaciones y guardado (cierre v1)
+
+| Método | Ruta | Body | Respuesta | Notas |
+|--------|------|------|-----------|-------|
+| POST | `/api/project/save` | — | `{updated_at}` | persistencia forzada con confirmación (FR-036) |
+| POST | `/api/relations` | `{source, target, type}` | `201 {relation}` | `422`: tipo inválido, source==target, código inexistente; `409` si la relación idéntica ya existe (FR-038) |
+| DELETE | `/api/relations/{id}` | — | `204` | |
+
+Tipos de relación: `jerarquía`, `asociación`, `causalidad`, `contradicción`. Las
+relaciones referencian códigos por **nombre**; toda mutación de códigos poda las
+relaciones cuyos extremos ya no existen.
+
 ## Reglas transversales
 
 - Toda mutación persiste el proyecto de forma atómica **antes** de responder (FR-025).

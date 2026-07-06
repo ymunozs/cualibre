@@ -7,9 +7,12 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 
 `.specify/memory/constitution.md` gobierna todo. En particular:
 - **Nunca eliminar funcionalidades al iterar** (Principio I). Inventario protegido:
-  importación PDF/DOCX/TXT, Canvas con resaltado por dominio, Nube Negra, Paleta con
-  códigos manuales y memos, NLP triple (word cloud + barras + tabla), Analytics,
-  exportación CSV UTF-8 BOM, búsqueda OpenAlex, multi-proyecto.
+  importación PDF/DOCX/TXT, Canvas con resaltado por dominio y pestañas de documentos,
+  Nube Negra, Paleta con códigos manuales/memos/edición/eliminación, arrastre de
+  selección a códigos existentes, NLP triple (word cloud + barras + tabla), Analytics,
+  relaciones entre códigos (jerarquía/asociación/causalidad/contradicción con
+  organizador SVG y árbol), exportación CSV UTF-8 BOM, búsqueda OpenAlex,
+  multi-proyecto con botón de guardado explícito.
 - **Ningún control de entrada sobre el Canvas** (Principio II). Solo la Nube Negra
   (popup efímero) puede aparecer sobre el texto.
 - **Prohibido el patrón iframe-bridge de Streamlit** (Principio IV). La interacción

@@ -23,6 +23,16 @@
   clásico de word cloud: palabras llenando el espacio, tamaño proporcional a frecuencia,
   colores de la paleta), no el texto disperso de v0.9.1.
 
+### Session 2026-07-06 (cierre v1, tras validación del investigador)
+
+- Pestañas de documentos en el Pentagrama para cambiar entre documentos del corpus
+  (más una vista "Todos").
+- Botón visible de guardar proyecto con confirmación horaria (el autoguardado se mantiene).
+- Arrastrar una selección textual sobre un código existente del banco re-aplica ese
+  código (nueva cita con el mismo nombre y dominio).
+- Relaciones entre códigos con tipos jerarquía/asociación/causalidad/contradicción,
+  con organizador visual (grafo) y árbol de jerarquía.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Codificación expedita desde el Canvas (Priority: P1)
@@ -331,6 +341,26 @@ que se listan resultados con título, año, citas y DOI clicable.
 - **FR-023**: La vista Literatura MUST permitir buscar obras por conceptos en OpenAlex y
   mostrar título, año, número de citas y enlace DOI de cada resultado.
 - **FR-024**: Un fallo de red en Literatura MUST informarse sin afectar el trabajo local.
+
+**Navegación de documentos y guardado (cierre v1)**
+
+- **FR-035**: Cuando el corpus tenga más de un documento, el Pentagrama MUST ofrecer
+  pestañas para cambiar entre documentos individuales y una vista "Todos"; las pestañas
+  son navegación, no entrada de datos, y viven fuera del área de lectura.
+- **FR-036**: La cabecera MUST ofrecer un botón de guardar proyecto que fuerza la
+  persistencia y confirma visiblemente con la hora del guardado (el autoguardado FR-025
+  se mantiene intacto).
+
+**Re-aplicación de códigos y relaciones (cierre v1)**
+
+- **FR-037**: Arrastrar una selección del Canvas y soltarla sobre un código del banco
+  MUST crear una nueva cita codificada con el nombre y dominio de ese código.
+- **FR-038**: El sistema MUST permitir crear y eliminar relaciones dirigidas entre
+  códigos existentes (por nombre) con tipo jerarquía, asociación, causalidad o
+  contradicción; una relación cuyos códigos desaparecen del proyecto se elimina sola.
+- **FR-039**: Una vista Relaciones MUST visualizar las relaciones como organizador
+  (grafo con nodos coloreados por dominio y aristas distinguibles por tipo sin depender
+  solo del color) y como árbol construido desde las relaciones de jerarquía.
 
 **Persistencia**
 

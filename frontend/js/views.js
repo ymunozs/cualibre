@@ -17,6 +17,7 @@ const Views = {
     document.getElementById("project-select").addEventListener("change", (e) => this._switchProject(e));
     document.getElementById("btn-new-project").addEventListener("click", () => this._newProject());
     document.getElementById("btn-rename-project").addEventListener("click", () => this._renameProject());
+    document.getElementById("btn-save-project").addEventListener("click", () => this._saveProject());
 
     // NLP
     document.getElementById("nlp-lang").addEventListener("change", () => this.renderNlp());
@@ -48,6 +49,17 @@ const Views = {
     if (this.current === "analytics") this.renderAnalytics();
     else if (this.current === "nlp") this.renderNlp();
     else if (this.current === "exportar") this.renderExport();
+    else if (this.current === "relaciones") Relations.render();
+  },
+
+  async _saveProject() {
+    try {
+      const { updated_at } = await API.saveProject();
+      const time = updated_at.split("T")[1] || updated_at;
+      this.toast(`💾 Proyecto guardado (${time})`);
+    } catch (error) {
+      this.toast(error.message, true);
+    }
   },
 
   // ---------- Importador ----------

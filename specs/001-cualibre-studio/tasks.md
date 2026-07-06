@@ -195,3 +195,16 @@ cuando exista la vista; T024 deja listo el hook de re-render.
 Negra, con resaltado estable. **Stop & validate** en cada checkpoint con la app corriendo
 (Principio VII). Luego incremental: US3 → US4 → US5/US6/US7 → US8 → Polish. Cada historia
 se entrega sin romper las anteriores (Principio I: nunca eliminar funcionalidades).
+
+---
+
+## Phase 12: Cierre v1 (mejoras post-validación del investigador, 2026-07-06)
+
+- [X] T049 Añadir a `backend/models.py` el modelo `Relation` + `RELATION_TYPES` + payload `RelationCreate`; `Project.relations` y `next_relation_id` (data-model.md)
+- [X] T050 Añadir a `backend/app.py`: `POST /api/project/save`, `POST /api/relations` (422/409), `DELETE /api/relations/{id}` y poda de relaciones huérfanas en toda mutación de códigos
+- [X] T051 [P] Tests en `backend/tests/test_api.py`: save, CRUD de relaciones, validaciones, poda tras eliminar/renombrar códigos y documentos
+- [X] T052 Pestañas de documentos en el Pentagrama (`frontend/js/canvas.js` + `views.js` + CSS): barra "TODOS | doc1 | doc2…" visible con >1 documento, fuera del área de lectura (FR-035)
+- [X] T053 Botón «💾 GUARDAR» en la cabecera (`index.html` + `views.js`) con toast de hora (FR-036)
+- [X] T054 Arrastrar selección→código del banco (`canvas.js` dragstart + `paleta.js` drop con resaltado de destino): re-aplica nombre+dominio del código (FR-037)
+- [X] T055 Vista «◈ RELACIONES» (`index.html` + `frontend/js/relations.js`): formulario origen/tipo/destino, lista con eliminación, organizador SVG (nodos por dominio, aristas por tipo con estilo no-solo-color) y árbol de jerarquía (FR-039)
+- [X] T056 Verificación: pytest completo + arnés + flujo API end-to-end de relaciones + arranque real

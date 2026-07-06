@@ -132,10 +132,13 @@ confianza del investigador en cada iteración.
 - Formatos de corpus soportados: PDF, DOCX, TXT (UTF-8).
 - Idiomas del corpus: español e inglés (stopwords y NLP para ambos).
 - Inventario de funcionalidades protegidas por el Principio I: importación de corpus,
-  Canvas con resaltado por dominio, Nube Negra, Paleta con códigos manuales y memos,
-  NLP triple (nube de palabras + barras + tabla de conteo, con filtro de idioma y longitud
-  mínima), Analytics (distribución por dominios + densidad de códigos), exportación CSV
-  UTF-8, búsqueda de literatura OpenAlex.
+  Canvas con resaltado por dominio y pestañas de documentos, Nube Negra, Paleta con
+  códigos manuales y memos, edición/eliminación de códigos, arrastre de selección a
+  códigos existentes, multi-proyecto con guardado explícito, NLP triple (nube de
+  palabras + barras + tabla de conteo, con filtro de idioma y longitud mínima),
+  Analytics (distribución por dominios + densidad de códigos), relaciones entre códigos
+  (jerarquía/asociación/causalidad/contradicción con organizador y árbol), exportación
+  CSV UTF-8, búsqueda de literatura OpenAlex.
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -160,4 +163,7 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
+**Version**: 1.1.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
+<!-- 1.1.0: inventario del Principio I ampliado tras el cierre de v1 (pestañas de
+documentos, guardado explícito, arrastre a códigos, relaciones entre códigos),
+aprobado por el investigador en sesión del 2026-07-06. -->

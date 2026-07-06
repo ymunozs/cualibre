@@ -123,6 +123,38 @@ const Paleta = {
     const item = document.createElement("div");
     item.className = "code-item";
 
+    // Destino de arrastre: re-aplicar este código a la selección (FR-037)
+    item.addEventListener("dragover", (event) => {
+      if (!Canvas.dragSelection) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+      item.classList.add("drop-target");
+    });
+    item.addEventListener("dragleave", () => item.classList.remove("drop-target"));
+    item.addEventListener("drop", async (event) => {
+      event.preventDefault();
+      item.classList.remove("drop-target");
+      const sel = Canvas.dragSelection;
+      if (!sel) return;
+      Canvas.dragSelection = null;
+      window.getSelection().removeAllRanges();
+      try {
+        await API.createCode({
+          doc_id: sel.docId,
+          domain: code.domain,
+          name: code.name,
+          quote: sel.quote,
+          start: sel.start,
+          end: sel.end,
+          memo: "",
+        });
+        await State.reload();
+        Views.toast(`Cita añadida a «${code.name}»`);
+      } catch (error) {
+        Views.toast(error.message, true);
+      }
+    });
+
     const head = document.createElement("div");
     head.className = "code-head";
     const chip = document.createElement("span");

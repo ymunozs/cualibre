@@ -23,6 +23,10 @@ presiona `Ctrl-C` en la Terminal.
    elige el dominio (teclas 1–9 o el selector) → escribe el nombre del código →
    **Enter**. El fragmento queda resaltado con el color de su dominio.
    `Esc` o un clic fuera cancelan.
+   - Con más de un documento, usa las **pestañas** sobre el Canvas para leer uno a la
+     vez o todos juntos.
+   - Para **re-aplicar un código existente**: selecciona el fragmento y **arrástralo**
+     sobre ese código en el banco de la Paleta.
 3. **Paleta derecha**: códigos manuales con memo, lista de documentos (con eliminación
    protegida), banco de códigos con edición ✎ y eliminación 🗑, y reinicio del proyecto
    (siempre con confirmación).
@@ -30,10 +34,16 @@ presiona `Ctrl-C` en la Terminal.
    idioma (español/inglés) y longitud mínima.
 5. **◫ Analytics**: distribución por dominios y densidad de códigos, al día con cada
    codificación.
-6. **⇄ Exportar**: tabla completa y descarga CSV en UTF-8 que abre perfecto en Excel
+6. **◈ Relaciones**: vincula códigos entre sí (jerarquía «contiene a», asociación,
+   causalidad, contradicción/tensión) y míralos como organizador gráfico y como árbol
+   de jerarquía. Si un código desaparece, sus relaciones se limpian solas.
+7. **⇄ Exportar**: tabla completa y descarga CSV en UTF-8 que abre perfecto en Excel
    (tildes y ñ intactas).
-7. **📚 Literatura**: búsqueda de papers en OpenAlex (título, año, citas, DOI). Es lo
+8. **📚 Literatura**: búsqueda de papers en OpenAlex (título, año, citas, DOI). Es lo
    único que requiere internet.
+
+El proyecto se guarda solo tras cada acción; el botón **💾 GUARDAR** de la cabecera
+fuerza un guardado y te confirma la hora, para trabajar tranquilo.
 
 ## Proyectos y respaldo
 

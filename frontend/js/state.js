@@ -25,7 +25,10 @@ const State = {
 // Arranque de la SPA
 (async function boot() {
   try {
-    State.domains = await API.getDomains();
+    [State.domains, Relations.types] = await Promise.all([
+      API.getDomains(),
+      API.getRelationTypes(),
+    ]);
   } catch (error) {
     document.body.insertAdjacentText("afterbegin", "No se pudo conectar con el servidor de CUA-LIBRE.");
     return;
@@ -33,6 +36,7 @@ const State = {
   Canvas.init();
   Nube.init();
   Paleta.init();
+  Relations.init();
   Views.init();
   Nube.populateDomains();
   Paleta.populateDomains();

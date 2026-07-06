@@ -38,6 +38,7 @@ const API = {
   renameProject: (id, name) => API._json("PATCH", `/api/projects/${id}`, { name }),
   activateProject: (id) => API._json("POST", `/api/projects/${id}/activate`, {}),
   resetProject: () => API._json("POST", "/api/project/reset", { confirm: true }),
+  saveProject: () => API._json("POST", "/api/project/save", {}),
 
   // Dominios (fuente única: backend/models.py)
   getDomains: () => API._fetch("/api/domains"),
@@ -55,6 +56,11 @@ const API = {
   createCode: (payload) => API._json("POST", "/api/codes", payload),
   updateCode: (id, payload) => API._json("PATCH", `/api/codes/${id}`, payload),
   deleteCode: (id) => API._fetch(`/api/codes/${id}`, { method: "DELETE" }),
+
+  // Relaciones (FR-038)
+  getRelationTypes: () => API._fetch("/api/relation-types"),
+  createRelation: (payload) => API._json("POST", "/api/relations", payload),
+  deleteRelation: (id) => API._fetch(`/api/relations/${id}`, { method: "DELETE" }),
 
   // Análisis
   nlp: (lang, minLen) => API._fetch(`/api/nlp?lang=${lang}&min_len=${minLen}&top=60`),

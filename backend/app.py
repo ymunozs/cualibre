@@ -19,6 +19,7 @@ from .export import project_to_csv
 from .literature import LiteratureError, search_works
 from .models import (
     DOMAINS,
+    RELATION_TYPES,
     Code,
     CodeCreate,
     CodeUpdate,
@@ -26,8 +27,18 @@ from .models import (
     Document,
     Project,
     ProjectCreate,
+    Relation,
+    RelationCreate,
     utf16_len,
 )
+
+
+def _prune_relations(project: Project) -> None:
+    """Elimina relaciones cuyos códigos ya no existen por nombre (FR-038)."""
+    names = {c.name for c in project.codes}
+    project.relations = [
+        r for r in project.relations if r.source in names and r.target in names
+    ]
 from .nlp import word_frequencies
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
@@ -82,8 +93,18 @@ def reset_project(payload: ConfirmPayload) -> Project:
     project.documents = []
     project.codes = []
     project.next_code_id = 1
+    project.relations = []
+    project.next_relation_id = 1
     storage.save_project(project)
     return project
+
+
+@app.post("/api/project/save")
+def save_project_now() -> dict:
+    """Guardado explícito (FR-036). El autoguardado (FR-025) sigue vigente."""
+    project = storage.get_active_project()
+    storage.save_project(project)
+    return {"updated_at": project.updated_at}
 
 
 # ----- Documentos -----
@@ -121,6 +142,7 @@ def delete_document(doc_id: str, confirm: bool = False) -> dict:
         )
     project.documents = [d for d in project.documents if d.id != doc_id]
     project.codes = [c for c in project.codes if c.doc_id != doc_id]
+    _prune_relations(project)
     storage.save_project(project)
     return {"deleted_codes": len(anchored)}
 
@@ -165,6 +187,7 @@ def update_code(code_id: int, payload: CodeUpdate) -> Code:
         code.domain = payload.domain
     if payload.memo is not None:
         code.memo = payload.memo
+    _prune_relations(project)
     storage.save_project(project)
     return code
 
@@ -175,6 +198,45 @@ def delete_code(code_id: int) -> None:
     if not any(c.id == code_id for c in project.codes):
         raise HTTPException(404, "Código no encontrado")
     project.codes = [c for c in project.codes if c.id != code_id]
+    _prune_relations(project)
+    storage.save_project(project)
+
+
+# ----- Relaciones entre códigos (FR-038) -----
+
+@app.get("/api/relation-types")
+def get_relation_types() -> dict[str, str]:
+    return RELATION_TYPES
+
+
+@app.post("/api/relations", status_code=201)
+def create_relation(payload: RelationCreate) -> Relation:
+    project = storage.get_active_project()
+    names = {c.name for c in project.codes}
+    for endpoint in (payload.source, payload.target):
+        if endpoint not in names:
+            raise HTTPException(422, f"No existe un código llamado «{endpoint}»")
+    if any(r.source == payload.source and r.target == payload.target
+           and r.type == payload.type for r in project.relations):
+        raise HTTPException(409, "Esa relación ya existe")
+    relation = Relation(
+        id=project.next_relation_id,
+        source=payload.source,
+        target=payload.target,
+        type=payload.type,
+    )
+    project.next_relation_id += 1
+    project.relations.append(relation)
+    storage.save_project(project)
+    return relation
+
+
+@app.delete("/api/relations/{relation_id}", status_code=204)
+def delete_relation(relation_id: int) -> None:
+    project = storage.get_active_project()
+    if not any(r.id == relation_id for r in project.relations):
+        raise HTTPException(404, "Relación no encontrada")
+    project.relations = [r for r in project.relations if r.id != relation_id]
     storage.save_project(project)
 
 

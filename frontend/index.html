@@ -15,6 +15,7 @@
     <select id="project-select"></select>
     <button id="btn-new-project" class="btn btn-small" title="Crear proyecto nuevo">+ NUEVO</button>
     <button id="btn-rename-project" class="btn btn-small" title="Renombrar proyecto">✎ RENOMBRAR</button>
+    <button id="btn-save-project" class="btn btn-small btn-save" title="Guardar proyecto ahora">💾 GUARDAR</button>
   </div>
 </header>
 
@@ -28,6 +29,7 @@
   <button class="tab active" data-view="pentagrama">◰ PENTAGRAMA</button>
   <button class="tab" data-view="nlp">⚡ NLP</button>
   <button class="tab" data-view="analytics">◫ ANALYTICS</button>
+  <button class="tab" data-view="relaciones">◈ RELACIONES</button>
   <button class="tab" data-view="exportar">⇄ EXPORTAR</button>
   <button class="tab" data-view="literatura">📚 LITERATURA</button>
 </nav>
@@ -37,6 +39,7 @@
   <section id="view-pentagrama" class="view">
     <div id="canvas-col">
       <div class="section-title">CANVAS DE ANÁLISIS</div>
+      <div id="doc-tabs" class="hidden"></div>
       <div id="canvas"></div>
     </div>
     <aside id="paleta-col">
@@ -103,6 +106,31 @@
     </div>
   </section>
 
+  <!-- RELACIONES (FR-038/039) -->
+  <section id="view-relaciones" class="view hidden">
+    <div class="section-title">RELACIONES ENTRE CÓDIGOS</div>
+    <p id="rel-empty" class="empty-note hidden">Necesitas al menos dos códigos con nombres distintos para crear relaciones.</p>
+    <div id="rel-builder" class="controls-row">
+      <select id="rel-source"></select>
+      <select id="rel-type"></select>
+      <select id="rel-target"></select>
+      <button id="btn-rel-create" class="btn btn-accent" style="width:auto">◉ CREAR RELACIÓN</button>
+    </div>
+    <div id="rel-body">
+      <div>
+        <div class="section-title">ORGANIZADOR (GRAFO)</div>
+        <div id="rel-graph"></div>
+        <div id="rel-legend"></div>
+      </div>
+      <div>
+        <div class="section-title">ÁRBOL DE JERARQUÍA</div>
+        <div id="rel-tree" class="panel"></div>
+        <div class="section-title">LISTADO</div>
+        <div id="rel-list" class="panel"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- EXPORTAR -->
   <section id="view-exportar" class="view hidden">
     <div class="section-title">GESTIÓN DE DATOS</div>
@@ -145,6 +173,7 @@
 <script src="/static/js/canvas.js"></script>
 <script src="/static/js/nube.js"></script>
 <script src="/static/js/paleta.js"></script>
+<script src="/static/js/relations.js"></script>
 <script src="/static/js/views.js"></script>
 <script src="/static/js/state.js"></script>
 </body>

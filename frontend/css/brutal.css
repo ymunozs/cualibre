@@ -272,6 +272,60 @@ body {
 }
 .code-edit-buttons { display: flex; gap: 6px; margin-top: 4px; }
 
+/* ---------- Pestañas de documentos (navegación, no entrada — FR-035) ---------- */
+
+#doc-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+
+.doc-tab {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: #EEE;
+  border: 2px solid var(--ink);
+  padding: 5px 12px;
+  cursor: pointer;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc-tab.active { background: var(--ink); color: #fff; }
+.doc-tab:hover:not(.active) { background: #ddd; }
+
+/* ---------- Arrastre de selección a código (FR-037) ---------- */
+
+.code-item.drop-target {
+  outline: 3px solid var(--accent);
+  outline-offset: -1px;
+  background: #FFF3F0;
+}
+
+/* ---------- Botón guardar ---------- */
+
+.btn-save { border-color: var(--accent); }
+
+/* ---------- Relaciones (FR-038/039) ---------- */
+
+#rel-body { display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px; margin-top: 10px; align-items: start; }
+#rel-builder select { max-width: 240px; }
+#rel-legend { margin-top: 4px; }
+
+.tree-branch { list-style: none; padding-left: 22px; }
+.tree-root { padding-left: 0; }
+.tree-node {
+  padding: 4px 0;
+  font-size: 13px;
+  font-weight: 700;
+  display: block;
+}
+.tree-node > .dom-chip { display: inline-block; margin-right: 8px; vertical-align: middle; }
+.tree-branch .tree-branch { border-left: 2px solid var(--ink); margin-left: 5px; }
+
+@media (max-width: 980px) {
+  #rel-body { grid-template-columns: 1fr; }
+}
+
 /* ---------- Nube Negra (único flotante permitido — Principio II) ---------- */
 
 #nube {

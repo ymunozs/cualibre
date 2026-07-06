@@ -9,14 +9,32 @@
 
 const Canvas = {
   el: null,
+  activeDocId: null, // null = todos los documentos (FR-035)
+  dragSelection: null, // selección arrastrada hacia un código del banco (FR-037)
 
   init() {
     this.el = document.getElementById("canvas");
     this.el.addEventListener("mouseup", (event) => this._onMouseUp(event));
+    // Arrastrar la selección: capturar sus offsets antes de soltarla en el banco
+    this.el.addEventListener("dragstart", (event) => {
+      const info = this._selectionInfo();
+      if (!info) { event.preventDefault(); return; }
+      this.dragSelection = info;
+      event.dataTransfer.setData("text/plain", info.quote);
+      event.dataTransfer.effectAllowed = "copy";
+      Nube.hide();
+    });
+    this.el.addEventListener("dragend", () => { this.dragSelection = null; });
   },
 
   render() {
     const { documents, codes } = State.project;
+    // Si el documento activo ya no existe, volver a "Todos"
+    if (this.activeDocId && !documents.some(d => d.id === this.activeDocId)) {
+      this.activeDocId = null;
+    }
+    this._renderDocTabs(documents);
+
     this.el.textContent = "";
     if (!documents.length) {
       const empty = document.createElement("p");
@@ -25,7 +43,10 @@ const Canvas = {
       this.el.appendChild(empty);
       return;
     }
-    for (const doc of documents) {
+    const visible = this.activeDocId
+      ? documents.filter(d => d.id === this.activeDocId)
+      : documents;
+    for (const doc of visible) {
       const wrapper = document.createElement("div");
       wrapper.className = "doc";
 
@@ -42,6 +63,30 @@ const Canvas = {
 
       this.el.appendChild(wrapper);
     }
+  },
+
+  /* Pestañas de documentos: navegación, nunca entrada de datos (Principio II). */
+  _renderDocTabs(documents) {
+    const bar = document.getElementById("doc-tabs");
+    bar.textContent = "";
+    if (documents.length < 2) {
+      bar.classList.add("hidden");
+      return;
+    }
+    bar.classList.remove("hidden");
+    const makeTab = (label, docId) => {
+      const tab = document.createElement("button");
+      tab.className = "doc-tab" + (this.activeDocId === docId ? " active" : "");
+      tab.textContent = label;
+      tab.title = label;
+      tab.addEventListener("click", () => {
+        this.activeDocId = docId;
+        this.render();
+      });
+      bar.appendChild(tab);
+    };
+    makeTab("TODOS", null);
+    for (const doc of documents) makeTab(doc.filename, doc.id);
   },
 
   /* Segmentación: límites ordenados → segmentos contiguos → spans planos. */
@@ -100,35 +145,40 @@ const Canvas = {
     return el ? el.closest(".doc-text") : null;
   },
 
-  _onMouseUp(event) {
-    // Un clic dentro de la Nube no debe reposicionarla ni cerrarla
-    if (event.target.closest && event.target.closest("#nube")) return;
-
+  /* Selección actual → {docId, start, end, quote, rect} o null si no es codificable. */
+  _selectionInfo() {
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
-      Nube.hide();
-      return;
-    }
+    if (!selection || selection.isCollapsed || selection.rangeCount === 0) return null;
+
     const range = selection.getRangeAt(0);
     const startDoc = this._docTextOf(range.startContainer);
     const endDoc = this._docTextOf(range.endContainer);
 
     // Fuera del corpus, o cruzando dos documentos: no codificable (spec, edge case)
-    if (!startDoc || !endDoc || startDoc !== endDoc) {
-      Nube.hide();
-      return;
-    }
+    if (!startDoc || !endDoc || startDoc !== endDoc) return null;
 
     const docId = startDoc.dataset.doc;
     const start = this._absOffset(startDoc, range.startContainer, range.startOffset);
     const end = this._absOffset(startDoc, range.endContainer, range.endOffset);
-    if (end - start < 3) { // umbral FR-009
+    if (end - start < 3) return null; // umbral FR-009
+
+    const doc = State.project.documents.find(d => d.id === docId);
+    return {
+      docId, start, end,
+      quote: doc.text.slice(start, end),
+      rect: range.getBoundingClientRect(),
+    };
+  },
+
+  _onMouseUp(event) {
+    // Un clic dentro de la Nube no debe reposicionarla ni cerrarla
+    if (event.target.closest && event.target.closest("#nube")) return;
+
+    const info = this._selectionInfo();
+    if (!info) {
       Nube.hide();
       return;
     }
-
-    const doc = State.project.documents.find(d => d.id === docId);
-    const quote = doc.text.slice(start, end);
-    Nube.show(range.getBoundingClientRect(), { docId, start, end, quote });
+    Nube.show(info.rect, info);
   },
 };
