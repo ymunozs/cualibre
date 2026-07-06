@@ -70,7 +70,7 @@ que codificar; ambas son P1.
 - [X] T022 [US1] Implementar en `frontend/js/canvas.js` la segmentación de rangos: recolectar límites start/end de los códigos por documento, partir el texto en segmentos contiguos, emitir cada segmento como nodo de texto o `<span>` plano (nunca anidado) con color del código más reciente que lo cubre, `title` con nombres de códigos y `data-doc`/`data-start` para el mapeo de offsets; solapamientos y repeticiones seguros (FR-006/007)
 - [X] T023 [US1] Implementar en `frontend/js/canvas.js` el mapeo selección→offsets: en `mouseup`, validar que la selección (≥3 caracteres) vive dentro de un solo documento del Canvas y calcular start/end absolutos desde `data-start` + offset dentro del nodo; exponer `{docId, start, end, quote, rect}`
 - [X] T024 [US1] Implementar `frontend/js/nube.js`: popup Nube Negra posicionado junto al rect de la selección, selector de dominio (con teclas 1–9), campo de nombre con foco automático, Enter → POST /api/codes → cierre + re-render Canvas/Paleta/Analytics; Escape o clic fuera → cierre sin rastro; nombre vacío → aviso sin guardar (FR-009–012)
-- [ ] T025 [US1] Verificación manual del flujo crítico con la app corriendo (quickstart pasos 2–3, incluyendo citas repetidas, solapadas, Escape y nombre vacío)
+- [X] T025 [US1] Verificación manual del flujo crítico con la app corriendo (quickstart pasos 2–3, incluyendo citas repetidas, solapadas, Escape y nombre vacío)
 
 **Checkpoint**: MVP — el corazón del producto funciona de punta a punta. Nota: la
 verificación de "Analytics reflejan el código de inmediato" se completa en la Fase 8,
@@ -102,7 +102,7 @@ cuando exista la vista; T024 deja listo el hook de re-render.
 - [X] T030 [P] [US4] Añadir a `backend/app.py`: `PATCH /api/codes/{id}` (name/domain/memo mutables, anclaje inmutable) y `DELETE /api/codes/{id}` (FR-030/031)
 - [X] T031 [P] [US4] Añadir a `backend/tests/test_api.py`: edición válida, intento de mutar anclaje ignorado/rechazado, eliminación, códigos manuales (doc_id null ⇒ start/end null, quote vacía)
 - [X] T032 [US4] Implementar `frontend/js/paleta.js`: formulario manual (dominio, etiqueta, memo) con guardado vía POST /api/codes; banco de códigos listado en la Paleta (color de dominio, nombre, cita truncada, memo) con acciones editar (inline: nombre/dominio/memo) y eliminar con confirmación; re-render de Canvas y Analytics tras cada acción
-- [ ] T033 [US4] Verificación manual: quickstart pasos 4–5
+- [X] T033 [US4] Verificación manual: quickstart pasos 4–5
 
 **Checkpoint**: gestión completa del banco de códigos
 
@@ -168,7 +168,7 @@ cuando exista la vista; T024 deja listo el hook de re-render.
 
 - [X] T046 [P] Escribir `README.md` en español para el investigador: qué es, cómo iniciar (`./start.sh`), dónde viven los datos, cómo respaldar proyectos
 - [X] T047 Prueba de rendimiento: generar un TXT sintético de ~200 páginas, importarlo y verificar fluidez de lectura/selección/codificación (SC-006); optimizar render si hace falta
-- [ ] T048 Ejecutar la validación end-to-end completa de `specs/001-cualibre-studio/quickstart.md` (13 pasos) con la app real y marcar el inventario constitucional (SC-008); corregir todo lo que falle antes de declarar la versión lista
+- [X] T048 Ejecutar la validación end-to-end completa de `specs/001-cualibre-studio/quickstart.md` (13 pasos) con la app real y marcar el inventario constitucional (SC-008); corregir todo lo que falle antes de declarar la versión lista
 
 ---
 

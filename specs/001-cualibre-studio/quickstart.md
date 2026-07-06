@@ -62,5 +62,5 @@ Esperado: todos verdes (contrato API, extracción, NLP, CSV, persistencia).
 ## Inventario constitucional (Principio I — SC-008)
 
 Antes de entregar, confirmar presencia y operación de las 8 funcionalidades:
-importación ▢ · Canvas+resaltado ▢ · Nube Negra ▢ · Paleta+memos ▢ · NLP triple ▢ ·
-Analytics ▢ · Exportación CSV ▢ · OpenAlex ▢
+importación ☑ · Canvas+resaltado ☑ · Nube Negra ☑ · Paleta+memos ☑ · NLP triple ☑ ·
+Analytics ☑ · Exportación CSV ☑ · OpenAlex ☑ — validado por el investigador el 2026-07-06
