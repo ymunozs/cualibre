@@ -1,0 +1,398 @@
+/* =============================================================================
+   CUA-LIBRE STUDIO — Sistema Brutalista (Constitución, Principio VI)
+   Space Grotesk (títulos) · IBM Plex Mono (interfaz) · serif (corpus)
+   ============================================================================= */
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/static/fonts/space-grotesk-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/static/fonts/space-grotesk-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/static/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/static/fonts/ibm-plex-mono-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  /* Paleta de dominios (FR-016) — sincronizada con backend/models.py */
+  --dom-emocional: #FF3300;
+  --dom-descriptivo: #0066FF;
+  --dom-invivo: #FFCC00;
+  --dom-tension: #FF0066;
+  --dom-proceso: #6600CC;
+  --dom-teorico: #00CC66;
+  --dom-relacional: #0099CC;
+  --dom-critico: #CC0000;
+  --dom-metodo: #333333;
+
+  --ink: #000;
+  --paper: #FAFAFA;
+  --canvas: #FDFDF7;
+  --accent: #FF3300;
+  --border: 3px solid var(--ink);
+  --border-thin: 2px solid var(--ink);
+  --shadow: 5px 5px 0 var(--ink);
+  --shadow-accent: 5px 5px 0 var(--accent);
+  --mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  --display: "Space Grotesk", "Helvetica Neue", sans-serif;
+  --serif: Charter, Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 24px 28px 60px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+/* ---------- Cabecera ---------- */
+
+#topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 4px solid var(--ink);
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+
+.cua-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+.title-accent { color: var(--accent); }
+.cua-title small { font-size: 0.9rem; font-family: var(--mono); font-weight: 400; color: #666; }
+
+#project-bar { display: flex; align-items: center; gap: 8px; }
+
+.mini-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Importador (jerarquía superior — FR-001) ---------- */
+
+#importador {
+  border: var(--border);
+  background: #fff;
+  box-shadow: var(--shadow-accent);
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.import-label { font-weight: 700; font-size: 12px; letter-spacing: 0.05em; }
+
+/* ---------- Pestañas ---------- */
+
+#tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+
+.tab {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  background: #EEE;
+  border: var(--border-thin);
+  padding: 10px 20px;
+  cursor: pointer;
+}
+.tab.active { background: var(--accent); color: #fff; }
+.tab:hover:not(.active) { background: #ddd; }
+
+/* ---------- Vistas ---------- */
+
+.view.hidden, .hidden { display: none !important; }
+
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-left: 4px solid var(--accent);
+  padding-left: 10px;
+  margin: 14px 0 10px;
+}
+
+/* ---------- Pentagrama: Canvas + Paleta ---------- */
+
+#view-pentagrama { display: grid; grid-template-columns: 2.3fr 1fr; gap: 22px; align-items: start; }
+
+#canvas {
+  height: 640px;
+  overflow-y: auto;
+  background: var(--canvas);
+  border: var(--border);
+  padding: 30px 34px;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.75;
+  color: #111;
+}
+
+.doc { margin-bottom: 26px; }
+
+.doc-header {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: #fff;
+  display: inline-block;
+  padding: 3px 10px;
+  margin-bottom: 10px;
+  user-select: none;
+}
+
+.doc-text { white-space: pre-wrap; word-wrap: break-word; }
+
+.doc-text .hl { padding: 1px 2px; border-radius: 2px; cursor: help; }
+
+#canvas-empty {
+  color: #999;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+/* Paleta */
+
+#paleta-col { min-width: 0; }
+
+.panel {
+  border: var(--border-thin);
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 6px;
+}
+
+.panel select, .panel input[type="text"], .panel textarea {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 13px;
+  border: var(--border-thin);
+  padding: 7px 8px;
+  margin: 6px 0;
+  background: #fff;
+}
+.panel textarea { resize: vertical; }
+
+.btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  border: var(--border-thin);
+  background: #fff;
+  padding: 9px 14px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+.btn:hover { box-shadow: 3px 3px 0 var(--ink); transform: translate(-1px, -1px); }
+.btn:active { box-shadow: none; transform: none; }
+.btn-accent { background: var(--accent); color: #fff; border-color: var(--ink); width: 100%; }
+.btn-danger { background: var(--ink); color: #fff; width: 100%; margin-top: 10px; }
+.btn-small { padding: 5px 10px; font-size: 11px; }
+
+.plain-list { list-style: none; }
+.plain-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px dashed #bbb;
+  font-size: 12px;
+  word-break: break-all;
+}
+.plain-list li:last-child { border-bottom: none; }
+
+.icon-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+}
+.icon-btn:hover { color: var(--accent); }
+
+/* Banco de códigos */
+
+#code-bank { max-height: 340px; overflow-y: auto; }
+
+.code-item {
+  border-bottom: 1px dashed #bbb;
+  padding: 8px 0;
+  font-size: 12px;
+}
+.code-item:last-child { border-bottom: none; }
+
+.code-head { display: flex; align-items: center; gap: 6px; }
+
+.dom-chip {
+  width: 12px; height: 12px;
+  border: 1px solid var(--ink);
+  flex-shrink: 0;
+}
+.code-name { font-weight: 700; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.code-quote { color: #555; font-style: italic; margin-top: 3px; overflow-wrap: anywhere; }
+.code-memo { color: #333; margin-top: 3px; overflow-wrap: anywhere; }
+.code-meta { color: #999; font-size: 10px; margin-top: 3px; }
+
+.code-edit-form select, .code-edit-form input, .code-edit-form textarea {
+  width: 100%; font-family: var(--mono); font-size: 12px;
+  border: 1px solid var(--ink); padding: 4px 6px; margin: 3px 0;
+}
+.code-edit-buttons { display: flex; gap: 6px; margin-top: 4px; }
+
+/* ---------- Nube Negra (único flotante permitido — Principio II) ---------- */
+
+#nube {
+  position: absolute;
+  z-index: 9999;
+  background: var(--ink);
+  color: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: var(--shadow-accent);
+  width: 260px;
+  padding: 14px;
+}
+.nube-title { font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 8px; }
+#nube select, #nube input {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 13px;
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #555;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+}
+#nube input::placeholder { color: #888; }
+#nube input.error { border-color: var(--accent); animation: shake 0.25s; }
+#nube input.error::placeholder { color: var(--accent); }
+.nube-hint { font-size: 9px; color: #999; letter-spacing: 0.05em; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ---------- NLP ---------- */
+
+.controls-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.controls-row select, .controls-row input[type="text"] {
+  font-family: var(--mono); font-size: 13px; border: var(--border-thin); padding: 7px 8px;
+}
+.controls-row input[type="text"] { flex: 1; min-width: 220px; }
+.controls-row label { display: flex; align-items: center; gap: 8px; }
+
+#wordcloud {
+  width: 100%;
+  background: var(--canvas);
+  border: var(--border);
+  display: block;
+}
+
+#nlp-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 6px; }
+
+.table-scroll { max-height: 380px; overflow: auto; border: var(--border-thin); background: #fff; }
+
+.data-table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.data-table th {
+  background: var(--ink); color: #fff;
+  text-align: left; padding: 7px 10px;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  position: sticky; top: 0;
+}
+.data-table td { padding: 6px 10px; border-bottom: 1px solid #ddd; vertical-align: top; }
+.data-table tr:nth-child(even) td { background: #f4f4ef; }
+
+/* ---------- Analytics ---------- */
+
+#analytics-charts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 22px; align-items: start; }
+#chart-pie, #chart-bars { border: var(--border); background: #fff; padding: 14px; }
+
+.empty-note { color: #777; font-size: 13px; padding: 14px 0; }
+
+/* ---------- Exportar ---------- */
+
+#btn-export { display: inline-block; width: auto; text-decoration: none; margin-bottom: 12px; }
+
+/* ---------- Literatura ---------- */
+
+.lit-card {
+  border: var(--border-thin);
+  background: #fff;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.lit-title { font-weight: 700; font-size: 13px; }
+.lit-meta { color: #666; font-size: 11px; margin-top: 4px; }
+.lit-card a { color: var(--accent); font-weight: 700; }
+
+/* ---------- Toast y diálogo ---------- */
+
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  border: 2px solid var(--accent);
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 10000;
+  box-shadow: var(--shadow-accent);
+}
+#toast.error { background: var(--accent); border-color: var(--ink); }
+
+dialog {
+  border: var(--border);
+  box-shadow: var(--shadow);
+  padding: 22px;
+  font-family: var(--mono);
+  font-size: 14px;
+  max-width: 440px;
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+.dialog-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.dialog-buttons .btn { width: auto; margin-top: 0; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 980px) {
+  #view-pentagrama, #nlp-bottom, #analytics-charts { grid-template-columns: 1fr; }
+  #canvas { height: 480px; }
+}

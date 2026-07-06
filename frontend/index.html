@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUA-LIBRE STUDIO</title>
+<link rel="stylesheet" href="/static/css/brutal.css">
+</head>
+<body>
+
+<header id="topbar">
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.0.0</small></h1>
+  <div id="project-bar">
+    <label for="project-select" class="mini-label">PROYECTO</label>
+    <select id="project-select"></select>
+    <button id="btn-new-project" class="btn btn-small" title="Crear proyecto nuevo">+ NUEVO</button>
+    <button id="btn-rename-project" class="btn btn-small" title="Renombrar proyecto">✎ RENOMBRAR</button>
+  </div>
+</header>
+
+<section id="importador">
+  <label for="file-input" class="import-label">📥 IMPORTAR CORPUS — PDF, DOCX o TXT</label>
+  <input type="file" id="file-input" accept=".pdf,.docx,.txt" multiple>
+  <span id="import-status" class="mini-label"></span>
+</section>
+
+<nav id="tabs">
+  <button class="tab active" data-view="pentagrama">◰ PENTAGRAMA</button>
+  <button class="tab" data-view="nlp">⚡ NLP</button>
+  <button class="tab" data-view="analytics">◫ ANALYTICS</button>
+  <button class="tab" data-view="exportar">⇄ EXPORTAR</button>
+  <button class="tab" data-view="literatura">📚 LITERATURA</button>
+</nav>
+
+<main>
+  <!-- PENTAGRAMA: Canvas (lectura pura) + Paleta -->
+  <section id="view-pentagrama" class="view">
+    <div id="canvas-col">
+      <div class="section-title">CANVAS DE ANÁLISIS</div>
+      <div id="canvas"></div>
+    </div>
+    <aside id="paleta-col">
+      <div class="section-title">PALETA DE CONTROL</div>
+      <div class="panel" id="paleta-manual">
+        <div class="mini-label">CÓDIGO MANUAL</div>
+        <select id="manual-domain"></select>
+        <input type="text" id="manual-name" placeholder="Etiqueta / código…" maxlength="200">
+        <textarea id="manual-memo" rows="3" placeholder="Memo de investigación…"></textarea>
+        <button id="btn-manual-save" class="btn btn-accent">◉ GUARDAR</button>
+      </div>
+      <div class="section-title">DOCUMENTOS DEL CORPUS</div>
+      <div class="panel">
+        <ul id="doc-list" class="plain-list"></ul>
+      </div>
+      <div class="section-title">BANCO DE CÓDIGOS</div>
+      <div class="panel" id="code-bank"></div>
+      <button id="btn-reset" class="btn btn-danger">⌦ REINICIAR PROYECTO</button>
+    </aside>
+  </section>
+
+  <!-- NLP -->
+  <section id="view-nlp" class="view hidden">
+    <div class="section-title">ANÁLISIS DE CORPUS</div>
+    <div class="controls-row">
+      <label class="mini-label">IDIOMA
+        <select id="nlp-lang">
+          <option value="es" selected>Español</option>
+          <option value="en">Inglés</option>
+        </select>
+      </label>
+      <label class="mini-label">LONGITUD MÍNIMA <span id="nlp-minlen-value">4</span>
+        <input type="range" id="nlp-minlen" min="2" max="10" value="4">
+      </label>
+    </div>
+    <div class="section-title">NUBE DE CONCEPTOS</div>
+    <canvas id="wordcloud" height="340"></canvas>
+    <div id="nlp-bottom">
+      <div>
+        <div class="section-title">FRECUENCIAS TOP</div>
+        <div id="nlp-bars"></div>
+      </div>
+      <div>
+        <div class="section-title">LISTADO Y CONTEO</div>
+        <div id="nlp-table" class="table-scroll"></div>
+      </div>
+    </div>
+    <p id="nlp-empty" class="empty-note hidden">Importa documentos al corpus para analizar sus frecuencias.</p>
+  </section>
+
+  <!-- ANALYTICS -->
+  <section id="view-analytics" class="view hidden">
+    <div class="section-title">ESTADÍSTICAS DE CODIFICACIÓN</div>
+    <p id="analytics-empty" class="empty-note hidden">Codifica fragmentos en el Pentagrama para generar estadísticas.</p>
+    <div id="analytics-charts">
+      <div>
+        <div class="section-title">DISTRIBUCIÓN POR DOMINIOS</div>
+        <div id="chart-pie"></div>
+      </div>
+      <div>
+        <div class="section-title">DENSIDAD DE CÓDIGOS</div>
+        <div id="chart-bars"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPORTAR -->
+  <section id="view-exportar" class="view hidden">
+    <div class="section-title">GESTIÓN DE DATOS</div>
+    <a id="btn-export" class="btn btn-accent" href="/api/export.csv" download>⇄ DESCARGAR CSV (UTF-8 · EXCEL)</a>
+    <div id="export-table" class="table-scroll"></div>
+  </section>
+
+  <!-- LITERATURA -->
+  <section id="view-literatura" class="view hidden">
+    <div class="section-title">BÚSQUEDA OPENALEX</div>
+    <div class="controls-row">
+      <input type="text" id="lit-query" placeholder="Ej: Vygotsky emotions education">
+      <button id="btn-lit-search" class="btn btn-accent">BUSCAR</button>
+    </div>
+    <div id="lit-results"></div>
+  </section>
+</main>
+
+<!-- NUBE NEGRA: único elemento efímero permitido sobre el texto (Principio II) -->
+<div id="nube" class="hidden" role="dialog" aria-label="Codificar selección">
+  <div class="nube-title">CODIFICAR SELECCIÓN</div>
+  <select id="nube-domain" title="Dominio (teclas 1–9)"></select>
+  <input type="text" id="nube-name" placeholder="Nombre del código…" maxlength="200" autocomplete="off">
+  <div class="nube-hint">ENTER guarda · ESC cancela · 1–9 dominio</div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<dialog id="confirm-dialog">
+  <p id="confirm-message"></p>
+  <div class="dialog-buttons">
+    <button id="confirm-cancel" class="btn">CANCELAR</button>
+    <button id="confirm-ok" class="btn btn-danger">CONFIRMAR</button>
+  </div>
+</dialog>
+
+<script src="/static/js/api.js"></script>
+<script src="/static/js/charts.js"></script>
+<script src="/static/js/wordcloud.js"></script>
+<script src="/static/js/canvas.js"></script>
+<script src="/static/js/nube.js"></script>
+<script src="/static/js/paleta.js"></script>
+<script src="/static/js/views.js"></script>
+<script src="/static/js/state.js"></script>
+</body>
+</html>

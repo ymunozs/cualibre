@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+*.egg-info/
+.pytest_cache/
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.env*
+uv.lock
