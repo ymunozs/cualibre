@@ -13,6 +13,7 @@ uv run pyinstaller --noconfirm --clean --windowed \
   --icon packaging/cualibre.icns \
   --add-data "frontend:frontend" \
   --add-data "MANUAL.md:." \
+  --add-data "backend/data_nrc_es.json:." \
   --collect-all es_core_news_sm \
   --collect-all en_core_web_sm \
   --osx-bundle-identifier cl.cualibre.studio \

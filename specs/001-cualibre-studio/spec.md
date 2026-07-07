@@ -427,6 +427,16 @@ que se listan resultados con título, año, citas y DOI clicable.
   las conjugaciones se agrupan bajo su lema (cantó/cantaba → cantar) y se respetan
   stopwords y exclusiones.
 
+**Sentimiento (v1.6)**
+
+- **FR-059**: Una vista Sentimiento MUST analizar la valencia (−1..+1) y las 8 emociones
+  del corpus mediante léxico abierto en castellano (NRC EmoLex, 5.094 palabras, con
+  lematización spaCy e inversión por negación), 100% offline y AUDITABLE: se muestran
+  siempre las palabras que produjeron cada puntaje. Incluye tono y arco emocional por
+  documento (estilo syuzhet), tono por dominio y por código, emociones agregadas y
+  ranking de palabras con carga. (Evaluación de alternativas: pysentimiento descartado
+  para v1 por peso ~2 GB y opacidad; syuzhet descartado por requerir runtime R.)
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del

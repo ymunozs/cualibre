@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v1.5)
+# CUA-LIBRE STUDIO — Manual de uso (v1.6)
 
 Guía completa de comandos y flujos para el análisis cualitativo.
 
@@ -85,7 +85,23 @@ Lista con el número de códigos de cada documento. **🗑** elimina un document
 
 Todo se actualiza solo con cada codificación.
 
-## 9. ◈ Relaciones
+## 9. ◑ Sentimiento
+
+Analiza el **tono emocional** del corpus con un léxico abierto en castellano (NRC EmoLex,
+5.094 palabras; uso investigativo con cita a Mohammad & Turney 2013). Todo es **auditable**:
+cada puntaje viene acompañado de las palabras que lo produjeron.
+
+- **Tono y arco emocional por documento**: valencia global (−1 a +1) y su trayectoria
+  párrafo a párrafo — dónde el relato se oscurece o se ilumina.
+- **Tono por dominio y por código**: ¿tus citas de "Tensión/CHAT" son más negativas que
+  las de "Relacional"? Barras divergentes desde el eje cero.
+- **Emociones detectadas** (8 de NRC: alegría, tristeza, miedo, rabia, confianza,
+  anticipación, sorpresa, asco) y **ranking de palabras con carga** (± con conteos).
+- Maneja **negación**: "no siento alegría" invierte la polaridad de *alegría*.
+- Límites honestos: la ironía y el sarcasmo se le escapan; úsalo como brújula
+  exploratoria, no como veredicto.
+
+## 10. ◈ Relaciones
 
 1. Elige código origen → **tipo** → código destino → **◉ CREAR RELACIÓN**.
 2. Tipos: **jerarquía** (contiene a), **asociación**, **causalidad** (influye en), **contradicción** (tensiona con).
@@ -93,26 +109,26 @@ Todo se actualiza solo con cada codificación.
 4. **Árbol de jerarquía**: se arma solo desde las relaciones "contiene a".
 5. Si un código desaparece del proyecto, sus relaciones se limpian automáticamente.
 
-## 10. ⇄ Exportar
+## 11. ⇄ Exportar
 
 Tabla completa del banco y **descarga CSV** en UTF-8 con BOM: abre en Excel con tildes y ñ intactas. Columnas: id, fecha, documento, dominio, código, cita, memo.
 
-## 11. 📚 Literatura
+## 12. 📚 Literatura
 
 Búsqueda por conceptos en **OpenAlex** (título, año, citas, enlace DOI). Única función que requiere internet; si no hay conexión, el resto de la app sigue igual.
 
-## 12. ◷ Sesión de foco
+## 13. ◷ Sesión de foco
 
 Al abrir la app (o con clic en **◷ sesión** en la barra inferior) puedes fijar una **meta**
 ("codificar la entrevista 3") y un bloque de **15/25/50/90 minutos** — u **OMITIR**. El
 indicador muestra el tiempo restante y cuántos códigos llevas en la sesión; al terminar,
 un aviso suave sugiere la pausa (sin alarmas).
 
-## 13. ♫ Música de foco (barra inferior)
+## 14. ♫ Música de foco (barra inferior)
 
 Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` junto a tus datos — **clic en el título de la barra** te muestra la ruta exacta. `▶` reproduce en bucle, `⏭` salta de pista, y el volumen se recuerda.
 
-## 14. Tabla rápida de atajos
+## 15. Tabla rápida de atajos
 
 | Atajo | Acción |
 |-------|--------|
@@ -124,7 +140,7 @@ Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` ju
 | `⌘Z` / `Ctrl+Z` | Deshacer última codificación |
 | Arrastrar selección → código del banco | Re-aplicar ese código |
 
-## 15. Solución de problemas
+## 16. Solución de problemas
 
 - **Mac dice que la app no se puede abrir**: la primera vez, clic derecho → Abrir (la app no está firmada con certificado de Apple).
 - **Windows SmartScreen advierte**: "Más información → Ejecutar de todas formas".

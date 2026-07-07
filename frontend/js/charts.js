@@ -158,6 +158,76 @@ const Charts = {
     container.appendChild(table);
   },
 
+  /* Arco emocional (FR-059): línea de valencia -1..1 con eje cero. */
+  line(container, points) {
+    container.textContent = "";
+    if (points.length < 2) {
+      const p = document.createElement("span");
+      p.className = "empty-note";
+      p.textContent = "Se necesitan 2+ párrafos para trazar el arco.";
+      container.appendChild(p);
+      return;
+    }
+    const width = 560, height = 110, pad = 8;
+    const svg = this._svg(width, height);
+    const x = (i) => pad + (i / (points.length - 1)) * (width - 2 * pad);
+    const y = (s) => height / 2 - s * (height / 2 - pad);
+    svg.appendChild(this._el("line", {
+      x1: pad, y1: height / 2, x2: width - pad, y2: height / 2,
+      stroke: "currentColor", "stroke-width": 1, "stroke-dasharray": "3,4", opacity: 0.5,
+    }));
+    const path = points.map((p, i) => `${i ? "L" : "M"} ${x(i).toFixed(1)} ${y(p.score).toFixed(1)}`).join(" ");
+    svg.appendChild(this._el("path", {
+      d: path, fill: "none", stroke: "#FF3300", "stroke-width": 3,
+      "stroke-linejoin": "round", "stroke-linecap": "round",
+    }));
+    points.forEach((p, i) => {
+      const dot = this._el("circle", {
+        cx: x(i), cy: y(p.score), r: 3.5,
+        fill: p.score >= 0 ? "#00CC66" : "#CC0000", stroke: "#000", "stroke-width": 1.5,
+      });
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = `Tramo ${i + 1}: ${p.score > 0 ? "+" : ""}${p.score} (${p.matched} palabras con carga)`;
+      dot.appendChild(title);
+      svg.appendChild(dot);
+    });
+    container.appendChild(svg);
+  },
+
+  /* Barras divergentes (FR-059): valencia -1..1 desde un eje central. */
+  diverging(container, data) {
+    container.textContent = "";
+    if (!data.length) return;
+    const rowH = 30, width = 560, center = width / 2, span = width / 2 - 70;
+    const height = data.length * rowH + 4;
+    const svg = this._svg(width, height);
+    svg.appendChild(this._el("line", {
+      x1: center, y1: 0, x2: center, y2: height,
+      stroke: "currentColor", "stroke-width": 1, opacity: 0.5,
+    }));
+    data.forEach((d, i) => {
+      const yPos = i * rowH + 5;
+      const barW = Math.abs(d.value) * span;
+      const bar = this._el("rect", {
+        x: d.value >= 0 ? center : center - barW, y: yPos,
+        width: Math.max(2, barW), height: rowH - 11,
+        fill: d.color, stroke: "#000", "stroke-width": 2,
+      });
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = `${d.label}: ${d.value > 0 ? "+" : ""}${d.value}${d.sublabel ? ` (${d.sublabel})` : ""}`;
+      bar.appendChild(title);
+      svg.appendChild(bar);
+      const label = this._el("text", {
+        x: d.value >= 0 ? center - 8 : center + 8, y: yPos + rowH - 17,
+        "text-anchor": d.value >= 0 ? "end" : "start",
+        "font-size": 11, "font-family": "IBM Plex Mono, monospace", fill: "currentColor",
+      });
+      label.textContent = `${d.label} ${d.value > 0 ? "+" : ""}${d.value}`;
+      svg.appendChild(label);
+    });
+    container.appendChild(svg);
+  },
+
   /* ---- Exportación de organizadores gráficos (FR-049) ---- */
 
   _download(blob, filename) {

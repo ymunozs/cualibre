@@ -150,7 +150,7 @@ confianza del investigador en cada iteración.
   por proyecto, exportación del organizador (PNG/SVG) y de la nube de conceptos (PNG),
   deshacer última codificación (⌘Z), manual de uso (MANUAL.md, también dentro de la
   app), sesión de foco con meta y pomodoro omitible, modo oscuro, recuperación de citas
-  por código, tipografía del corpus conmutable, numeración de líneas y foco gramatical del NLP (verbos/sustantivos/adjetivos con lematización spaCy offline).
+  por código, tipografía del corpus conmutable, numeración de líneas foco gramatical del NLP (verbos/sustantivos/adjetivos con lematización spaCy offline) y análisis de sentimiento por léxico NRC-es (valencia, arco emocional, emociones; auditable y offline).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -175,7 +175,7 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.6.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-07
+**Version**: 1.7.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-07
 <!-- 1.5.0: Principio VI enmendado por el investigador (modo oscuro y tipografía
 Courier como variantes de lectura autorizadas) + inventario ampliado con v1.4. -->
 <!-- 1.2.0: inventario ampliado con la barra de música de foco (v1.1 de la app).

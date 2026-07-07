@@ -221,6 +221,62 @@ const Views = {
     else if (this.current === "nlp") this.renderNlp();
     else if (this.current === "exportar") this.renderExport();
     else if (this.current === "relaciones") Relations.render();
+    else if (this.current === "sentimiento") this.renderSentiment();
+  },
+
+  /* ---------- Sentimiento (FR-059) ---------- */
+
+  async renderSentiment() {
+    let data;
+    try {
+      data = await API.sentiment();
+    } catch (error) {
+      this.toast(error.message, true);
+      return;
+    }
+    const empty = document.getElementById("sent-empty");
+    const body = document.getElementById("sent-body");
+    if (!data.documents.length) {
+      empty.classList.remove("hidden");
+      body.classList.add("hidden");
+      return;
+    }
+    empty.classList.add("hidden");
+    body.classList.remove("hidden");
+
+    // Documentos: score + arco
+    const docsBox = document.getElementById("sent-docs");
+    docsBox.textContent = "";
+    for (const doc of data.documents) {
+      const card = document.createElement("div");
+      card.className = "sent-doc-card";
+      const head = document.createElement("div");
+      head.className = "sent-doc-head";
+      const sign = doc.score > 0.05 ? "positivo" : doc.score < -0.05 ? "negativo" : "neutro";
+      head.textContent = `${doc.filename} — valencia ${doc.score > 0 ? "+" : ""}${doc.score} (${sign}, ${doc.matched} palabras con carga)`;
+      card.appendChild(head);
+      const arcBox = document.createElement("div");
+      Charts.line(arcBox, doc.arc);
+      card.appendChild(arcBox);
+      docsBox.appendChild(card);
+    }
+
+    // Dominios y códigos: barras divergentes con colores oficiales
+    Charts.diverging(document.getElementById("sent-domains"),
+      data.domains.map(d => ({ label: d.domain, value: d.score, sublabel: `${d.n} citas`, color: State.domains[d.domain] })));
+    Charts.diverging(document.getElementById("sent-codes"),
+      data.codes.map(c => ({ label: c.name, value: c.score, sublabel: `${c.n} citas`, color: State.domains[c.domain] })));
+
+    // Emociones (conteos, un solo tono) y palabras con carga
+    Charts.hbar(document.getElementById("sent-emotions"),
+      data.emotions.map(e => ({ label: e.emotion, value: e.count, color: "#FF3300" })));
+    const rows = [];
+    const maxLen = Math.max(data.words.positive.length, data.words.negative.length);
+    for (let i = 0; i < maxLen; i++) {
+      const p = data.words.positive[i], n = data.words.negative[i];
+      rows.push([p ? `${p.word} (${p.count})` : "", n ? `${n.word} (${n.count})` : ""]);
+    }
+    Charts.table(document.getElementById("sent-words"), ["Positivas ↑", "Negativas ↓"], rows);
   },
 
   async _saveProject() {

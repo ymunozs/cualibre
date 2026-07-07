@@ -66,6 +66,7 @@ const API = {
   music: () => API._fetch("/api/music"),
 
   // Análisis
+  sentiment: () => API._fetch("/api/sentiment"),
   nlp: (lang, minLen, pos = "all") =>
     API._fetch(`/api/nlp?lang=${lang}&min_len=${minLen}&top=60&pos=${pos}`),
   setNlpExclusions: (words) => API._json("PUT", "/api/nlp/exclusions", { words }),

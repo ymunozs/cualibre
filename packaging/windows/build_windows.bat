@@ -12,6 +12,7 @@ python -m PyInstaller --noconfirm --clean ^
   --icon packaging\cualibre.ico ^
   --add-data "frontend;frontend" ^
   --add-data "MANUAL.md;." ^
+  --add-data "backend\data_nrc_es.json;." ^
   --collect-all es_core_news_sm ^
   --collect-all en_core_web_sm ^
   run.py || goto :error

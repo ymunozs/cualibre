@@ -9,7 +9,7 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.5</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.6</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label">PROYECTO</label>
     <select id="project-select"></select>
@@ -32,6 +32,7 @@
   <button class="tab active" data-view="pentagrama">◰ PENTAGRAMA</button>
   <button class="tab" data-view="nlp">⚡ NLP</button>
   <button class="tab" data-view="analytics">◫ ANALYTICS</button>
+  <button class="tab" data-view="sentimiento">◑ SENTIMIENTO</button>
   <button class="tab" data-view="relaciones">◈ RELACIONES</button>
   <button class="tab" data-view="exportar">⇄ EXPORTAR</button>
   <button class="tab" data-view="literatura">📚 LITERATURA</button>
@@ -146,6 +147,32 @@
       <div id="chart-cooc" class="table-scroll"></div>
       <div class="section-title">CÓDIGOS POR DOCUMENTO</div>
       <div id="chart-doccode" class="table-scroll"></div>
+    </div>
+  </section>
+
+  <!-- SENTIMIENTO (FR-059): léxico NRC-es, auditable -->
+  <section id="view-sentimiento" class="view hidden">
+    <div class="section-title">ANÁLISIS DE SENTIMIENTO — LÉXICO ABIERTO (NRC-ES)</div>
+    <p class="empty-note" style="padding-top:0">Valencia de −1 (negativo) a +1 (positivo), calculada desde 5.094 palabras en castellano
+      con inversión por negación. Todo puntaje es auditable: abajo se listan las palabras que lo produjeron.</p>
+    <p id="sent-empty" class="empty-note hidden">Importa documentos para analizar su tono.</p>
+    <div id="sent-body">
+      <div class="section-title">TONO Y ARCO EMOCIONAL POR DOCUMENTO</div>
+      <div id="sent-docs"></div>
+      <div id="sent-grid">
+        <div>
+          <div class="section-title">TONO POR DOMINIO</div>
+          <div id="sent-domains"></div>
+          <div class="section-title">TONO POR CÓDIGO (MAYOR CARGA)</div>
+          <div id="sent-codes"></div>
+        </div>
+        <div>
+          <div class="section-title">EMOCIONES DETECTADAS</div>
+          <div id="sent-emotions"></div>
+          <div class="section-title">PALABRAS CON CARGA</div>
+          <div id="sent-words" class="table-scroll"></div>
+        </div>
+      </div>
     </div>
   </section>
 

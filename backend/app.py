@@ -335,6 +335,73 @@ def serve_music(filename: str) -> FileResponse:
     return FileResponse(path)
 
 
+# ----- Sentimiento (FR-059) -----
+
+@app.get("/api/sentiment")
+def sentiment() -> dict:
+    """Análisis de valencia y emociones por léxico (español, auditable)."""
+    from .sentiment import analyze_texts, document_arc
+
+    project = storage.get_active_project()
+    if not project.documents and not project.codes:
+        return {"documents": [], "domains": [], "codes": [], "words": {"positive": [], "negative": []}, "emotions": []}
+
+    # Documentos: valencia global + arco emocional
+    doc_results = analyze_texts([d.text for d in project.documents])
+    documents = []
+    all_pos: dict = {}
+    all_neg: dict = {}
+    all_emos: dict = {}
+    for doc, result in zip(project.documents, doc_results):
+        documents.append({
+            "id": doc.id, "filename": doc.filename,
+            "score": result["score"], "matched": result["matched"],
+            "arc": document_arc(doc.text),
+        })
+        for w, c in result["positives"].items():
+            all_pos[w] = all_pos.get(w, 0) + c
+        for w, c in result["negatives"].items():
+            all_neg[w] = all_neg.get(w, 0) + c
+        for e, c in result["emotions"].items():
+            all_emos[e] = all_emos.get(e, 0) + c
+
+    # Tono por dominio y por código (sobre las citas ancladas)
+    anchored = [c for c in project.codes if c.doc_id and c.quote]
+    domains: list = []
+    codes: list = []
+    if anchored:
+        quote_results = analyze_texts([c.quote for c in anchored])
+        by_domain: dict = {}
+        by_code: dict = {}
+        for code, result in zip(anchored, quote_results):
+            by_domain.setdefault(code.domain, []).append(result["score"])
+            by_code.setdefault((code.name, code.domain), []).append(result["score"])
+        domains = [
+            {"domain": d, "score": round(sum(s) / len(s), 3), "n": len(s)}
+            for d, s in by_domain.items()
+        ]
+        codes = sorted(
+            ({"name": n, "domain": d, "score": round(sum(s) / len(s), 3), "n": len(s)}
+             for (n, d), s in by_code.items()),
+            key=lambda x: abs(x["score"]), reverse=True,
+        )[:12]
+
+    top = lambda counter: [
+        {"word": w, "count": c}
+        for w, c in sorted(counter.items(), key=lambda x: -x[1])[:15]
+    ]
+    return {
+        "documents": documents,
+        "domains": domains,
+        "codes": codes,
+        "words": {"positive": top(all_pos), "negative": top(all_neg)},
+        "emotions": [
+            {"emotion": e, "count": c}
+            for e, c in sorted(all_emos.items(), key=lambda x: -x[1])
+        ],
+    }
+
+
 # ----- Manual (FR-052) -----
 
 @app.get("/api/manual")
