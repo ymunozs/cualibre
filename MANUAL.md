@@ -105,12 +105,28 @@ cada puntaje viene acompañado de las palabras que lo produjeron.
 
 ### Cómo se produce el análisis (racionalidad y método)
 
-**Racionalidad.** Cua-libre usa un método **basado en léxico** (no en redes neuronales)
-por una razón metodológica: es completamente **auditable**. Cada puntaje puede
-reconstruirse a mano mirando las palabras detectadas — condición necesaria para defender
-el análisis en un apartado de métodos. Coherente con el Principio VIII de la constitución
-del programa: los análisis automáticos son brújulas exploratorias; la interpretación es
-siempre tuya.
+Cua-libre está diseñado para **promover decisiones 100% humanas**: el análisis de
+sentimiento no interpreta por ti ni escribe nada en tu banco de códigos — es una brújula
+exploratoria que señala zonas del corpus donde tu lectura atenta puede rendir más.
+
+**Racionalidad.** El análisis usa un método **basado en léxico**: una lista fija y pública
+de palabras, cada una con su polaridad y sus emociones asociadas, elaborada y validada por
+investigadores. Se eligió este método (y no redes neuronales) por tres razones que importan
+en investigación cualitativa:
+
+1. **Auditabilidad**: cada puntaje puede reconstruirse a mano. Si un documento marca −0.4,
+   la vista te muestra exactamente qué palabras lo produjeron y cuántas veces; puedes ir a
+   verlas en contexto y juzgar si el número dice algo o no. Nada queda dentro de una caja
+   negra.
+2. **Replicabilidad**: con el mismo texto y el mismo léxico, el resultado es siempre el
+   mismo, en cualquier máquina, sin conexión a internet. Otro investigador puede repetir tu
+   análisis y obtener idénticos valores.
+3. **Defensa metodológica**: en un apartado de métodos puedes describir el procedimiento
+   completo en un párrafo y citar la fuente del léxico. Con un modelo neuronal solo podrías
+   decir "el modelo lo clasificó así".
+
+El costo de esta transparencia es conocido: el léxico no capta ironía, sarcasmo ni dobles
+sentidos. Por eso los puntajes son **insumo para tu interpretación**, nunca su reemplazo.
 
 **Procesamiento, paso a paso.**
 1. Cada texto se tokeniza y **lematiza** con spaCy (*lloraba* → *llorar*), para que las
@@ -134,9 +150,7 @@ Intelligence, 29(3), 436–465.
 
 **Para seguir leyendo.** Liu, B. (2012), *Sentiment Analysis and Opinion Mining* (el
 manual clásico del campo); Jockers, M., viñeta del paquete *syuzhet* (arcos narrativos);
-Pérez et al. (2021), *pysentimiento* (arXiv:2106.09462) — la alternativa con redes
-neuronales para español, más precisa pero no auditable, descartada en Cua-libre por
-diseño; y saifmohammad.com para el léxico NRC y sus actualizaciones.
+y saifmohammad.com para el léxico NRC y sus actualizaciones.
 
 ## 10. ◈ Relaciones
 

@@ -120,8 +120,8 @@ const Reporte = {
 <h2>1. Nota metodológica</h2>
 <p>El análisis fue realizado con CUA-LIBRE STUDIO, herramienta local de análisis cualitativo
 (QDA). La codificación es íntegramente humana: toda entrada al banco de códigos requirió un
-gesto deliberado del investigador; el programa no sugiere ni automatiza interpretación
-(Constitución del proyecto, Principio VIII). Los análisis automáticos de apoyo son
+gesto deliberado del investigador; el programa no sugiere ni automatiza interpretación.
+Los análisis automáticos de apoyo son
 auditables: las frecuencias léxicas y el foco gramatical usan spaCy (Honnibal &amp; Montani)
 con lematización; el análisis de sentimiento usa el NRC Word–Emotion Association Lexicon en
 castellano (Mohammad &amp; Turney, 2013, <em>Computational Intelligence</em>, 29(3), 436–465;
