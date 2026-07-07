@@ -441,14 +441,12 @@ body {
   padding: 2px 6px;
 }
 .mus-btn:hover { color: var(--accent); }
-.mus-btn.src {
+.mus-brand {
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  border: 1px solid #555;
-  padding: 3px 8px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
 }
-.mus-btn.src.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 #mus-title {
   flex: 1;
@@ -460,18 +458,6 @@ body {
 }
 
 #mus-vol { width: 90px; accent-color: var(--accent); }
-#mus-vol:disabled { opacity: 0.3; }
-
-#fm-dock {
-  position: fixed;
-  right: 16px;
-  bottom: 48px;
-  z-index: 9001;
-  border: 3px solid #000;
-  box-shadow: var(--shadow-accent);
-  background: #000;
-}
-#fm-dock iframe { display: block; width: 320px; height: 180px; border: none; }
 
 /* ---------- Toast y diálogo ---------- */
 

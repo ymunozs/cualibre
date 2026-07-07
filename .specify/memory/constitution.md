@@ -138,8 +138,9 @@ confianza del investigador en cada iteración.
   palabras + barras + tabla de conteo, con filtro de idioma y longitud mínima),
   Analytics (distribución por dominios + densidad de códigos), relaciones entre códigos
   (jerarquía/asociación/causalidad/contradicción con organizador y árbol), exportación
-  CSV UTF-8, búsqueda de literatura OpenAlex, barra de música de foco (pistas locales
-  del investigador + Claude FM opcional).
+  CSV UTF-8, búsqueda de literatura OpenAlex, barra de música de foco con las pistas
+  locales del investigador (Claude FM retirado por decisión del investigador el
+  2026-07-06: embedding restringido).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 

@@ -364,12 +364,12 @@ que se listan resultados con título, año, citas y DOI clicable.
 
 **Música de foco (v1.1)**
 
-- **FR-040**: Una barra delgada fija al pie MUST ofrecer música de foco con dos fuentes:
-  (a) pistas locales del investigador desde la carpeta `musica/` del directorio de datos
-  (offline, fuente por defecto, con reproducción continua, siguiente y volumen) y
-  (b) Claude FM, el stream lo-fi de Anthropic en YouTube (online, opcional). La música
-  nunca MUST bloquear ni interferir el flujo de análisis; si no hay pistas, la barra
-  indica dónde depositarlas.
+- **FR-040**: Una barra delgada fija al pie MUST ofrecer música de foco con las pistas
+  locales del investigador desde la carpeta `musica/` del directorio de datos (offline,
+  reproducción continua, siguiente y volumen). La música nunca MUST bloquear ni
+  interferir el flujo de análisis; si no hay pistas, la barra indica dónde depositarlas.
+  (La fuente "Claude FM" se retiró por decisión del investigador el 2026-07-06: el
+  stream de YouTube tiene el embedding restringido y no puede acoplarse.)
 
 **Persistencia**
 

@@ -47,9 +47,7 @@ fuerza un guardado y te confirma la hora, para trabajar tranquilo.
 
 **♫ Música de foco**: la barra al pie reproduce tu propia música — deja tus archivos
 (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` junto a tus datos (clic en el título
-de la barra te muestra la ruta exacta). El botón **CLAUDE FM** cambia al stream lo-fi
-24/7 de Anthropic en YouTube (requiere internet; el volumen se controla en su
-mini-reproductor).
+de la barra te muestra la ruta exacta) y suenan en bucle mientras codificas.
 
 ## Proyectos y respaldo
 

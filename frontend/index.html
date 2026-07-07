@@ -157,16 +157,14 @@
   <div class="nube-hint">ENTER guarda · ESC cancela · 1–9 dominio</div>
 </div>
 
-<!-- Barra de música de foco (FR-040): local (compositor de la casa) o Claude FM -->
+<!-- Barra de música de foco (FR-040): pistas locales del investigador -->
 <div id="music-bar">
   <button id="mus-toggle" class="mus-btn" title="Reproducir / Pausa">▶</button>
   <button id="mus-next" class="mus-btn" title="Siguiente pista">⏭</button>
   <span id="mus-title" title="Clic: ver carpeta de música">—</span>
   <input type="range" id="mus-vol" min="0" max="100" value="70" title="Volumen">
-  <button id="mus-src-local" class="mus-btn src active" title="Tu música (offline)">MI MÚSICA</button>
-  <button id="mus-src-fm" class="mus-btn src" title="Stream lo-fi de Anthropic (requiere internet)">CLAUDE FM</button>
+  <span class="mus-brand">♫ MÚSICA DE FOCO</span>
 </div>
-<div id="fm-dock" class="hidden"></div>
 <audio id="mus-audio"></audio>
 
 <div id="toast" class="hidden"></div>
