@@ -399,6 +399,9 @@ que se listan resultados con título, año, citas y DOI clicable.
 - **FR-050**: ⌘Z/Ctrl+Z (fuera de campos de texto) MUST deshacer la última codificación.
 - **FR-051**: Existe un manual de uso completo en español (MANUAL.md) que documenta
   todos los comandos, atajos y flujos.
+- **FR-052**: El manual MUST estar disponible dentro de la app: botón ❓ MANUAL junto a
+  Guardar que lo abre en un diálogo (MANUAL.md convertido a HTML por el backend y
+  empaquetado en los instaladores); Esc o ✕ lo cierran.
 
 **Persistencia**
 
