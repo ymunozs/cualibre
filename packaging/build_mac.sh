@@ -7,8 +7,13 @@ cd "$(dirname "$0")/.."
 VERSION="${1:-1.0}"
 APP_NAME="CUA-LIBRE Studio"
 
+# Piso real de compatibilidad, verificado con otool -l sobre los binarios
+# compilados (numpy/thinc/blis/pymupdf/Python): macOS 10.15 Catalina.
+# numpy>=2 exige macOS 14+ (Sonoma) — por eso se fija <2 en pyproject.toml.
+MACOS_MIN="10.15"
+
 echo "▶ PyInstaller (.app)…"
-uv run pyinstaller --noconfirm --clean --windowed \
+MACOSX_DEPLOYMENT_TARGET="$MACOS_MIN" uv run pyinstaller --noconfirm --clean --windowed \
   --name "$APP_NAME" \
   --icon packaging/cualibre.icns \
   --add-data "frontend:frontend" \
@@ -18,6 +23,9 @@ uv run pyinstaller --noconfirm --clean --windowed \
   --collect-all en_core_web_sm \
   --osx-bundle-identifier cl.cualibre.studio \
   run.py
+
+echo "▶ Declarando compatibilidad mínima (macOS $MACOS_MIN) en Info.plist…"
+plutil -replace LSMinimumSystemVersion -string "$MACOS_MIN" "dist/$APP_NAME.app/Contents/Info.plist"
 
 echo "▶ DMG…"
 STAGING="$(mktemp -d)"

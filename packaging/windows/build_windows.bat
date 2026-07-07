@@ -4,7 +4,7 @@ REM Requisitos: Python 3.12+ (python.org) e Inno Setup 6 (jrsoftware.org).
 cd /d "%~dp0\..\.."
 
 echo === Dependencias ===
-python -m pip install --quiet fastapi uvicorn pymupdf python-docx python-multipart httpx pyinstaller "spacy>=3.8,<3.9" https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl || goto :error
+python -m pip install --quiet fastapi uvicorn pymupdf python-docx python-multipart httpx pyinstaller "spacy>=3.8,<3.9" "numpy==1.26.4" https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl || goto :error
 
 echo === PyInstaller ===
 python -m PyInstaller --noconfirm --clean ^

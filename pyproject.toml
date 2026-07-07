@@ -1,6 +1,6 @@
 [project]
 name = "cualibre"
-version = "1.7.0"
+version = "1.7.2"
 description = "CUA-LIBRE STUDIO — Estudio de análisis cualitativo (QDA/CAQCAS) local"
 requires-python = ">=3.12,<3.13"
 dependencies = [
@@ -11,6 +11,7 @@ dependencies = [
     "python-multipart>=0.0.9",
     "httpx>=0.27",
     "spacy>=3.8,<3.9",
+    "numpy==1.26.4",
     "es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl",
     "en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
 ]

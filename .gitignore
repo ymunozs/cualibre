@@ -11,3 +11,6 @@ Thumbs.db
 *.swp
 .env*
 uv.lock
+
+build/
+*.spec

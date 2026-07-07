@@ -88,6 +88,19 @@ No necesitas Terminal si usas la app instalada:
 En ambos casos la app instalada abre el navegador sola y usa la misma carpeta de datos,
 así que tus proyectos se comparten con la versión de desarrollo.
 
+### Compatibilidad del instalador de macOS
+
+- **Sistema mínimo: macOS 10.15 Catalina o superior** — incluye Big Sur, Monterey,
+  Ventura, Sonoma, Sequoia y Tahoe. (Verificado con `otool -l` sobre los binarios
+  empaquetados: numpy, thinc, blis, PyMuPDF y Python mismo.)
+- **Arquitectura: Intel (x86_64)**. En Macs con Apple Silicon (M1/M2/M3/M4) corre vía
+  **Rosetta 2** — macOS lo ofrece instalar automáticamente la primera vez (requiere
+  internet esa única vez). Si una Mac Apple Silicon la rechaza sin pedir instalar
+  Rosetta, revisa Preferencias → Privacidad y Seguridad → permite la app ahí.
+- Nota técnica: `numpy>=2` exige macOS 14 (Sonoma) como mínimo — por eso el proyecto
+  fija `numpy==1.26.4` en `pyproject.toml` y en los scripts de empaquetado; no lo subas
+  de versión sin volver a verificar el piso de compatibilidad con `otool -l`.
+
 ## Para desarrollo
 
 - Tests: `uv run -m pytest backend/tests/ -v`

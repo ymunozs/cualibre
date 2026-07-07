@@ -211,6 +211,7 @@ Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` ju
 ## 16. Solución de problemas
 
 - **Mac dice que la app no se puede abrir**: la primera vez, clic derecho → Abrir (la app no está firmada con certificado de Apple).
+- **En otra Mac no abre / no dice nada**: revisa dos cosas — (1) **versión de macOS**: se necesita **macOS 10.15 (Catalina) o superior**; en versiones anteriores no abrirá. (2) Si esa Mac es **Apple Silicon** (M1/M2/M3/M4) y nunca instaló **Rosetta 2**, macOS debería ofrecerte instalarla al abrir la app (pide internet una sola vez); si no lo ofrece, instálala desde Terminal con `softwareupdate --install-rosetta`.
 - **Windows SmartScreen advierte**: "Más información → Ejecutar de todas formas".
 - **El navegador no se abre solo**: entra manualmente a `http://127.0.0.1:8734`.
 - **"No se pudo conectar con el servidor"**: la app no está corriendo; lánzala de nuevo.
