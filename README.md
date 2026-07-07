@@ -3,6 +3,8 @@
 Estudio local de análisis cualitativo de datos (QDA/CAQDAS) para investigación en
 ciencias sociales. Todo tu trabajo vive en tu Mac; no depende de la nube.
 
+**Manual completo de comandos y atajos: [MANUAL.md](MANUAL.md)**
+
 ## Cómo iniciar
 
 Abre la Terminal en esta carpeta y ejecuta:

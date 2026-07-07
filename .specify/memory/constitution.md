@@ -143,7 +143,9 @@ confianza del investigador en cada iteración.
   2026-07-06: embedding restringido), búsqueda en el corpus (⌘F), filtro de resaltados
   por dominio con lectura limpia, matrices de co-ocurrencia (código×código y
   documento×código), modo inmersión, posición de lectura persistente, repetición de la
-  última codificación (⌘↵) e indicador de autoguardado.
+  última codificación (⌘↵), indicador de autoguardado, exclusiones de palabras en NLP
+  por proyecto, exportación del organizador (PNG/SVG) y de la nube de conceptos (PNG),
+  deshacer última codificación (⌘Z) y manual de uso (MANUAL.md).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -168,7 +170,7 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.3.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
+**Version**: 1.4.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
 <!-- 1.2.0: inventario ampliado con la barra de música de foco (v1.1 de la app).
 1.3.0: inventario ampliado con co-ocurrencia y mejoras de experiencia de lectura
 (v1.2 de la app), solicitadas por el investigador el 2026-07-06. -->

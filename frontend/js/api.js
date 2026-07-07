@@ -67,5 +67,6 @@ const API = {
 
   // Análisis
   nlp: (lang, minLen) => API._fetch(`/api/nlp?lang=${lang}&min_len=${minLen}&top=60`),
+  setNlpExclusions: (words) => API._json("PUT", "/api/nlp/exclusions", { words }),
   literature: (q) => API._fetch(`/api/literature?q=${encodeURIComponent(q)}`),
 };

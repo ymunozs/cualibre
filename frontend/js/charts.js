@@ -158,6 +158,48 @@ const Charts = {
     container.appendChild(table);
   },
 
+  /* ---- Exportación de organizadores gráficos (FR-049) ---- */
+
+  _download(blob, filename) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  },
+
+  downloadSvg(svgEl, filename) {
+    const clone = svgEl.cloneNode(true);
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const source = new XMLSerializer().serializeToString(clone);
+    this._download(new Blob([source], { type: "image/svg+xml;charset=utf-8" }), filename);
+  },
+
+  downloadSvgAsPng(svgEl, filename, scale = 2) {
+    const clone = svgEl.cloneNode(true);
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const vb = svgEl.viewBox.baseVal;
+    const width = (vb && vb.width) || svgEl.clientWidth || 800;
+    const height = (vb && vb.height) || svgEl.clientHeight || 600;
+    const source = new XMLSerializer().serializeToString(clone);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#FDFDF7";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => this._download(blob, filename), "image/png");
+    };
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+  },
+
+  downloadCanvas(canvasEl, filename) {
+    canvasEl.toBlob(blob => this._download(blob, filename), "image/png");
+  },
+
   /* Tabla de datos genérica. headers: [..], rows: [[..], ...] */
   table(container, headers, rows) {
     container.textContent = "";

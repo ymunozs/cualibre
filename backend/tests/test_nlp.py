@@ -38,3 +38,12 @@ def test_empty_corpus():
 def test_digits_excluded():
     result = word_frequencies("2026 2026 análisis", lang="es", min_len=4)
     assert all(w["word"] != "2026" for w in result)
+
+
+def test_custom_exclusions():
+    text = "Entrevistado: la escuela. Entrevistado: la memoria. entrevistadora pregunta"
+    result = word_frequencies(text, lang="es", min_len=4,
+                              exclusions={"Entrevistado", "ENTREVISTADORA"})
+    words = {w["word"] for w in result}
+    assert "entrevistado" not in words and "entrevistadora" not in words
+    assert "escuela" in words and "memoria" in words

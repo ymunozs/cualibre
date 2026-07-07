@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, UploadFile
+from pydantic import BaseModel
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
@@ -259,7 +260,27 @@ def nlp(lang: str = "es", min_len: int = 4, top: int = 50) -> dict:
     min_len = max(2, min(10, min_len))
     project = storage.get_active_project()
     corpus = "\n".join(d.text for d in project.documents)
-    return {"words": word_frequencies(corpus, lang=lang, min_len=min_len, top=top)}
+    return {
+        "words": word_frequencies(
+            corpus, lang=lang, min_len=min_len, top=top,
+            exclusions=set(project.nlp_exclusions),
+        ),
+        "exclusions": project.nlp_exclusions,
+    }
+
+
+class ExclusionsPayload(BaseModel):
+    words: list[str]
+
+
+@app.put("/api/nlp/exclusions")
+def set_nlp_exclusions(payload: ExclusionsPayload) -> dict:
+    """Palabras que el investigador omite del conteo (FR-048), por proyecto."""
+    project = storage.get_active_project()
+    cleaned = sorted({w.strip() for w in payload.words if w.strip()})
+    project.nlp_exclusions = cleaned
+    storage.save_project(project)
+    return {"exclusions": cleaned}
 
 
 @app.get("/api/export.csv")

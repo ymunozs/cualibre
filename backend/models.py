@@ -86,6 +86,7 @@ class Project(BaseModel):
     next_code_id: int = 1
     relations: list[Relation] = Field(default_factory=list)
     next_relation_id: int = 1
+    nlp_exclusions: list[str] = Field(default_factory=list)
 
     def summary(self) -> dict:
         return {

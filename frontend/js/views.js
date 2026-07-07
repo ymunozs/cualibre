@@ -33,6 +33,39 @@ const Views = {
       if (e.key === "Enter") this._searchLiterature();
     });
 
+    // Exclusiones NLP (FR-048)
+    const applyExclusions = async () => {
+      const words = document.getElementById("nlp-exclusions").value
+        .split(",").map(w => w.trim()).filter(Boolean);
+      try {
+        await API.setNlpExclusions(words);
+        this.toast(words.length ? `Omitiendo ${words.length} palabra(s)` : "Sin exclusiones");
+        this.renderNlp();
+      } catch (error) {
+        this.toast(error.message, true);
+      }
+    };
+    document.getElementById("btn-nlp-exclusions").addEventListener("click", applyExclusions);
+    document.getElementById("nlp-exclusions").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") applyExclusions();
+    });
+
+    // Exportar organizadores gráficos (FR-049)
+    document.getElementById("btn-export-cloud").addEventListener("click", () => {
+      Charts.downloadCanvas(document.getElementById("wordcloud"), "cualibre_nube_de_conceptos.png");
+    });
+    const graphSvg = () => document.querySelector("#rel-graph svg");
+    document.getElementById("btn-export-graph-svg").addEventListener("click", () => {
+      const svg = graphSvg();
+      svg ? Charts.downloadSvg(svg, "cualibre_organizador.svg")
+          : this.toast("Crea relaciones para exportar el organizador", true);
+    });
+    document.getElementById("btn-export-graph-png").addEventListener("click", () => {
+      const svg = graphSvg();
+      svg ? Charts.downloadSvgAsPng(svg, "cualibre_organizador.png")
+          : this.toast("Crea relaciones para exportar el organizador", true);
+    });
+
     // Modo inmersión (FR-044): solo el Canvas, para leer sin ruido
     document.getElementById("btn-immersion").addEventListener("click", () => {
       document.body.classList.toggle("immersion");
@@ -50,7 +83,26 @@ const Views = {
           && document.getElementById("nube").classList.contains("hidden")) {
         document.body.classList.remove("immersion");
       }
+      // Deshacer última codificación (FR-050) — fuera de campos de texto
+      if ((e.metaKey || e.ctrlKey) && e.key === "z"
+          && !e.target.matches("input, textarea, select")) {
+        e.preventDefault();
+        this._undoLastCode();
+      }
     });
+  },
+
+  async _undoLastCode() {
+    const codes = State.project.codes;
+    if (!codes.length) { this.toast("Nada que deshacer", true); return; }
+    const last = codes.reduce((a, b) => (a.id > b.id ? a : b));
+    try {
+      await API.deleteCode(last.id);
+      await State.reload();
+      this.toast(`Deshecho: «${last.name}»`);
+    } catch (error) {
+      this.toast(error.message, true);
+    }
   },
 
   /* Indicador de autoguardado (FR-047): pulso tras cada sincronización */
@@ -257,7 +309,13 @@ const Views = {
     let words = [];
     if (hasCorpus) {
       try {
-        words = (await API.nlp(lang, minLen)).words;
+        const data = await API.nlp(lang, minLen);
+        words = data.words;
+        // Mostrar las exclusiones vigentes sin pisar lo que el usuario escribe
+        const exclusionsInput = document.getElementById("nlp-exclusions");
+        if (document.activeElement !== exclusionsInput) {
+          exclusionsInput.value = (data.exclusions || []).join(", ");
+        }
       } catch (error) {
         this.toast(error.message, true);
         return;

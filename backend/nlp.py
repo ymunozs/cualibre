@@ -56,14 +56,18 @@ _WORD_RE = re.compile(r"\b\w+\b", re.UNICODE)
 
 
 def word_frequencies(
-    text: str, lang: str = "es", min_len: int = 4, top: int = 50
+    text: str, lang: str = "es", min_len: int = 4, top: int = 50,
+    exclusions: set[str] | None = None,
 ) -> list[dict]:
-    """Frecuencias del corpus: stopwords por idioma + longitud mínima (FR-017)."""
+    """Frecuencias del corpus: stopwords por idioma + longitud mínima (FR-017)
+    + exclusiones del investigador, p. ej. marcas de transcripción (FR-048)."""
     stopwords = STOPWORDS_ES if lang == "es" else STOPWORDS_EN
+    excluded = {w.lower() for w in (exclusions or set())}
     words = _WORD_RE.findall(text.lower())
     filtered = (
         w for w in words
-        if len(w) >= min_len and w not in stopwords and not w.isdigit()
+        if len(w) >= min_len and w not in stopwords and w not in excluded
+        and not w.isdigit()
     )
     return [
         {"word": word, "count": count}

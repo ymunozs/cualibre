@@ -389,6 +389,17 @@ que se listan resultados con título, año, citas y DOI clicable.
   nombre y dominio) sobre la nueva selección.
 - **FR-047**: Un indicador en la cabecera pulsa con cada persistencia automática.
 
+**Cierre v1.3**
+
+- **FR-048**: La vista NLP MUST permitir definir palabras a omitir del conteo (p. ej.
+  marcas de transcripción como "Entrevistado"), separadas por coma, persistentes por
+  proyecto y aplicadas sin distinción de mayúsculas.
+- **FR-049**: El organizador de relaciones MUST ser exportable como PNG (para insertar
+  en documentos) y como SVG (editable); la nube de conceptos del NLP, como PNG.
+- **FR-050**: ⌘Z/Ctrl+Z (fuera de campos de texto) MUST deshacer la última codificación.
+- **FR-051**: Existe un manual de uso completo en español (MANUAL.md) que documenta
+  todos los comandos, atajos y flujos.
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del

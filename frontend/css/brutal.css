@@ -131,6 +131,19 @@ body {
 
 .view.hidden, .hidden { display: none !important; }
 
+.btn-export-mini {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  border: 1px solid var(--ink);
+  background: #fff;
+  padding: 2px 7px;
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.btn-export-mini:hover { background: var(--accent); color: #fff; }
+
 .section-title {
   font-size: 11px;
   font-weight: 700;

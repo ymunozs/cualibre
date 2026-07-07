@@ -243,3 +243,16 @@ def test_literature_client_maps_openalex_payload(monkeypatch):
         results = search_works("test", client=http_client)
     assert results == [{"title": "T", "year": 2020, "cited_by_count": 7,
                         "doi": "https://doi.org/10/abc"}]
+
+
+def test_nlp_exclusions_persist_and_apply(client):
+    upload_txt(client, text="Entrevistado dice escuela escuela Entrevistado dice música")
+    r = client.put("/api/nlp/exclusions", json={"words": ["Entrevistado", "  dice ", ""]})
+    assert r.json()["exclusions"] == ["Entrevistado", "dice"]
+    data = client.get("/api/nlp?lang=es&min_len=4").json()
+    words = {w["word"] for w in data["words"]}
+    assert "entrevistado" not in words and "dice" not in words
+    assert "escuela" in words
+    assert data["exclusions"] == ["Entrevistado", "dice"]
+    # persistido en el proyecto
+    assert client.get("/api/project").json()["nlp_exclusions"] == ["Entrevistado", "dice"]
