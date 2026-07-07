@@ -254,19 +254,24 @@ def get_domains() -> dict[str, str]:
 
 
 @app.get("/api/nlp")
-def nlp(lang: str = "es", min_len: int = 4, top: int = 50) -> dict:
+def nlp(lang: str = "es", min_len: int = 4, top: int = 50, pos: str = "all") -> dict:
     if lang not in ("es", "en"):
         raise HTTPException(422, "Idioma no soportado: usa 'es' o 'en'")
+    if pos not in ("all", "verb", "noun", "adj"):
+        raise HTTPException(422, "Filtro gramatical inválido: usa all, verb, noun o adj")
     min_len = max(2, min(10, min_len))
     project = storage.get_active_project()
     corpus = "\n".join(d.text for d in project.documents)
-    return {
-        "words": word_frequencies(
-            corpus, lang=lang, min_len=min_len, top=top,
-            exclusions=set(project.nlp_exclusions),
-        ),
-        "exclusions": project.nlp_exclusions,
-    }
+    exclusions = set(project.nlp_exclusions)
+    if pos == "all":
+        words = word_frequencies(corpus, lang=lang, min_len=min_len, top=top,
+                                 exclusions=exclusions)
+    else:
+        from .nlp import pos_frequencies
+
+        words = pos_frequencies(corpus, lang=lang, pos=pos, min_len=min_len,
+                                top=top, exclusions=exclusions)
+    return {"words": words, "exclusions": project.nlp_exclusions}
 
 
 class ExclusionsPayload(BaseModel):

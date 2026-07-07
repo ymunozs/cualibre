@@ -47,3 +47,31 @@ def test_custom_exclusions():
     words = {w["word"] for w in result}
     assert "entrevistado" not in words and "entrevistadora" not in words
     assert "escuela" in words and "memoria" in words
+
+
+def test_pos_verbs_spanish():
+    from backend.nlp import pos_frequencies
+
+    text = "El niño cantó en la escuela. Los niños cantaban felices. La maestra escuchaba la canción."
+    verbs = {w["word"]: w["count"] for w in pos_frequencies(text, "es", "verb", min_len=4)}
+    assert verbs.get("cantar", 0) >= 2  # cantó + cantaban lematizan a cantar
+    assert "escuchar" in verbs
+    assert "escuela" not in verbs and "niño" not in verbs
+
+
+def test_pos_nouns_spanish():
+    from backend.nlp import pos_frequencies
+
+    text = "El niño cantó en la escuela grande. La escuela estaba vacía."
+    nouns = {w["word"] for w in pos_frequencies(text, "es", "noun", min_len=4)}
+    assert "escuela" in nouns and "niño" in nouns
+    assert "cantar" not in nouns and "grande" not in nouns
+
+
+def test_pos_respects_exclusions():
+    from backend.nlp import pos_frequencies
+
+    text = "El entrevistado cantó. El entrevistado lloró."
+    nouns = {w["word"] for w in pos_frequencies(text, "es", "noun", min_len=4,
+                                                exclusions={"entrevistado"})}
+    assert "entrevistado" not in nouns

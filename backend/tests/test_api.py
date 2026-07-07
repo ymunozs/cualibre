@@ -264,3 +264,11 @@ def test_manual_endpoint(client):
     html = r.json()["html"]
     assert "<h1>" in html and "Manual de uso" in html
     assert "<table" in html and "Nube Negra" in html
+
+
+def test_nlp_pos_endpoint(client):
+    upload_txt(client, text="El niño cantó en la escuela. Los niños cantaban felices.")
+    verbs = client.get("/api/nlp?lang=es&min_len=4&pos=verb").json()["words"]
+    assert any(w["word"] == "cantar" for w in verbs)
+    assert all(w["word"] != "escuela" for w in verbs)
+    assert client.get("/api/nlp?pos=adverbio").status_code == 422

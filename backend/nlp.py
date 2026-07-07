@@ -54,6 +54,50 @@ yourself yourselves
 
 _WORD_RE = re.compile(r"\b\w+\b", re.UNICODE)
 
+# ---- Foco gramatical con spaCy (FR-058) ----
+# Los modelos pequeños es/en viajan dentro de los instaladores (decisión del
+# investigador 2026-07-07: engordar instaladores a cambio de POS offline).
+
+POS_MAP = {"verb": {"VERB"}, "noun": {"NOUN", "PROPN"}, "adj": {"ADJ"}}
+_NLP_CACHE: dict = {}
+
+
+def _get_model(lang: str):
+    if lang not in _NLP_CACHE:
+        import es_core_news_sm, en_core_web_sm  # noqa: PLC0415
+
+        module = es_core_news_sm if lang == "es" else en_core_web_sm
+        model = module.load(exclude=["parser", "ner"])
+        model.max_length = 2_000_000
+        _NLP_CACHE[lang] = model
+    return _NLP_CACHE[lang]
+
+
+def pos_frequencies(
+    text: str, lang: str, pos: str, min_len: int = 4, top: int = 50,
+    exclusions: set[str] | None = None,
+) -> list[dict]:
+    """Frecuencias de lemas filtradas por categoría gramatical (verbos,
+    sustantivos o adjetivos). 'cantó' y 'cantaba' cuentan como 'cantar'."""
+    stopwords = STOPWORDS_ES if lang == "es" else STOPWORDS_EN
+    excluded = {w.lower() for w in (exclusions or set())}
+    wanted = POS_MAP[pos]
+    model = _get_model(lang)
+    counter: Counter = Counter()
+    # Por párrafos: acota memoria en corpus grandes
+    chunks = [c for c in text.split("\n\n") if c.strip()]
+    for doc in model.pipe(chunks, batch_size=32):
+        for token in doc:
+            if token.pos_ not in wanted or not token.is_alpha:
+                continue
+            lemma = token.lemma_.lower().strip()
+            word = token.text.lower()
+            if (len(lemma) < min_len or lemma in stopwords or word in stopwords
+                    or lemma in excluded or word in excluded):
+                continue
+            counter[lemma] += 1
+    return [{"word": w, "count": c} for w, c in counter.most_common(top)]
+
 
 def word_frequencies(
     text: str, lang: str = "es", min_len: int = 4, top: int = 50,

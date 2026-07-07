@@ -84,7 +84,7 @@ const Charts = {
       // Etiqueta en tinta sobre la barra (identidad nunca solo por color)
       const label = this._el("text", {
         x: 0, y: y + labelH - 4, "font-size": 11,
-        "font-family": "IBM Plex Mono, monospace", fill: "#000",
+        "font-family": "IBM Plex Mono, monospace", fill: "currentColor",
       });
       label.textContent = d.sublabel ? `${d.label} · ${d.sublabel}` : d.label;
       svg.appendChild(label);
@@ -102,7 +102,7 @@ const Charts = {
       const value = this._el("text", {
         x: barW + 8, y: y + labelH + (rowH - labelH - 6) / 2 + 4,
         "font-size": 12, "font-weight": "700",
-        "font-family": "IBM Plex Mono, monospace", fill: "#000",
+        "font-family": "IBM Plex Mono, monospace", fill: "currentColor",
       });
       value.textContent = d.value;
       svg.appendChild(value);

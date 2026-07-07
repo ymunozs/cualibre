@@ -393,7 +393,9 @@ que se listan resultados con título, año, citas y DOI clicable.
 
 - **FR-048**: La vista NLP MUST permitir definir palabras a omitir del conteo (p. ej.
   marcas de transcripción como "Entrevistado"), separadas por coma, persistentes por
-  proyecto y aplicadas sin distinción de mayúsculas.
+  proyecto y aplicadas sin distinción de mayúsculas. Las adiciones son ACUMULATIVAS
+  (nunca reemplazan la lista vigente) y cada palabra se puede quitar individualmente
+  desde un chip con ✕ (corrección pedida por el investigador, 2026-07-07).
 - **FR-049**: El organizador de relaciones MUST ser exportable como PNG (para insertar
   en documentos) y como SVG (editable); la nube de conceptos del NLP, como PNG.
 - **FR-050**: ⌘Z/Ctrl+Z (fuera de campos de texto) MUST deshacer la última codificación.
@@ -416,6 +418,14 @@ que se listan resultados con título, año, citas y DOI clicable.
   (Courier), persistente.
 - **FR-057**: Numeración de líneas por documento (№, activada por defecto): los números
   viven fuera del flujo de texto (no se seleccionan ni copian, no alteran offsets).
+
+**Foco gramatical (v1.5)**
+
+- **FR-058**: La vista NLP MUST ofrecer foco gramatical (todas / solo verbos / solo
+  sustantivos / solo adjetivos) mediante POS tagging offline (spaCy, modelos es/en
+  empaquetados en los instaladores — engorde aprobado por el investigador); al filtrar,
+  las conjugaciones se agrupan bajo su lema (cantó/cantaba → cantar) y se respetan
+  stopwords y exclusiones.
 
 **Persistencia**
 

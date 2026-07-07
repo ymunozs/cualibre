@@ -32,6 +32,7 @@ const Views = {
       document.getElementById("nlp-minlen-value").textContent = minLen.value;
     });
     minLen.addEventListener("change", () => this.renderNlp());
+    document.getElementById("nlp-pos").addEventListener("change", () => this.renderNlp());
 
     // Literatura
     document.getElementById("btn-lit-search").addEventListener("click", () => this._searchLiterature());
@@ -39,13 +40,16 @@ const Views = {
       if (e.key === "Enter") this._searchLiterature();
     });
 
-    // Exclusiones NLP (FR-048)
+    // Exclusiones NLP (FR-048) — ADITIVAS: lo nuevo se suma a lo guardado
     const applyExclusions = async () => {
-      const words = document.getElementById("nlp-exclusions").value
-        .split(",").map(w => w.trim()).filter(Boolean);
+      const input = document.getElementById("nlp-exclusions");
+      const nuevas = input.value.split(",").map(w => w.trim()).filter(Boolean);
+      const merged = [...new Set([...this._exclusions, ...nuevas])];
       try {
-        await API.setNlpExclusions(words);
-        this.toast(words.length ? `Omitiendo ${words.length} palabra(s)` : "Sin exclusiones");
+        const { exclusions } = await API.setNlpExclusions(merged);
+        this._exclusions = exclusions;
+        input.value = "";
+        this.toast(nuevas.length ? `Omitiendo ${exclusions.length} palabra(s) en total` : "Sin cambios");
         this.renderNlp();
       } catch (error) {
         this.toast(error.message, true);
@@ -397,13 +401,10 @@ const Views = {
     let words = [];
     if (hasCorpus) {
       try {
-        const data = await API.nlp(lang, minLen);
+        const data = await API.nlp(lang, minLen, document.getElementById("nlp-pos").value);
         words = data.words;
-        // Mostrar las exclusiones vigentes sin pisar lo que el usuario escribe
-        const exclusionsInput = document.getElementById("nlp-exclusions");
-        if (document.activeElement !== exclusionsInput) {
-          exclusionsInput.value = (data.exclusions || []).join(", ");
-        }
+        this._exclusions = data.exclusions || [];
+        this._renderExclusionChips();
       } catch (error) {
         this.toast(error.message, true);
         return;
@@ -420,6 +421,28 @@ const Views = {
       ["#", "Palabra", "Frecuencia"],
       words.map((w, i) => [i + 1, w.word, w.count])
     );
+  },
+
+  _exclusions: [],
+  _renderExclusionChips() {
+    const box = document.getElementById("nlp-exclusion-chips");
+    box.textContent = "";
+    for (const word of this._exclusions) {
+      const chip = document.createElement("button");
+      chip.className = "filter-chip";
+      chip.title = `Dejar de omitir «${word}»`;
+      chip.textContent = `${word} ✕`;
+      chip.addEventListener("click", async () => {
+        try {
+          const { exclusions } = await API.setNlpExclusions(this._exclusions.filter(w => w !== word));
+          this._exclusions = exclusions;
+          this.renderNlp();
+        } catch (error) {
+          this.toast(error.message, true);
+        }
+      });
+      box.appendChild(chip);
+    }
   },
 
   // ---------- Exportar (FR-021) ----------

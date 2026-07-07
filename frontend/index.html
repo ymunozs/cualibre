@@ -9,7 +9,7 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.4</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.5</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label">PROYECTO</label>
     <select id="project-select"></select>
@@ -96,11 +96,20 @@
       <label class="mini-label">LONGITUD MÍNIMA <span id="nlp-minlen-value">4</span>
         <input type="range" id="nlp-minlen" min="2" max="10" value="4">
       </label>
+      <label class="mini-label">FOCO GRAMATICAL
+        <select id="nlp-pos" title="Filtra por categoría gramatical; agrupa conjugaciones bajo su lema (cantó → cantar)">
+          <option value="all" selected>Todas las palabras</option>
+          <option value="verb">Solo verbos</option>
+          <option value="noun">Solo sustantivos</option>
+          <option value="adj">Solo adjetivos</option>
+        </select>
+      </label>
     </div>
     <div class="controls-row">
       <input type="text" id="nlp-exclusions" placeholder="Palabras a omitir del conteo, separadas por coma (ej: Entrevistado, Entrevistadora, E1)">
-      <button id="btn-nlp-exclusions" class="btn btn-small">OMITIR</button>
+      <button id="btn-nlp-exclusions" class="btn btn-small">＋ OMITIR</button>
     </div>
+    <div id="nlp-exclusion-chips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px"></div>
     <div class="section-title">NUBE DE CONCEPTOS
       <button id="btn-export-cloud" class="btn-export-mini" title="Descargar la nube como imagen PNG">⬇ PNG</button>
     </div>

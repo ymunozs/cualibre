@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v1.4)
+# CUA-LIBRE STUDIO — Manual de uso (v1.5)
 
 Guía completa de comandos y flujos para el análisis cualitativo.
 
@@ -73,7 +73,8 @@ Lista con el número de códigos de cada documento. **🗑** elimina un document
 
 - **Idioma** (español/inglés): aplica las stopwords correctas.
 - **Longitud mínima**: descarta palabras cortas.
-- **Palabras a omitir**: escribe términos separados por coma (ej. `Entrevistado, Entrevistadora, E1, eh`) y presiona **OMITIR** (o Enter) — ideal para marcas de transcripción. Se guardan por proyecto.
+- **Foco gramatical**: cuenta **todas las palabras**, **solo verbos**, **solo sustantivos** o **solo adjetivos**; al filtrar, las conjugaciones se agrupan bajo su lema (*cantó* y *cantaba* cuentan como *cantar*). Funciona sin internet.
+- **Palabras a omitir**: escribe términos separados por coma y presiona **＋ OMITIR** — se **suman** a la lista vigente (chips bajo el campo; ✕ quita una). Ideal para marcas de transcripción como `Entrevistado`. Se guardan por proyecto.
 - Tres vistas simultáneas: **nube de conceptos** (exportable con **⬇ PNG**), barras top y tabla de conteo exacto.
 
 ## 8. ◫ Analytics
