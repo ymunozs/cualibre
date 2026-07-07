@@ -88,18 +88,31 @@ No necesitas Terminal si usas la app instalada:
 En ambos casos la app instalada abre el navegador sola y usa la misma carpeta de datos,
 así que tus proyectos se comparten con la versión de desarrollo.
 
-### Compatibilidad del instalador de macOS
+### Compatibilidad de macOS: hay DOS instaladores
 
-- **Sistema mínimo: macOS 10.15 Catalina o superior** — incluye Big Sur, Monterey,
-  Ventura, Sonoma, Sequoia y Tahoe. (Verificado con `otool -l` sobre los binarios
-  empaquetados: numpy, thinc, blis, PyMuPDF y Python mismo.)
-- **Arquitectura: Intel (x86_64)**. En Macs con Apple Silicon (M1/M2/M3/M4) corre vía
-  **Rosetta 2** — macOS lo ofrece instalar automáticamente la primera vez (requiere
-  internet esa única vez). Si una Mac Apple Silicon la rechaza sin pedir instalar
-  Rosetta, revisa Preferencias → Privacidad y Seguridad → permite la app ahí.
+Cada Mac necesita el DMG de **su propia arquitectura** — un binario compilado para
+Apple Silicon no corre en Intel, ni viceversa (a diferencia de Rosetta 2, que solo
+traduce en un sentido: Intel→Apple Silicon, nunca al revés). Por eso el Release
+publica **dos** archivos:
+
+- **`CUA-LIBRE-Studio-<v>-mac-intel.dmg`** — Macs con procesador **Intel** (todo Mac
+  vendido hasta 2020, y algunos modelos de 2020).
+- **`CUA-LIBRE-Studio-<v>-mac-applesilicon.dmg`** — Macs con chip **M1/M2/M3/M4**
+  (vendidos desde fines de 2020 en adelante).
+
+¿Cuál tienes? Menú  → *Acerca de esta Mac*: si dice "Chip Apple M1/M2/M3/M4", descarga
+la versión Apple Silicon; si dice "Procesador Intel Core...", descarga la versión Intel.
+
+- **Sistema mínimo (ambas): macOS 10.15 Catalina o superior** — incluye Big Sur,
+  Monterey, Ventura, Sonoma, Sequoia y Tahoe. (Verificado con `otool -l` sobre los
+  binarios empaquetados: numpy, thinc, blis, PyMuPDF y Python mismo.)
 - Nota técnica: `numpy>=2` exige macOS 14 (Sonoma) como mínimo — por eso el proyecto
   fija `numpy==1.26.4` en `pyproject.toml` y en los scripts de empaquetado; no lo subas
   de versión sin volver a verificar el piso de compatibilidad con `otool -l`.
+- `packaging/build_mac.sh` detecta la arquitectura real del binario (`lipo -archs`) y
+  nombra el DMG en consecuencia — nunca hay que asumirla a mano. El workflow de CI
+  construye ambas en paralelo: `macos-13` (Intel, el último runner hosted de GitHub en
+  esa arquitectura) y `macos-14` (Apple Silicon).
 
 ## Para desarrollo
 

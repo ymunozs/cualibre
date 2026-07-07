@@ -27,13 +27,24 @@ MACOSX_DEPLOYMENT_TARGET="$MACOS_MIN" uv run pyinstaller --noconfirm --clean --w
 echo "▶ Declarando compatibilidad mínima (macOS $MACOS_MIN) en Info.plist…"
 plutil -replace LSMinimumSystemVersion -string "$MACOS_MIN" "dist/$APP_NAME.app/Contents/Info.plist"
 
-echo "▶ DMG…"
+# El binario resultante SOLO corre en la arquitectura donde se compiló
+# (PyInstaller empaqueta las wheels nativas ya instaladas, de un solo arco).
+# Cada DMG debe nombrarse según su arquitectura real — verificado con lipo,
+# nunca asumido — para no distribuir un arm64 a quien tiene Intel o viceversa.
+ARCH="$(lipo -archs "dist/$APP_NAME.app/Contents/MacOS/$APP_NAME")"
+case "$ARCH" in
+  arm64)  TAG="mac-applesilicon" ;;
+  x86_64) TAG="mac-intel" ;;
+  *) echo "⚠ Arquitectura inesperada: $ARCH — abortando para no publicar un DMG mal etiquetado"; exit 1 ;;
+esac
+
+echo "▶ DMG ($ARCH → $TAG)…"
 STAGING="$(mktemp -d)"
 cp -R "dist/$APP_NAME.app" "$STAGING/"
 ln -s /Applications "$STAGING/Applications"
 hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING" -ov -format UDZO \
-  "dist/CUA-LIBRE-Studio-$VERSION-mac.dmg"
+  "dist/CUA-LIBRE-Studio-$VERSION-$TAG.dmg"
 rm -rf "$STAGING"
 
-echo "✔ Listo: dist/CUA-LIBRE-Studio-$VERSION-mac.dmg"
+echo "✔ Listo: dist/CUA-LIBRE-Studio-$VERSION-$TAG.dmg"
 echo "  (App sin firmar: la primera vez, clic derecho → Abrir)"
