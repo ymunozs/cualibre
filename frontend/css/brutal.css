@@ -610,6 +610,10 @@ dialog {
   max-width: 440px;
 }
 
+#history-dialog { max-width: 480px; width: 88vw; max-height: 75vh; }
+#history-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+#history-body { overflow-y: auto; max-height: 45vh; }
+
 #manual-dialog { max-width: 780px; width: 90vw; max-height: 85vh; padding: 0; }
 #manual-head {
   display: flex; justify-content: space-between; align-items: center;
@@ -698,6 +702,10 @@ body.dark .empty-note { color: #888; }
 body.dark #rel-graph svg { background: #FDFDF7 !important; border-color: #E8E8E2 !important; }
 body.dark #wordcloud { border-color: #E8E8E2; }
 body.dark .mini-label { color: #E8E8E2; }
+/* Manual en oscuro: los chips de código llevaban fondo claro con texto claro */
+body.dark #manual-body code { background: #2E2E28; border-color: #555; color: #E8E8E2; }
+body.dark #manual-body h1 { border-bottom-color: #E8E8E2; }
+body.dark #manual-body p, body.dark #manual-body li { color: #E8E8E2; }
 
 /* ---------- Sentimiento (FR-059) ---------- */
 

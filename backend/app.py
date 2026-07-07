@@ -116,11 +116,34 @@ def reset_project(payload: ConfirmPayload) -> Project:
     return project
 
 
+@app.get("/api/snapshots")
+def get_snapshots() -> dict:
+    """Historial de respaldos del proyecto activo (FR-062)."""
+    project = storage.get_active_project()
+    return {"snapshots": storage.list_snapshots(project.id)}
+
+
+@app.post("/api/snapshots/{name}/restore")
+def restore_snapshot(name: str, payload: ConfirmPayload) -> Project:
+    if not payload.confirm:
+        raise HTTPException(400, "Restaurar requiere confirmación explícita")
+    current = storage.get_active_project()
+    snapshot = storage.load_snapshot(current.id, name)
+    if snapshot is None:
+        raise HTTPException(404, "Respaldo no encontrado")
+    # Red de seguridad: el estado actual se respalda antes de ser reemplazado
+    storage._maybe_snapshot(current, force=True)
+    snapshot.id = current.id  # el respaldo ocupa el lugar del proyecto activo
+    storage.save_project(snapshot)
+    return snapshot
+
+
 @app.post("/api/project/save")
 def save_project_now() -> dict:
-    """Guardado explícito (FR-036). El autoguardado (FR-025) sigue vigente."""
+    """Guardado explícito (FR-036); fuerza un respaldo con historial (FR-062)."""
     project = storage.get_active_project()
     storage.save_project(project)
+    storage._maybe_snapshot(project, force=True)
     return {"updated_at": project.updated_at}
 
 

@@ -73,12 +73,65 @@ def write_config(config: dict) -> None:
     _atomic_write(_config_path(), json.dumps(config, ensure_ascii=False, indent=2))
 
 
+# Respaldos con historial (FR-062): copia periódica del proyecto, restaurable
+SNAPSHOT_INTERVAL_S = 600  # a lo más un snapshot cada 10 minutos de trabajo
+SNAPSHOT_KEEP = 40
+
+
+def snapshots_dir(project_id: str) -> Path:
+    d = base_dir() / "snapshots" / project_id
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _maybe_snapshot(project: Project, force: bool = False) -> bool:
+    import time
+    from datetime import datetime
+
+    folder = snapshots_dir(project.id)
+    existing = sorted(folder.glob("*.json"))
+    if not force:
+        if existing:
+            last = existing[-1].stat().st_mtime
+        else:
+            try:
+                last = datetime.fromisoformat(project.created_at).timestamp()
+            except ValueError:
+                last = 0
+        if time.time() - last < SNAPSHOT_INTERVAL_S:
+            return False
+    name = datetime.now().strftime("%Y%m%d-%H%M%S") + ".json"
+    _atomic_write(folder / name, project.model_dump_json(indent=2))
+    for old in sorted(folder.glob("*.json"))[:-SNAPSHOT_KEEP]:
+        old.unlink(missing_ok=True)
+    return True
+
+
+def list_snapshots(project_id: str) -> list[dict]:
+    return [
+        {"name": p.name, "saved_at": f"{p.stem[:4]}-{p.stem[4:6]}-{p.stem[6:8]} {p.stem[9:11]}:{p.stem[11:13]}:{p.stem[13:15]}",
+         "size_kb": p.stat().st_size // 1024}
+        for p in sorted(snapshots_dir(project_id).glob("*.json"), reverse=True)
+    ]
+
+
+def load_snapshot(project_id: str, name: str) -> Optional[Project]:
+    if name != Path(name).name:  # sin traversal
+        return None
+    path = snapshots_dir(project_id) / name
+    try:
+        return Project.model_validate_json(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, ValueError):
+        return None
+
+
 def save_project(project: Project) -> None:
     from .models import now_iso
 
     project.updated_at = now_iso()
     path = projects_dir() / f"{project.id}.json"
     _atomic_write(path, project.model_dump_json(indent=2))
+    _maybe_snapshot(project)
 
 
 def load_project(project_id: str) -> Optional[Project]:

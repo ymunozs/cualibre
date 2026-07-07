@@ -18,6 +18,7 @@
     <button id="btn-example" class="btn btn-small" title="Crear un proyecto de ejemplo con entrevista ficticia codificada">🎓 DEMO</button>
     <button id="btn-save-project" class="btn btn-small btn-save" title="Guardar proyecto ahora">💾 GUARDAR</button>
     <span id="save-dot" title="Se enciende con cada guardado automático"></span>
+    <button id="btn-history" class="btn btn-small" title="Historial de respaldos del proyecto">🕐 HISTORIAL</button>
     <button id="btn-manual" class="btn btn-small" title="Manual de uso y atajos">❓ MANUAL</button>
     <button id="btn-dark" class="btn btn-small" title="Modo oscuro / claro">◐</button>
   </div>
@@ -268,6 +269,17 @@
     <button id="quotes-close" class="btn btn-small">✕</button>
   </div>
   <div id="quotes-body"></div>
+</dialog>
+
+<dialog id="history-dialog">
+  <div id="history-head">
+    <span class="nube-title" style="color:var(--accent)">HISTORIAL DE RESPALDOS</span>
+    <button id="history-close" class="btn btn-small">✕ CERRAR</button>
+  </div>
+  <p class="empty-note" style="padding-top:0">Cua-libre guarda una copia de tu proyecto como máximo cada 10 minutos de
+    trabajo, más una copia extra cada vez que presionas 💾 GUARDAR. Restaurar reemplaza el proyecto
+    actual (se respalda antes, por seguridad).</p>
+  <div id="history-body">Cargando…</div>
 </dialog>
 
 <dialog id="manual-dialog">

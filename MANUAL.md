@@ -18,6 +18,11 @@ Si la app ya estaba corriendo y la abres de nuevo, simplemente reutiliza la inst
 - **🎓 DEMO**: crea un proyecto de ejemplo (entrevista ficticia ya codificada, con
   relaciones y exclusiones) para explorar todas las funciones sin riesgo.
 - **💾 GUARDAR**: fuerza un guardado y confirma la hora. El punto a su lado **pulsa en rojo** con cada guardado automático (que ocurre solo, tras cada acción).
+- **🕐 HISTORIAL**: abre el historial de respaldos de tu proyecto. Cua-libre guarda una
+  copia completa cada 10 minutos de trabajo (como máximo) y una copia extra cada vez que
+  presionas 💾 GUARDAR. Elige cualquier punto de la lista y pulsa **↺** para restaurar el
+  proyecto a ese momento — el estado justo antes de restaurar también se respalda,
+  así que nunca pierdes trabajo por equivocarte.
 - **❓ MANUAL**: abre este manual dentro de la app. **◐**: alterna modo oscuro/claro.
 - Tus datos viven en `~/Library/Application Support/cualibre/` (Mac) o `%APPDATA%\cualibre\` (Windows). Copiar esa carpeta = respaldo completo.
 

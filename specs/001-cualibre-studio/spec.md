@@ -447,6 +447,10 @@ que se listan resultados con título, año, citas y DOI clicable.
 - **FR-061**: Un botón 🎓 DEMO MUST crear un proyecto de ejemplo con entrevista ficticia
   ya codificada (9 códigos anclados + 1 manual, 3 relaciones, exclusiones NLP), para
   aprender el flujo sin arriesgar datos.
+- **FR-062**: El sistema MUST mantener un historial de respaldos por proyecto: una copia
+  completa como máximo cada 10 minutos de trabajo, más una copia forzada en cada guardado
+  explícito (💾 GUARDAR); MUST permitir listarlos (🕐 HISTORIAL) y restaurar cualquiera
+  con confirmación explícita, respaldando primero el estado actual antes de reemplazarlo.
 
 **Persistencia**
 

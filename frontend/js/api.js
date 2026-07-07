@@ -40,6 +40,10 @@ const API = {
   resetProject: () => API._json("POST", "/api/project/reset", { confirm: true }),
   saveProject: () => API._json("POST", "/api/project/save", {}),
 
+  // Respaldos con historial (FR-062)
+  getSnapshots: () => API._fetch("/api/snapshots"),
+  restoreSnapshot: (name) => API._json("POST", `/api/snapshots/${encodeURIComponent(name)}/restore`, { confirm: true }),
+
   // Dominios (fuente única: backend/models.py)
   getDomains: () => API._fetch("/api/domains"),
 

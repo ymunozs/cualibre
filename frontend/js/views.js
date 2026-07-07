@@ -34,6 +34,12 @@ const Views = {
       document.getElementById("manual-dialog").close();
     });
 
+    // Historial de respaldos (FR-062)
+    document.getElementById("btn-history").addEventListener("click", () => this._openHistory());
+    document.getElementById("history-close").addEventListener("click", () => {
+      document.getElementById("history-dialog").close();
+    });
+
     // NLP
     document.getElementById("nlp-lang").addEventListener("change", () => this.renderNlp());
     const minLen = document.getElementById("nlp-minlen");
@@ -193,6 +199,54 @@ const Views = {
       } catch (error) {
         document.getElementById("manual-body").textContent = error.message;
       }
+    }
+  },
+
+  async _openHistory() {
+    const dialog = document.getElementById("history-dialog");
+    const body = document.getElementById("history-body");
+    dialog.showModal();
+    body.textContent = "Cargando…";
+    try {
+      const { snapshots } = await API.getSnapshots();
+      body.textContent = "";
+      if (!snapshots.length) {
+        const p = document.createElement("p");
+        p.className = "empty-note";
+        p.textContent = "Aún no hay respaldos. Se crean automáticamente mientras trabajas (o al presionar 💾 GUARDAR).";
+        body.appendChild(p);
+        return;
+      }
+      const list = document.createElement("ul");
+      list.className = "plain-list";
+      for (const snap of snapshots) {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.textContent = `${snap.saved_at} · ${snap.size_kb} KB`;
+        const restore = document.createElement("button");
+        restore.className = "icon-btn";
+        restore.title = "Restaurar este respaldo";
+        restore.textContent = "↺";
+        restore.addEventListener("click", async () => {
+          const ok = await this.confirm(
+            `¿Restaurar el proyecto al estado del ${snap.saved_at}? Se perderán los cambios posteriores (aunque quedan respaldados aparte, por seguridad).`
+          );
+          if (!ok) return;
+          try {
+            await API.restoreSnapshot(snap.name);
+            await State.reload();
+            dialog.close();
+            this.toast(`Proyecto restaurado al ${snap.saved_at}`);
+          } catch (error) {
+            this.toast(error.message, true);
+          }
+        });
+        li.append(label, restore);
+        list.appendChild(li);
+      }
+      body.appendChild(list);
+    } catch (error) {
+      body.textContent = error.message;
     }
   },
 
