@@ -91,6 +91,17 @@ def get_active_project() -> Project:
     return storage.get_active_project()
 
 
+@app.post("/api/projects/example", status_code=201)
+def create_example_project() -> Project:
+    """Proyecto demo con entrevista ficticia ya codificada (FR-061)."""
+    from .demo import build_example_project
+
+    project = build_example_project()
+    storage.save_project(project)
+    storage.set_active_project(project.id)
+    return project
+
+
 @app.post("/api/project/reset")
 def reset_project(payload: ConfirmPayload) -> Project:
     if not payload.confirm:

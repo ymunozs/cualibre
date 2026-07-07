@@ -9,12 +9,13 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.6</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.7</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label">PROYECTO</label>
     <select id="project-select"></select>
     <button id="btn-new-project" class="btn btn-small" title="Crear proyecto nuevo">+ NUEVO</button>
     <button id="btn-rename-project" class="btn btn-small" title="Renombrar proyecto">✎ RENOMBRAR</button>
+    <button id="btn-example" class="btn btn-small" title="Crear un proyecto de ejemplo con entrevista ficticia codificada">🎓 DEMO</button>
     <button id="btn-save-project" class="btn btn-small btn-save" title="Guardar proyecto ahora">💾 GUARDAR</button>
     <span id="save-dot" title="Se enciende con cada guardado automático"></span>
     <button id="btn-manual" class="btn btn-small" title="Manual de uso y atajos">❓ MANUAL</button>
@@ -208,6 +209,7 @@
   <section id="view-exportar" class="view hidden">
     <div class="section-title">GESTIÓN DE DATOS</div>
     <a id="btn-export" class="btn btn-accent" href="/api/export.csv" download>⇄ DESCARGAR CSV (UTF-8 · EXCEL)</a>
+    <button id="btn-report" class="btn" style="width:auto;margin-left:10px">📄 REPORTE ACADÉMICO (HTML → PDF)</button>
     <div id="export-table" class="table-scroll"></div>
   </section>
 
@@ -293,6 +295,7 @@
 <script src="/static/js/relations.js"></script>
 <script src="/static/js/musica.js"></script>
 <script src="/static/js/sesion.js"></script>
+<script src="/static/js/reporte.js"></script>
 <script src="/static/js/views.js"></script>
 <script src="/static/js/state.js"></script>
 </body>

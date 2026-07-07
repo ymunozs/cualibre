@@ -272,3 +272,20 @@ def test_nlp_pos_endpoint(client):
     assert any(w["word"] == "cantar" for w in verbs)
     assert all(w["word"] != "escuela" for w in verbs)
     assert client.get("/api/nlp?pos=adverbio").status_code == 422
+
+
+def test_example_project(client):
+    r = client.post("/api/projects/example")
+    assert r.status_code == 201
+    project = r.json()
+    assert "ejemplo" in project["name"]
+    assert len(project["documents"]) == 1 and len(project["codes"]) == 10
+    # Los anclajes son exactos: quote == texto[start:end] (BMP: índices coinciden)
+    text = project["documents"][0]["text"]
+    for code in project["codes"]:
+        if code["doc_id"]:
+            assert text[code["start"]:code["end"]] == code["quote"]
+    assert len(project["relations"]) == 3
+    assert project["nlp_exclusions"] == ["Entrevistadora", "Docente"]
+    # Queda activo
+    assert client.get("/api/project").json()["id"] == project["id"]

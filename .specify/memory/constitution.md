@@ -126,6 +126,25 @@ Ningún cambio se declara funcional sin haberse probado ejecutando la aplicació
 Racional: el ciclo anterior de "código completo y corregido" que llegaba roto quemó la
 confianza del investigador en cada iteración.
 
+### VIII. Decisión Analítica 100% Humana (NON-NEGOTIABLE)
+
+CUA-LIBRE STUDIO está diseñado para favorecer decisiones interpretativas 100% humanas.
+El juicio analítico —qué codificar, cómo nombrarlo, qué significa— pertenece
+exclusivamente al investigador.
+
+- NINGÚN componente del programa sugiere, propone, completa ni automatiza la codificación
+  interpretativa. Queda descartada de forma permanente la integración de asistentes de IA
+  generativa para codificar, nombrar códigos o redactar memos (decisión del investigador,
+  2026-07-07).
+- Los análisis automáticos existentes (frecuencias, foco gramatical, sentimiento por
+  léxico, co-ocurrencia) son brújulas exploratorias: DEBEN ser transparentes y auditables
+  (mostrar de dónde sale cada número) y JAMÁS escriben en el banco de códigos.
+- Toda entrada al banco de códigos requiere un gesto deliberado del investigador
+  (Enter en la Nube, guardado manual, arrastre).
+
+Racional: en investigación cualitativa el instrumento es el investigador; delegar la
+interpretación a un modelo destruye la validez del método y la autoría del análisis.
+
 ## Restricciones Técnicas y de Diseño
 
 - Aplicación local de escritorio/navegador para macOS; sin dependencia de servicios en la
@@ -175,7 +194,9 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.7.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-07
+**Version**: 1.8.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-07
+<!-- 1.8.0: nuevo Principio VIII (Decisión Analítica 100% Humana) por instrucción del
+investigador; el asistente IA de codificación queda descartado permanentemente. -->
 <!-- 1.5.0: Principio VI enmendado por el investigador (modo oscuro y tipografía
 Courier como variantes de lectura autorizadas) + inventario ampliado con v1.4. -->
 <!-- 1.2.0: inventario ampliado con la barra de música de foco (v1.1 de la app).

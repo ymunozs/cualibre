@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v1.6)
+# CUA-LIBRE STUDIO — Manual de uso (v1.7)
 
 Guía completa de comandos y flujos para el análisis cualitativo.
 
@@ -15,6 +15,8 @@ Si la app ya estaba corriendo y la abres de nuevo, simplemente reutiliza la inst
 
 - **Selector PROYECTO**: cambia entre tus investigaciones; cada proyecto aísla corpus, códigos, memos y relaciones.
 - **+ NUEVO** / **✎ RENOMBRAR**: crear o renombrar el proyecto activo.
+- **🎓 DEMO**: crea un proyecto de ejemplo (entrevista ficticia ya codificada, con
+  relaciones y exclusiones) para explorar todas las funciones sin riesgo.
 - **💾 GUARDAR**: fuerza un guardado y confirma la hora. El punto a su lado **pulsa en rojo** con cada guardado automático (que ocurre solo, tras cada acción).
 - **❓ MANUAL**: abre este manual dentro de la app. **◐**: alterna modo oscuro/claro.
 - Tus datos viven en `~/Library/Application Support/cualibre/` (Mac) o `%APPDATA%\cualibre\` (Windows). Copiar esa carpeta = respaldo completo.
@@ -101,6 +103,41 @@ cada puntaje viene acompañado de las palabras que lo produjeron.
 - Límites honestos: la ironía y el sarcasmo se le escapan; úsalo como brújula
   exploratoria, no como veredicto.
 
+### Cómo se produce el análisis (racionalidad y método)
+
+**Racionalidad.** Cua-libre usa un método **basado en léxico** (no en redes neuronales)
+por una razón metodológica: es completamente **auditable**. Cada puntaje puede
+reconstruirse a mano mirando las palabras detectadas — condición necesaria para defender
+el análisis en un apartado de métodos. Coherente con el Principio VIII de la constitución
+del programa: los análisis automáticos son brújulas exploratorias; la interpretación es
+siempre tuya.
+
+**Procesamiento, paso a paso.**
+1. Cada texto se tokeniza y **lematiza** con spaCy (*lloraba* → *llorar*), para que las
+   conjugaciones encuentren su entrada en el léxico.
+2. Cada palabra (por su forma o su lema) se busca en el léxico: si existe, aporta su
+   polaridad (+1 o −1) y sus emociones asociadas.
+3. **Negación**: si en las 3 palabras anteriores hay un negador (*no, nunca, sin, jamás,
+   ni, tampoco, nada, nadie, ninguno/a*), la polaridad de esa palabra se invierte.
+4. La **valencia** de un texto es el promedio de los aportes: (positivas − negativas) /
+   total de palabras con carga → un valor entre −1 y +1.
+5. El **arco emocional** repite el cálculo párrafo a párrafo (hasta 40 tramos), siguiendo
+   la idea del paquete *syuzhet* de M. Jockers para trayectorias narrativas.
+
+**Fuentes.** El léxico es el **NRC Word–Emotion Association Lexicon (EmoLex)** de Saif
+Mohammad y Peter Turney (National Research Council Canada): ~14.000 palabras anotadas por
+crowdsourcing con polaridad y 8 emociones (alegría, tristeza, miedo, rabia, confianza,
+anticipación, sorpresa, asco), del cual Cua-libre incluye las 5.094 entradas en castellano
+de la distribución oficial. Uso libre para investigación; **cita**: Mohammad, S. & Turney,
+P. (2013). *Crowdsourcing a Word–Emotion Association Lexicon*. Computational
+Intelligence, 29(3), 436–465.
+
+**Para seguir leyendo.** Liu, B. (2012), *Sentiment Analysis and Opinion Mining* (el
+manual clásico del campo); Jockers, M., viñeta del paquete *syuzhet* (arcos narrativos);
+Pérez et al. (2021), *pysentimiento* (arXiv:2106.09462) — la alternativa con redes
+neuronales para español, más precisa pero no auditable, descartada en Cua-libre por
+diseño; y saifmohammad.com para el léxico NRC y sus actualizaciones.
+
 ## 10. ◈ Relaciones
 
 1. Elige código origen → **tipo** → código destino → **◉ CREAR RELACIÓN**.
@@ -112,6 +149,13 @@ cada puntaje viene acompañado de las palabras que lo produjeron.
 ## 11. ⇄ Exportar
 
 Tabla completa del banco y **descarga CSV** en UTF-8 con BOM: abre en Excel con tildes y ñ intactas. Columnas: id, fecha, documento, dominio, código, cita, memo.
+
+**📄 Reporte académico**: genera un documento HTML autocontenido con TODO el proyecto —
+nota metodológica con citas formales (y la declaración de análisis 100% humano), libro de
+códigos, citas agrupadas por dominio y código con sus memos, gráficos, matrices de
+co-ocurrencia, organizador de relaciones y análisis de sentimiento. Se abre en una pestaña
+nueva: **⌘P** para guardarlo como PDF (anexo listo para tesis o paper) o **⌘S** para
+guardar el HTML.
 
 ## 12. 📚 Literatura
 

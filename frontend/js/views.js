@@ -18,6 +18,15 @@ const Views = {
     document.getElementById("btn-new-project").addEventListener("click", () => this._newProject());
     document.getElementById("btn-rename-project").addEventListener("click", () => this._renameProject());
     document.getElementById("btn-save-project").addEventListener("click", () => this._saveProject());
+    document.getElementById("btn-example").addEventListener("click", async () => {
+      try {
+        await API._fetch("/api/projects/example", { method: "POST" });
+        await State.reload();
+        this.toast("Proyecto de ejemplo creado — explóralo sin miedo, es ficticio");
+      } catch (error) {
+        this.toast(error.message, true);
+      }
+    });
 
     // Manual en la app (FR-052)
     document.getElementById("btn-manual").addEventListener("click", () => this._openManual());
@@ -80,6 +89,9 @@ const Views = {
     document.getElementById("btn-immersion").addEventListener("click", () => {
       document.body.classList.toggle("immersion");
     });
+
+    // Reporte académico (FR-060)
+    document.getElementById("btn-report").addEventListener("click", () => Reporte.generar());
 
     // Recuperación de citas: cerrar diálogo
     document.getElementById("quotes-close").addEventListener("click", () => {

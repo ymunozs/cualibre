@@ -437,6 +437,17 @@ que se listan resultados con título, año, citas y DOI clicable.
   ranking de palabras con carga. (Evaluación de alternativas: pysentimiento descartado
   para v1 por peso ~2 GB y opacidad; syuzhet descartado por requerir runtime R.)
 
+**Cierre v1.7**
+
+- **FR-060**: Un botón en Exportar MUST generar el reporte académico: documento HTML
+  autocontenido e imprimible a PDF con nota metodológica (citas formales, declaración de
+  análisis 100% humano — Principio VIII), libro de códigos por dominio, citas agrupadas
+  con memos, gráficos de distribución/densidad, matrices de co-ocurrencia, relaciones
+  (organizador + árbol) y sentimiento (arcos, tono por dominio, emociones).
+- **FR-061**: Un botón 🎓 DEMO MUST crear un proyecto de ejemplo con entrevista ficticia
+  ya codificada (9 códigos anclados + 1 manual, 3 relaciones, exclusiones NLP), para
+  aprender el flujo sin arriesgar datos.
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del
