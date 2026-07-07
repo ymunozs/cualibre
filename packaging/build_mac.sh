@@ -27,6 +27,17 @@ MACOSX_DEPLOYMENT_TARGET="$MACOS_MIN" uv run pyinstaller --noconfirm --clean --w
 echo "▶ Declarando compatibilidad mínima (macOS $MACOS_MIN) en Info.plist…"
 plutil -replace LSMinimumSystemVersion -string "$MACOS_MIN" "dist/$APP_NAME.app/Contents/Info.plist"
 
+# CRÍTICO: PyInstaller ya firmó el bundle (ad-hoc) al construirlo. Tocar el
+# Info.plist DESPUÉS invalida esa firma ("invalid Info.plist (plist or
+# signature have been modified)", verificable con codesign --verify) — y
+# eso es justo lo que Gatekeeper reporta como "app dañada, muévela a la
+# papelera" en vez del aviso normal de "desarrollador no identificado".
+# Hay que volver a firmar (ad-hoc) después de cualquier cambio al bundle.
+echo "▶ Re-firmando (ad-hoc) tras modificar Info.plist…"
+codesign --force --deep --sign - "dist/$APP_NAME.app"
+codesign --verify --deep --strict "dist/$APP_NAME.app"
+echo "  ✔ Firma ad-hoc válida"
+
 # El binario resultante SOLO corre en la arquitectura donde se compiló
 # (PyInstaller empaqueta las wheels nativas ya instaladas, de un solo arco).
 # Cada DMG debe nombrarse según su arquitectura real — verificado con lipo,
