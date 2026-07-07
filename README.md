@@ -32,8 +32,13 @@ presiona `Ctrl-C` en la Terminal.
    (siempre con confirmación).
 4. **⚡ NLP**: frecuencias del corpus con nube de palabras, barras y tabla; filtros de
    idioma (español/inglés) y longitud mínima.
-5. **◫ Analytics**: distribución por dominios y densidad de códigos, al día con cada
-   codificación.
+5. **◫ Analytics**: distribución por dominios, densidad de códigos, y las matrices de
+   **co-ocurrencia** (qué códigos se solapan sobre las mismas citas) y **códigos por
+   documento** — al día con cada codificación.
+   - En el Pentagrama además: **⌘F** busca en el corpus (con navegación ‹ ›), los chips
+     de la Paleta **filtran resaltados** por dominio («lectura limpia» los apaga todos),
+     **⛶** activa el modo inmersión (Esc sale), **⌘↵** en la Nube repite tu última
+     codificación, y tu posición de lectura se conserva siempre.
 6. **◈ Relaciones**: vincula códigos entre sí (jerarquía «contiene a», asociación,
    causalidad, contradicción/tensión) y míralos como organizador gráfico y como árbol
    de jerarquía. Si un código desaparece, sus relaciones se limpian solas.

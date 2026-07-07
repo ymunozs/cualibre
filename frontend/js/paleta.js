@@ -7,6 +7,60 @@ const Paleta = {
   init() {
     document.getElementById("btn-manual-save").addEventListener("click", () => this._saveManual());
     document.getElementById("btn-reset").addEventListener("click", () => this._reset());
+
+    // Búsqueda en el corpus (FR-041)
+    const input = document.getElementById("search-input");
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") this._runSearch();
+      if (e.key === "Escape") { input.value = ""; this._clearSearch(); }
+    });
+    document.getElementById("search-next").addEventListener("click", () => { Canvas.nextHit(1); this._updateCount(); });
+    document.getElementById("search-prev").addEventListener("click", () => { Canvas.nextHit(-1); this._updateCount(); });
+    document.getElementById("search-clear").addEventListener("click", () => { input.value = ""; this._clearSearch(); });
+
+    // Lectura limpia (FR-042)
+    document.getElementById("btn-clean-read").addEventListener("click", () => {
+      const allHidden = Canvas.hiddenDomains.size === Object.keys(State.domains).length;
+      Canvas.setAllDomains(!allHidden);
+      this._renderFilter();
+    });
+  },
+
+  _runSearch() {
+    const total = Canvas.search(document.getElementById("search-input").value);
+    this._updateCount();
+    if (!total) Views.toast("Sin resultados en el corpus", true);
+  },
+
+  _clearSearch() {
+    Canvas.clearSearch();
+    this._updateCount();
+  },
+
+  _updateCount() {
+    const count = document.getElementById("search-count");
+    count.textContent = Canvas.searchRanges.length
+      ? `${Canvas.currentHit + 1}/${Canvas.searchRanges.length}`
+      : "—";
+  },
+
+  _renderFilter() {
+    const box = document.getElementById("domain-filter");
+    box.textContent = "";
+    for (const [domain, color] of Object.entries(State.domains)) {
+      const chip = document.createElement("button");
+      chip.className = "filter-chip" + (Canvas.hiddenDomains.has(domain) ? " off" : "");
+      chip.title = `${domain} — clic para ${Canvas.hiddenDomains.has(domain) ? "mostrar" : "ocultar"} sus resaltados`;
+      const dot = document.createElement("span");
+      dot.className = "dom-chip";
+      dot.style.backgroundColor = color;
+      chip.append(dot, document.createTextNode(domain));
+      chip.addEventListener("click", () => { Canvas.toggleDomain(domain); this._renderFilter(); });
+      box.appendChild(chip);
+    }
+    const clean = document.getElementById("btn-clean-read");
+    const allHidden = Canvas.hiddenDomains.size === Object.keys(State.domains).length;
+    clean.textContent = allHidden ? "◼ RESTAURAR RESALTADOS" : "◻ LECTURA LIMPIA";
   },
 
   populateDomains() {
@@ -23,6 +77,7 @@ const Paleta = {
   render() {
     this._renderDocs();
     this._renderBank();
+    this._renderFilter();
   },
 
   _renderDocs() {

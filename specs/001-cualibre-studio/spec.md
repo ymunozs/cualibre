@@ -371,6 +371,24 @@ que se listan resultados con título, año, citas y DOI clicable.
   (La fuente "Claude FM" se retiró por decisión del investigador el 2026-07-06: el
   stream de YouTube tiene el embedding restringido y no puede acoplarse.)
 
+**Análisis y experiencia de lectura (v1.2)**
+
+- **FR-041**: Búsqueda de texto en el corpus desde la Paleta (⌘F la enfoca): resaltado
+  temporal punteado de coincidencias, navegación anterior/siguiente con contador, sin
+  alterar los resaltados de códigos.
+- **FR-042**: Filtro de resaltados por dominio (chips en la Paleta) y modo "lectura
+  limpia" que apaga todos; preferencia persistente, los códigos no se alteran.
+- **FR-043**: Analytics MUST incluir la matriz de co-ocurrencia código×código (citas
+  cuyos rangos se solapan en el mismo documento; top 12 códigos, heatmap secuencial de
+  un solo tono con valores en tinta) y la matriz documento×código.
+- **FR-044**: Modo inmersión (⛶, salir con Esc): oculta todo salvo el Canvas centrado a
+  ancho de lectura; la Nube Negra sigue operativa.
+- **FR-045**: La posición de lectura se conserva por documento y proyecto entre
+  re-renders y sesiones; codificar nunca devuelve el scroll al inicio.
+- **FR-046**: ⌘↵ (o Ctrl+↵) en la Nube Negra repite la última codificación (mismo
+  nombre y dominio) sobre la nueva selección.
+- **FR-047**: Un indicador en la cabecera pulsa con cada persistencia automática.
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del

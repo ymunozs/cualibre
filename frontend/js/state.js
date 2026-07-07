@@ -19,6 +19,7 @@ const State = {
     Paleta.render();
     if (projects) Views.renderProjectBar(projects);
     Views.refreshCurrent(); // Analytics/NLP/Exportar al día si están visibles (FR-020)
+    Views.pulseSaved(); // el estado quedó persistido en disco (FR-047)
   },
 };
 

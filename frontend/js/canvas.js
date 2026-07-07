@@ -11,10 +11,24 @@ const Canvas = {
   el: null,
   activeDocId: null, // null = todos los documentos (FR-035)
   dragSelection: null, // selección arrastrada hacia un código del banco (FR-037)
+  hiddenDomains: new Set(), // dominios con resaltado apagado (FR-042)
+  searchRanges: [], // resultados de búsqueda en el corpus (FR-041)
+  currentHit: -1,
 
   init() {
     this.el = document.getElementById("canvas");
     this.el.addEventListener("mouseup", (event) => this._onMouseUp(event));
+    try {
+      this.hiddenDomains = new Set(JSON.parse(localStorage.getItem("cua-hidden-domains") || "[]"));
+    } catch (_) { /* preferencia corrupta: partir limpia */ }
+    // Posición de lectura persistente (FR-045)
+    let scrollTimer = null;
+    this.el.addEventListener("scroll", () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        localStorage.setItem(this._scrollKey(), String(this.el.scrollTop));
+      }, 300);
+    });
     // Arrastrar la selección: capturar sus offsets antes de soltarla en el banco
     this.el.addEventListener("dragstart", (event) => {
       const info = this._selectionInfo();
@@ -27,6 +41,11 @@ const Canvas = {
     this.el.addEventListener("dragend", () => { this.dragSelection = null; });
   },
 
+  _scrollKey() {
+    const pid = State.project ? State.project.id : "none";
+    return `cua-scroll-${pid}-${this.activeDocId || "all"}`;
+  },
+
   render() {
     const { documents, codes } = State.project;
     // Si el documento activo ya no existe, volver a "Todos"
@@ -34,6 +53,8 @@ const Canvas = {
       this.activeDocId = null;
     }
     this._renderDocTabs(documents);
+    // No perder el punto de lectura al re-renderizar (FR-045)
+    const savedScroll = this.el.scrollTop || parseInt(localStorage.getItem(this._scrollKey()) || "0", 10);
 
     this.el.textContent = "";
     if (!documents.length) {
@@ -63,6 +84,7 @@ const Canvas = {
 
       this.el.appendChild(wrapper);
     }
+    this.el.scrollTop = savedScroll;
   },
 
   /* Pestañas de documentos: navegación, nunca entrada de datos (Principio II). */
@@ -89,14 +111,22 @@ const Canvas = {
     for (const doc of documents) makeTab(doc.filename, doc.id);
   },
 
-  /* Segmentación: límites ordenados → segmentos contiguos → spans planos. */
+  /* Segmentación: límites ordenados → segmentos contiguos → spans planos.
+     Incluye filtro de dominios (FR-042) y marcas de búsqueda (FR-041). */
   _renderSegments(container, doc, codes) {
-    const anchored = codes.filter(c => c.doc_id === doc.id);
+    const anchored = codes.filter(
+      c => c.doc_id === doc.id && !this.hiddenDomains.has(c.domain)
+    );
+    const hits = this.searchRanges.filter(r => r.docId === doc.id);
     const length = doc.text.length;
     const bounds = new Set([0, length]);
     for (const code of anchored) {
       bounds.add(Math.min(code.start, length));
       bounds.add(Math.min(code.end, length));
+    }
+    for (const hit of hits) {
+      bounds.add(Math.min(hit.start, length));
+      bounds.add(Math.min(hit.end, length));
     }
     const points = [...bounds].sort((a, b) => a - b);
 
@@ -108,6 +138,12 @@ const Canvas = {
       const span = document.createElement("span");
       span.className = "seg";
       span.textContent = doc.text.slice(start, end);
+      const hit = hits.find(h => h.start <= start && h.end >= end);
+      if (hit) {
+        span.classList.add("search-hit");
+        span.dataset.hit = hit.idx;
+        if (hit.idx === this.currentHit) span.classList.add("search-current");
+      }
       if (covering.length) {
         // El código más reciente (id mayor) define el color visible
         const top = covering.reduce((a, b) => (a.id > b.id ? a : b));
@@ -180,5 +216,69 @@ const Canvas = {
       return;
     }
     Nube.show(info.rect, info);
+  },
+
+  // ---------- Búsqueda en el corpus (FR-041) ----------
+
+  search(query) {
+    this.searchRanges = [];
+    this.currentHit = -1;
+    const needle = query.trim().toLowerCase();
+    if (needle.length >= 2) {
+      let idx = 0;
+      for (const doc of State.project.documents) {
+        const haystack = doc.text.toLowerCase();
+        let from = 0;
+        while (true) {
+          const at = haystack.indexOf(needle, from);
+          if (at === -1 || idx > 500) break;
+          this.searchRanges.push({ docId: doc.id, start: at, end: at + needle.length, idx });
+          from = at + needle.length;
+          idx++;
+        }
+      }
+      if (this.searchRanges.length) {
+        this.activeDocId = null; // ver todos los documentos para navegar los hits
+        this.currentHit = 0;
+      }
+    }
+    this.render();
+    this._scrollToHit();
+    return this.searchRanges.length;
+  },
+
+  nextHit(delta) {
+    if (!this.searchRanges.length) return;
+    this.currentHit = (this.currentHit + delta + this.searchRanges.length) % this.searchRanges.length;
+    this.render();
+    this._scrollToHit();
+  },
+
+  clearSearch() {
+    this.searchRanges = [];
+    this.currentHit = -1;
+    this.render();
+  },
+
+  _scrollToHit() {
+    if (this.currentHit < 0) return;
+    const el = this.el.querySelector(`.search-current`);
+    if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+  },
+
+  // ---------- Filtro de resaltados (FR-042) ----------
+
+  toggleDomain(domain) {
+    this.hiddenDomains.has(domain)
+      ? this.hiddenDomains.delete(domain)
+      : this.hiddenDomains.add(domain);
+    localStorage.setItem("cua-hidden-domains", JSON.stringify([...this.hiddenDomains]));
+    this.render();
+  },
+
+  setAllDomains(hidden) {
+    this.hiddenDomains = hidden ? new Set(Object.keys(State.domains)) : new Set();
+    localStorage.setItem("cua-hidden-domains", JSON.stringify([...this.hiddenDomains]));
+    this.render();
   },
 };

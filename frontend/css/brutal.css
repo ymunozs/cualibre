@@ -414,6 +414,86 @@ body {
 .lit-meta { color: #666; font-size: 11px; margin-top: 4px; }
 .lit-card a { color: var(--accent); font-weight: 700; }
 
+/* ---------- Búsqueda en el corpus (FR-041) ---------- */
+
+#search-nav { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+#search-count { flex: 1; text-align: center; }
+
+.doc-text .search-hit {
+  outline: 2px dashed var(--accent);
+  outline-offset: 1px;
+}
+.doc-text .search-current {
+  outline: 3px solid var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 51, 0, 0.25);
+}
+
+/* ---------- Filtro de resaltados (FR-042) ---------- */
+
+#domain-filter { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid var(--ink);
+  background: #fff;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+.filter-chip.off { opacity: 0.35; }
+.filter-chip.off .dom-chip { background-color: #ccc !important; }
+
+/* ---------- Modo inmersión (FR-044) ---------- */
+
+#btn-immersion {
+  float: right;
+  border: 2px solid var(--ink);
+  background: #fff;
+  font-size: 12px;
+  padding: 1px 7px;
+  cursor: pointer;
+}
+#btn-immersion:hover { background: var(--accent); color: #fff; }
+
+body.immersion #topbar,
+body.immersion #importador,
+body.immersion #tabs,
+body.immersion #paleta-col,
+body.immersion #music-bar { display: none; }
+body.immersion { padding-bottom: 24px; }
+body.immersion #view-pentagrama { grid-template-columns: 1fr; }
+body.immersion #canvas-col { max-width: 920px; margin: 0 auto; width: 100%; }
+body.immersion #canvas { height: calc(100vh - 130px); }
+
+/* ---------- Indicador de autoguardado (FR-047) ---------- */
+
+#save-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #ccc;
+  border: 1px solid var(--ink);
+  display: inline-block;
+}
+#save-dot.pulse { animation: saved-pulse 1.2s ease-out; }
+@keyframes saved-pulse {
+  0% { background: var(--accent); transform: scale(1.6); }
+  100% { background: #ccc; transform: scale(1); }
+}
+
+/* ---------- Heatmaps de co-ocurrencia (FR-043) ---------- */
+
+#cooc-section { margin-top: 20px; }
+.heatmap th { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.heatmap tbody th {
+  background: #fff; color: var(--ink); position: static;
+  border-bottom: 1px solid #ddd; font-size: 10px; text-transform: none;
+}
+.heatmap td { text-align: center; border: 1px solid #eee; min-width: 40px; }
+
 /* ---------- Barra de música de foco (FR-040) ---------- */
 
 #music-bar {

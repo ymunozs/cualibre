@@ -111,6 +111,53 @@ const Charts = {
     container.appendChild(svg);
   },
 
+  /* Heatmap secuencial (un solo tono: canvas → acento) con valores en tinta.
+     rows/cols: etiquetas; values: matriz [fila][col]. */
+  heatmap(container, rows, cols, values) {
+    container.textContent = "";
+    const max = Math.max(1, ...values.flat());
+    const table = document.createElement("table");
+    table.className = "data-table heatmap";
+
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.appendChild(document.createElement("th"));
+    for (const col of cols) {
+      const th = document.createElement("th");
+      th.textContent = col;
+      th.title = col;
+      headRow.appendChild(th);
+    }
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    rows.forEach((rowLabel, i) => {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th");
+      th.textContent = rowLabel;
+      th.title = rowLabel;
+      tr.appendChild(th);
+      cols.forEach((colLabel, j) => {
+        const td = document.createElement("td");
+        const value = values[i][j];
+        td.textContent = value || "";
+        td.title = `${rowLabel} × ${colLabel}: ${value}`;
+        if (value) {
+          const t = value / max; // rampa #FDFDF7 → #FF3300
+          const mix = (a, b) => Math.round(a + (b - a) * t);
+          td.style.backgroundColor = `rgb(${mix(253, 255)}, ${mix(253, 51)}, ${mix(247, 0)})`;
+          td.style.color = t > 0.55 ? "#fff" : "#000";
+          td.style.fontWeight = "700";
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+  },
+
   /* Tabla de datos genérica. headers: [..], rows: [[..], ...] */
   table(container, headers, rows) {
     container.textContent = "";

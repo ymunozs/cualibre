@@ -62,6 +62,11 @@ const Nube = {
     }
     if (event.key === "Enter") {
       event.preventDefault();
+      // ⌘↵ / Ctrl+↵: repetir la última codificación sobre esta selección (FR-046)
+      if ((event.metaKey || event.ctrlKey) && this.last) {
+        this.domainSelect.value = this.last.domain;
+        this.nameInput.value = this.last.name;
+      }
       this._commit();
       return;
     }
@@ -104,6 +109,7 @@ const Nube = {
     window.getSelection().removeAllRanges();
     try {
       await API.createCode(payload);
+      this.last = { domain: payload.domain, name: payload.name }; // para ⌘↵ (FR-046)
       await State.reload(); // resaltado + banco + analytics inmediatos (FR-010)
       Views.toast(`Codificado: ${name}`);
     } catch (error) {

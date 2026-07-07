@@ -9,13 +9,14 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.1</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.2</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label">PROYECTO</label>
     <select id="project-select"></select>
     <button id="btn-new-project" class="btn btn-small" title="Crear proyecto nuevo">+ NUEVO</button>
     <button id="btn-rename-project" class="btn btn-small" title="Renombrar proyecto">✎ RENOMBRAR</button>
     <button id="btn-save-project" class="btn btn-small btn-save" title="Guardar proyecto ahora">💾 GUARDAR</button>
+    <span id="save-dot" title="Se enciende con cada guardado automático"></span>
   </div>
 </header>
 
@@ -38,11 +39,28 @@
   <!-- PENTAGRAMA: Canvas (lectura pura) + Paleta -->
   <section id="view-pentagrama" class="view">
     <div id="canvas-col">
-      <div class="section-title">CANVAS DE ANÁLISIS</div>
+      <div class="section-title">CANVAS DE ANÁLISIS
+        <button id="btn-immersion" title="Modo inmersión (Esc para salir)">⛶</button>
+      </div>
       <div id="doc-tabs" class="hidden"></div>
       <div id="canvas"></div>
     </div>
     <aside id="paleta-col">
+      <div class="section-title">BUSCAR EN EL CORPUS</div>
+      <div class="panel" id="search-panel">
+        <input type="text" id="search-input" placeholder="⌘F · texto a buscar…">
+        <div id="search-nav">
+          <button id="search-prev" class="btn btn-small" title="Anterior">‹</button>
+          <span id="search-count" class="mini-label">—</span>
+          <button id="search-next" class="btn btn-small" title="Siguiente">›</button>
+          <button id="search-clear" class="btn btn-small" title="Limpiar búsqueda">✕</button>
+        </div>
+      </div>
+      <div class="section-title">FILTRO DE RESALTADOS</div>
+      <div class="panel">
+        <div id="domain-filter"></div>
+        <button id="btn-clean-read" class="btn btn-small" style="margin-top:8px">◻ LECTURA LIMPIA</button>
+      </div>
       <div class="section-title">PALETA DE CONTROL</div>
       <div class="panel" id="paleta-manual">
         <div class="mini-label">CÓDIGO MANUAL</div>
@@ -104,6 +122,12 @@
         <div id="chart-bars"></div>
       </div>
     </div>
+    <div id="cooc-section" class="hidden">
+      <div class="section-title">CO-OCURRENCIA DE CÓDIGOS (CITAS QUE SE SOLAPAN)</div>
+      <div id="chart-cooc" class="table-scroll"></div>
+      <div class="section-title">CÓDIGOS POR DOCUMENTO</div>
+      <div id="chart-doccode" class="table-scroll"></div>
+    </div>
   </section>
 
   <!-- RELACIONES (FR-038/039) -->
@@ -154,7 +178,7 @@
   <div class="nube-title">CODIFICAR SELECCIÓN</div>
   <select id="nube-domain" title="Dominio (teclas 1–9)"></select>
   <input type="text" id="nube-name" placeholder="Nombre del código…" maxlength="200" autocomplete="off">
-  <div class="nube-hint">ENTER guarda · ESC cancela · 1–9 dominio</div>
+  <div class="nube-hint">↵ guarda · ⌘↵ repite último código · ESC · 1–9 dominio</div>
 </div>
 
 <!-- Barra de música de foco (FR-040): pistas locales del investigador -->

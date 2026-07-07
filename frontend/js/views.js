@@ -32,6 +32,33 @@ const Views = {
     document.getElementById("lit-query").addEventListener("keydown", (e) => {
       if (e.key === "Enter") this._searchLiterature();
     });
+
+    // Modo inmersión (FR-044): solo el Canvas, para leer sin ruido
+    document.getElementById("btn-immersion").addEventListener("click", () => {
+      document.body.classList.toggle("immersion");
+    });
+
+    // Teclas globales: ⌘F busca en el corpus; Esc sale de inmersión
+    document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+        e.preventDefault();
+        document.body.classList.remove("immersion");
+        this.show("pentagrama");
+        document.getElementById("search-input").focus();
+      }
+      if (e.key === "Escape" && document.body.classList.contains("immersion")
+          && document.getElementById("nube").classList.contains("hidden")) {
+        document.body.classList.remove("immersion");
+      }
+    });
+  },
+
+  /* Indicador de autoguardado (FR-047): pulso tras cada sincronización */
+  pulseSaved() {
+    const dot = document.getElementById("save-dot");
+    dot.classList.remove("pulse");
+    void dot.offsetWidth; // reiniciar la animación
+    dot.classList.add("pulse");
   },
 
   show(view) {
@@ -166,6 +193,55 @@ const Views = {
       .sort((a, b) => b.value - a.value)
       .slice(0, 20);
     Charts.hbar(document.getElementById("chart-bars"), barData);
+
+    this._renderCooccurrence(codes);
+  },
+
+  /* Co-ocurrencia (FR-043): dos códigos co-ocurren cuando sus citas se solapan
+     en el mismo documento. Matrices código×código y documento×código. */
+  _renderCooccurrence(codes) {
+    const section = document.getElementById("cooc-section");
+    const anchored = codes.filter(c => c.doc_id !== null);
+    const counts = new Map();
+    for (const code of anchored) counts.set(code.name, (counts.get(code.name) || 0) + 1);
+    const names = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([name]) => name);
+
+    if (names.length < 2) {
+      section.classList.add("hidden");
+      return;
+    }
+    section.classList.remove("hidden");
+
+    const index = new Map(names.map((n, i) => [n, i]));
+    const matrix = names.map(() => names.map(() => 0));
+    for (let a = 0; a < anchored.length; a++) {
+      for (let b = a + 1; b < anchored.length; b++) {
+        const A = anchored[a], B = anchored[b];
+        if (A.doc_id !== B.doc_id || A.name === B.name) continue;
+        if (A.start < B.end && B.start < A.end) { // solapamiento de rangos
+          const i = index.get(A.name), j = index.get(B.name);
+          if (i === undefined || j === undefined) continue;
+          matrix[i][j]++;
+          matrix[j][i]++;
+        }
+      }
+    }
+    Charts.heatmap(document.getElementById("chart-cooc"), names, names, matrix);
+
+    // Documento × código
+    const docs = State.project.documents;
+    const docMatrix = docs.map(doc =>
+      names.map(name =>
+        anchored.filter(c => c.doc_id === doc.id && c.name === name).length
+      )
+    );
+    Charts.heatmap(
+      document.getElementById("chart-doccode"),
+      docs.map(d => d.filename), names, docMatrix
+    );
   },
 
   // ---------- NLP (FR-017/018/034) ----------

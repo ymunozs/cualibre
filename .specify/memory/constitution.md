@@ -140,7 +140,10 @@ confianza del investigador en cada iteración.
   (jerarquía/asociación/causalidad/contradicción con organizador y árbol), exportación
   CSV UTF-8, búsqueda de literatura OpenAlex, barra de música de foco con las pistas
   locales del investigador (Claude FM retirado por decisión del investigador el
-  2026-07-06: embedding restringido).
+  2026-07-06: embedding restringido), búsqueda en el corpus (⌘F), filtro de resaltados
+  por dominio con lectura limpia, matrices de co-ocurrencia (código×código y
+  documento×código), modo inmersión, posición de lectura persistente, repetición de la
+  última codificación (⌘↵) e indicador de autoguardado.
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -165,9 +168,10 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.2.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
-<!-- 1.2.0: inventario ampliado con la barra de música de foco (v1.1 de la app),
-solicitada por el investigador el 2026-07-06. -->
+**Version**: 1.3.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
+<!-- 1.2.0: inventario ampliado con la barra de música de foco (v1.1 de la app).
+1.3.0: inventario ampliado con co-ocurrencia y mejoras de experiencia de lectura
+(v1.2 de la app), solicitadas por el investigador el 2026-07-06. -->
 <!-- 1.1.0: inventario del Principio I ampliado tras el cierre de v1 (pestañas de
 documentos, guardado explícito, arrastre a códigos, relaciones entre códigos),
 aprobado por el investigador en sesión del 2026-07-06. -->
