@@ -19,6 +19,12 @@ const Views = {
     document.getElementById("btn-rename-project").addEventListener("click", () => this._renameProject());
     document.getElementById("btn-save-project").addEventListener("click", () => this._saveProject());
 
+    // Manual en la app (FR-052)
+    document.getElementById("btn-manual").addEventListener("click", () => this._openManual());
+    document.getElementById("manual-close").addEventListener("click", () => {
+      document.getElementById("manual-dialog").close();
+    });
+
     // NLP
     document.getElementById("nlp-lang").addEventListener("change", () => this.renderNlp());
     const minLen = document.getElementById("nlp-minlen");
@@ -90,6 +96,21 @@ const Views = {
         this._undoLastCode();
       }
     });
+  },
+
+  _manualLoaded: false,
+  async _openManual() {
+    const dialog = document.getElementById("manual-dialog");
+    dialog.showModal();
+    if (!this._manualLoaded) {
+      try {
+        const { html } = await API._fetch("/api/manual");
+        document.getElementById("manual-body").innerHTML = html;
+        this._manualLoaded = true;
+      } catch (error) {
+        document.getElementById("manual-body").textContent = error.message;
+      }
+    }
   },
 
   async _undoLastCode() {

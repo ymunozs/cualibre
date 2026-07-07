@@ -330,6 +330,18 @@ def serve_music(filename: str) -> FileResponse:
     return FileResponse(path)
 
 
+# ----- Manual (FR-052) -----
+
+@app.get("/api/manual")
+def get_manual() -> dict:
+    from .manual import manual_html
+
+    try:
+        return {"html": manual_html()}
+    except FileNotFoundError:
+        raise HTTPException(404, "MANUAL.md no encontrado")
+
+
 # ----- SPA -----
 
 @app.get("/", include_in_schema=False)

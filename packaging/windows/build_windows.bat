@@ -11,6 +11,7 @@ python -m PyInstaller --noconfirm --clean ^
   --name "CUA-LIBRE Studio" ^
   --icon packaging\cualibre.ico ^
   --add-data "frontend;frontend" ^
+  --add-data "MANUAL.md;." ^
   run.py || goto :error
 
 echo === Inno Setup ===

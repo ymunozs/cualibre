@@ -256,3 +256,11 @@ def test_nlp_exclusions_persist_and_apply(client):
     assert data["exclusions"] == ["Entrevistado", "dice"]
     # persistido en el proyecto
     assert client.get("/api/project").json()["nlp_exclusions"] == ["Entrevistado", "dice"]
+
+
+def test_manual_endpoint(client):
+    r = client.get("/api/manual")
+    assert r.status_code == 200
+    html = r.json()["html"]
+    assert "<h1>" in html and "Manual de uso" in html
+    assert "<table" in html and "Nube Negra" in html

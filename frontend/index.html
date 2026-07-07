@@ -17,6 +17,7 @@
     <button id="btn-rename-project" class="btn btn-small" title="Renombrar proyecto">✎ RENOMBRAR</button>
     <button id="btn-save-project" class="btn btn-small btn-save" title="Guardar proyecto ahora">💾 GUARDAR</button>
     <span id="save-dot" title="Se enciende con cada guardado automático"></span>
+    <button id="btn-manual" class="btn btn-small" title="Manual de uso y atajos">❓ MANUAL</button>
   </div>
 </header>
 
@@ -201,6 +202,14 @@
 <audio id="mus-audio"></audio>
 
 <div id="toast" class="hidden"></div>
+
+<dialog id="manual-dialog">
+  <div id="manual-head">
+    <span class="nube-title" style="color:var(--accent)">MANUAL DE CUA-LIBRE</span>
+    <button id="manual-close" class="btn btn-small">✕ CERRAR</button>
+  </div>
+  <div id="manual-body">Cargando…</div>
+</dialog>
 
 <dialog id="confirm-dialog">
   <p id="confirm-message"></p>

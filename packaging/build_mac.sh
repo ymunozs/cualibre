@@ -12,6 +12,7 @@ uv run pyinstaller --noconfirm --clean --windowed \
   --name "$APP_NAME" \
   --icon packaging/cualibre.icns \
   --add-data "frontend:frontend" \
+  --add-data "MANUAL.md:." \
   --osx-bundle-identifier cl.cualibre.studio \
   run.py
 
