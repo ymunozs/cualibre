@@ -10,17 +10,17 @@ on:
     tags: ["v*"]
 
 jobs:
-  # Dos runners con arquitectura NATIVA distinta: macos-13 es el último
-  # runner hosted de GitHub sobre Intel; macos-14 corre en Apple Silicon.
-  # PyInstaller empaqueta las wheels ya instaladas (de un solo arco), así
-  # que un runner arm64 SOLO puede producir un binario arm64 y viceversa
-  # — no hay universal2 posible sin fusionar dos builds a mano. Por eso se
-  # construyen ambos por separado y se publican como DMG distintos.
+  # Solo Apple Silicon (macos-14) queda automático: se probó (v1.7.3,
+  # 2026-07-07) que el pool hosted de GitHub para macos-13 (Intel) puede
+  # quedar sin capacidad disponible por horas, atascando este job y con
+  # él el "release" completo (needs: [mac, windows] espera TODAS las
+  # instancias del matrix). El DMG Intel se sigue construyendo — pero
+  # localmente en una Mac Intel real con packaging/build_mac.sh — y se
+  # sube a mano con `gh release upload` junto a los artefactos de este
+  # workflow. Si GitHub restaura capacidad estable de macos-13, se puede
+  # volver a añadir aquí como segunda entrada del matrix.
   mac:
-    strategy:
-      matrix:
-        runner: [macos-13, macos-14]
-    runs-on: ${{ matrix.runner }}
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -30,7 +30,7 @@ jobs:
           ./packaging/build_mac.sh "${GITHUB_REF_NAME#v}"
       - uses: actions/upload-artifact@v4
         with:
-          name: CUA-LIBRE-Studio-mac-${{ matrix.runner }}
+          name: CUA-LIBRE-Studio-mac-applesilicon
           path: dist/*.dmg
 
   windows:
