@@ -308,6 +308,23 @@ def nlp(lang: str = "es", min_len: int = 4, top: int = 50, pos: str = "all") -> 
     return {"words": words, "exclusions": project.nlp_exclusions}
 
 
+@app.get("/api/kwic")
+def kwic(q: str, lang: str = "es", pos: str = "all", window: int = 60) -> dict:
+    """Concordancias (KWIC): todas las ocurrencias de una palabra en contexto (FR-063)."""
+    if not q.strip():
+        raise HTTPException(422, "Debes indicar una palabra para buscar concordancias")
+    if lang not in ("es", "en"):
+        raise HTTPException(422, "Idioma no soportado: usa 'es' o 'en'")
+    if pos not in ("all", "verb", "noun", "adj"):
+        raise HTTPException(422, "Filtro gramatical inválido: usa all, verb, noun o adj")
+    window = max(20, min(160, window))
+    project = storage.get_active_project()
+    from .nlp import kwic_occurrences
+
+    occurrences = kwic_occurrences(project.documents, q, lang=lang, pos=pos, window=window)
+    return {"query": q, "count": len(occurrences), "occurrences": occurrences}
+
+
 class ExclusionsPayload(BaseModel):
     words: list[str]
 

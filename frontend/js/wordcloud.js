@@ -6,8 +6,10 @@
 
 const WordCloud = {
   TEXT_COLORS: ["#FF3300", "#0066FF", "#FF0066", "#6600CC", "#CC0000", "#333333", "#0099CC"],
+  onWordClick: null, // asignado por Views: abre las concordancias (FR-063)
 
   render(canvas, words) {
+    const placedWords = []; // {x, y, w, h, word} — para el hit-test del clic
     const dpr = window.devicePixelRatio || 1;
     const cssWidth = canvas.clientWidth || 800;
     const cssHeight = 340;
@@ -16,6 +18,8 @@ const WordCloud = {
     const ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, cssWidth, cssHeight);
+    canvas.onclick = null;
+    canvas.style.cursor = "default";
 
     if (!words.length) return;
 
@@ -58,9 +62,21 @@ const WordCloud = {
       if (!position) return; // sin hueco: la palabra se omite
 
       placed.push(position);
+      placedWords.push({ ...position, word: word.word });
       ctx.fillStyle = this.TEXT_COLORS[index % this.TEXT_COLORS.length];
       ctx.textBaseline = "top";
       ctx.fillText(word.word, position.x, position.y);
     });
+
+    if (placedWords.length && this.onWordClick) {
+      canvas.style.cursor = "pointer";
+      canvas.onclick = (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const hit = placedWords.find(p => x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h);
+        if (hit) this.onWordClick(hit.word);
+      };
+    }
   },
 };

@@ -83,6 +83,11 @@ Lista con el número de códigos de cada documento. **🗑** elimina un document
 - **Foco gramatical**: cuenta **todas las palabras**, **solo verbos**, **solo sustantivos** o **solo adjetivos**; al filtrar, las conjugaciones se agrupan bajo su lema (*cantó* y *cantaba* cuentan como *cantar*). Funciona sin internet.
 - **Palabras a omitir**: escribe términos separados por coma y presiona **＋ OMITIR** — se **suman** a la lista vigente (chips bajo el campo; ✕ quita una). Ideal para marcas de transcripción como `Entrevistado`. Se guardan por proyecto.
 - Tres vistas simultáneas: **nube de conceptos** (exportable con **⬇ PNG**), barras top y tabla de conteo exacto.
+- **Concordancias (KWIC)**: haz clic en cualquier palabra —de la nube, las barras o la
+  tabla— para ver **todas sus ocurrencias en el corpus**, cada una con el texto que la
+  rodea. Con foco gramatical activo, busca por su **lema**: al pedir "cantar" también
+  encuentra "cantó" y "cantaba", mostrando la forma real en el texto. Cada ocurrencia
+  tiene un botón **«IR AL CANVAS →»** que salta directo a leerla en su contexto completo.
 
 ## 8. ◫ Analytics
 

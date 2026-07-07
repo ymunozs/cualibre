@@ -68,8 +68,9 @@ const Charts = {
     container.appendChild(legend);
   },
 
-  /* Barras horizontales. data: [{label, value, color, sublabel?}] */
-  hbar(container, data) {
+  /* Barras horizontales. data: [{label, value, color, sublabel?}]
+     onClick(datum) opcional: hace la fila clicable (usado por KWIC, FR-063). */
+  hbar(container, data, onClick) {
     container.textContent = "";
     if (!data.length) return;
 
@@ -81,13 +82,19 @@ const Charts = {
 
     data.forEach((d, i) => {
       const y = i * rowH;
+      const row = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      if (onClick) {
+        row.style.cursor = "pointer";
+        row.addEventListener("click", () => onClick(d));
+      }
+
       // Etiqueta en tinta sobre la barra (identidad nunca solo por color)
       const label = this._el("text", {
         x: 0, y: y + labelH - 4, "font-size": 11,
         "font-family": "IBM Plex Mono, monospace", fill: "currentColor",
       });
       label.textContent = d.sublabel ? `${d.label} · ${d.sublabel}` : d.label;
-      svg.appendChild(label);
+      row.appendChild(label);
 
       const barW = Math.max(3, (d.value / max) * barArea);
       const bar = this._el("rect", {
@@ -95,9 +102,9 @@ const Charts = {
         fill: d.color, stroke: "#000", "stroke-width": 2,
       });
       const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-      title.textContent = `${d.label}: ${d.value}`;
+      title.textContent = onClick ? `${d.label}: ${d.value} (clic para ver concordancias)` : `${d.label}: ${d.value}`;
       bar.appendChild(title);
-      svg.appendChild(bar);
+      row.appendChild(bar);
 
       const value = this._el("text", {
         x: barW + 8, y: y + labelH + (rowH - labelH - 6) / 2 + 4,
@@ -105,7 +112,9 @@ const Charts = {
         "font-family": "IBM Plex Mono, monospace", fill: "currentColor",
       });
       value.textContent = d.value;
-      svg.appendChild(value);
+      row.appendChild(value);
+
+      svg.appendChild(row);
     });
 
     container.appendChild(svg);

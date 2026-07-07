@@ -116,6 +116,7 @@
     <div class="section-title">NUBE DE CONCEPTOS
       <button id="btn-export-cloud" class="btn-export-mini" title="Descargar la nube como imagen PNG">⬇ PNG</button>
     </div>
+    <p class="empty-note" style="padding:0 0 6px">Clic en una palabra (aquí, en las barras o en la tabla) → concordancias en contexto.</p>
     <canvas id="wordcloud" height="340"></canvas>
     <div id="nlp-bottom">
       <div>
@@ -261,6 +262,14 @@
     <button id="btn-session-skip" class="btn">OMITIR</button>
     <button id="btn-session-start" class="btn btn-danger">◷ EMPEZAR</button>
   </div>
+</dialog>
+
+<dialog id="kwic-dialog">
+  <div id="kwic-head">
+    <span class="nube-title" id="kwic-title" style="color:var(--accent)">CONCORDANCIAS</span>
+    <button id="kwic-close" class="btn btn-small">✕</button>
+  </div>
+  <div id="kwic-body"></div>
 </dialog>
 
 <dialog id="quotes-dialog">

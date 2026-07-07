@@ -274,6 +274,31 @@ def test_nlp_pos_endpoint(client):
     assert client.get("/api/nlp?pos=adverbio").status_code == 422
 
 
+def test_kwic_endpoint(client):
+    upload_txt(client, text="La escuela rural fue mi hogar. Volví a la escuela después.")
+    r = client.get("/api/kwic?q=escuela&pos=all")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["count"] == 2 and len(data["occurrences"]) == 2
+    occ = data["occurrences"][0]
+    assert occ["match"] == "escuela" and occ["filename"] == "entrevista.txt"
+    assert "before" in occ and "after" in occ
+
+
+def test_kwic_pos_filter(client):
+    upload_txt(client, text="El niño cantó en la escuela. Los niños cantaban felices.")
+    r = client.get("/api/kwic?q=cantar&lang=es&pos=verb")
+    data = r.json()
+    matches = sorted(o["match"] for o in data["occurrences"])
+    assert matches == ["cantaban", "cantó"]
+
+
+def test_kwic_validations(client):
+    assert client.get("/api/kwic?q=").status_code == 422
+    assert client.get("/api/kwic?q=x&lang=fr").status_code == 422
+    assert client.get("/api/kwic?q=x&pos=adverbio").status_code == 422
+
+
 def test_example_project(client):
     r = client.post("/api/projects/example")
     assert r.status_code == 201

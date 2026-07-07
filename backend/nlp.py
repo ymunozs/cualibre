@@ -73,6 +73,59 @@ def _get_model(lang: str):
     return _NLP_CACHE[lang]
 
 
+def _kwic_entry(doc, start: int, end: int, window: int) -> dict:
+    text = doc.text
+    before = text[max(0, start - window):start].replace("\n", " ")
+    after = text[end:end + window].replace("\n", " ")
+    return {
+        "doc_id": doc.id,
+        "filename": doc.filename,
+        "start": start,
+        "end": end,
+        "before": before,
+        "match": text[start:end],
+        "after": after,
+    }
+
+
+def kwic_occurrences(
+    documents, query: str, lang: str = "es", pos: str = "all",
+    window: int = 60, limit: int = 300,
+) -> list[dict]:
+    """Concordancias (Keyword In Context) de una palabra o lema en el corpus.
+
+    En modo 'all' busca coincidencias literales (insensible a mayúsculas).
+    En modo verb/noun/adj busca por LEMA (así "cantar" también encuentra
+    "cantó" y "cantaba" en su forma real, con offsets exactos para saltar
+    al Canvas — FR-063)."""
+    query_norm = query.strip().lower()
+    if not query_norm:
+        return []
+    results: list[dict] = []
+    if pos == "all":
+        pattern = re.compile(r"\b" + re.escape(query_norm) + r"\b", re.IGNORECASE)
+        for doc in documents:
+            for m in pattern.finditer(doc.text):
+                if len(results) >= limit:
+                    return results
+                results.append(_kwic_entry(doc, m.start(), m.end(), window))
+    else:
+        wanted = POS_MAP.get(pos, set())
+        model = _get_model(lang)
+        for doc in documents:
+            if len(results) >= limit:
+                return results
+            for token in model(doc.text):
+                if len(results) >= limit:
+                    break
+                if not token.is_alpha or token.pos_ not in wanted:
+                    continue
+                if token.lemma_.lower() != query_norm and token.text.lower() != query_norm:
+                    continue
+                results.append(_kwic_entry(doc, token.idx, token.idx + len(token.text), window))
+    return results
+
+
 def pos_frequencies(
     text: str, lang: str, pos: str, min_len: int = 4, top: int = 50,
     exclusions: set[str] | None = None,

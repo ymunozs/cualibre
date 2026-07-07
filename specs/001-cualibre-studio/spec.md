@@ -451,6 +451,12 @@ que se listan resultados con título, año, citas y DOI clicable.
   completa como máximo cada 10 minutos de trabajo, más una copia forzada en cada guardado
   explícito (💾 GUARDAR); MUST permitir listarlos (🕐 HISTORIAL) y restaurar cualquiera
   con confirmación explícita, respaldando primero el estado actual antes de reemplazarlo.
+- **FR-063**: Toda palabra mostrada en la vista NLP (nube, barras, tabla) MUST ser
+  clicable y abrir sus concordancias (KWIC): todas las ocurrencias en el corpus con
+  contexto a ambos lados, con salto directo a cada una en el Canvas. En modo "todas las
+  palabras" busca coincidencias literales; con foco gramatical (verbo/sustantivo/
+  adjetivo) busca por lema, mostrando la forma real encontrada (p. ej. "cantar" también
+  encuentra "cantó" y "cantaba").
 
 **Persistencia**
 

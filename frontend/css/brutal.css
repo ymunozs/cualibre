@@ -647,6 +647,17 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 /* ---------- Recuperación de citas (FR-055) ---------- */
 
 #quotes-dialog { max-width: 640px; width: 88vw; max-height: 80vh; overflow-y: auto; }
+
+/* Concordancias / KWIC (FR-063) */
+#kwic-dialog { max-width: 680px; width: 88vw; max-height: 80vh; overflow-y: auto; }
+#kwic-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.kwic-line { border-bottom: 1px dashed #bbb; padding: 8px 0; }
+.kwic-line:last-child { border-bottom: none; }
+.kwic-text { font-family: var(--serif); font-size: 14px; line-height: 1.5; margin-bottom: 4px; }
+.kwic-text mark { background: var(--accent); color: #fff; padding: 0 2px; border-radius: 2px; }
+.kwic-line .btn { width: auto; margin-top: 4px; }
+.clickable-word { cursor: pointer; text-decoration: underline dotted; }
+.clickable-word:hover { color: var(--accent); }
 #quotes-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .quote-item { border-bottom: 1px dashed #bbb; padding: 10px 0; }
 .quote-item:last-child { border-bottom: none; }
@@ -696,6 +707,7 @@ body.dark .code-memo { color: #ccc; }
 body.dark .plain-list li { border-bottom-color: #444; }
 body.dark .code-item { border-bottom-color: #444; }
 body.dark .quote-item { border-bottom-color: #444; }
+body.dark .kwic-line { border-bottom-color: #444; }
 body.dark .section-title { color: #E8E8E2; }
 body.dark .empty-note { color: #888; }
 /* El organizador y la nube usan tinta negra: quedan como tarjetas claras */

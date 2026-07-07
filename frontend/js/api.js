@@ -73,6 +73,8 @@ const API = {
   sentiment: () => API._fetch("/api/sentiment"),
   nlp: (lang, minLen, pos = "all") =>
     API._fetch(`/api/nlp?lang=${lang}&min_len=${minLen}&top=60&pos=${pos}`),
+  kwic: (q, lang = "es", pos = "all") =>
+    API._fetch(`/api/kwic?q=${encodeURIComponent(q)}&lang=${lang}&pos=${pos}`),
   setNlpExclusions: (words) => API._json("PUT", "/api/nlp/exclusions", { words }),
   literature: (q) => API._fetch(`/api/literature?q=${encodeURIComponent(q)}`),
 };

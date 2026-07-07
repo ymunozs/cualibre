@@ -40,6 +40,12 @@ const Views = {
       document.getElementById("history-dialog").close();
     });
 
+    // Concordancias / KWIC (FR-063)
+    WordCloud.onWordClick = (word) => this.openKwic(word);
+    document.getElementById("kwic-close").addEventListener("click", () => {
+      document.getElementById("kwic-dialog").close();
+    });
+
     // NLP
     document.getElementById("nlp-lang").addEventListener("change", () => this.renderNlp());
     const minLen = document.getElementById("nlp-minlen");
@@ -532,17 +538,82 @@ const Views = {
         return;
       }
     }
-    // Tres visualizaciones simultáneas y coherentes (FR-018)
+    // Tres visualizaciones simultáneas y coherentes (FR-018), todas clicables → KWIC
     WordCloud.render(document.getElementById("wordcloud"), words);
     Charts.hbar(
       document.getElementById("nlp-bars"),
-      words.slice(0, 15).map(w => ({ label: w.word, value: w.count, color: "#FF3300" }))
+      words.slice(0, 15).map(w => ({ label: w.word, value: w.count, color: "#FF3300" })),
+      (d) => this.openKwic(d.label)
     );
     Charts.table(
       document.getElementById("nlp-table"),
       ["#", "Palabra", "Frecuencia"],
       words.map((w, i) => [i + 1, w.word, w.count])
     );
+    const table = document.querySelector("#nlp-table table");
+    if (table) {
+      [...table.tBodies[0].rows].forEach((row, i) => {
+        const cell = row.cells[1]; // columna "Palabra"
+        cell.classList.add("clickable-word");
+        cell.title = "Ver concordancias";
+        cell.addEventListener("click", () => this.openKwic(words[i].word));
+      });
+    }
+  },
+
+  /* Concordancias (KWIC): todas las ocurrencias de una palabra en contexto (FR-063) */
+  async openKwic(word) {
+    const dialog = document.getElementById("kwic-dialog");
+    const body = document.getElementById("kwic-body");
+    document.getElementById("kwic-title").textContent = `CONCORDANCIAS DE «${word.toUpperCase()}»`;
+    body.textContent = "Buscando…";
+    dialog.showModal();
+    try {
+      const lang = document.getElementById("nlp-lang").value;
+      const pos = document.getElementById("nlp-pos").value;
+      const { count, occurrences } = await API.kwic(word, lang, pos);
+      body.textContent = "";
+      if (!count) {
+        const p = document.createElement("p");
+        p.className = "empty-note";
+        p.textContent = "Sin ocurrencias en el corpus.";
+        body.appendChild(p);
+        return;
+      }
+      const summary = document.createElement("p");
+      summary.className = "empty-note";
+      summary.style.paddingTop = "0";
+      summary.textContent = `${count} ocurrencia(s)${count >= 300 ? " (mostrando las primeras 300)" : ""}.`;
+      body.appendChild(summary);
+      for (const occ of occurrences) {
+        const line = document.createElement("div");
+        line.className = "kwic-line";
+        const text = document.createElement("div");
+        text.className = "kwic-text";
+        text.innerHTML = `…${this._escapeHtml(occ.before)}<mark>${this._escapeHtml(occ.match)}</mark>${this._escapeHtml(occ.after)}…`;
+        const meta = document.createElement("div");
+        meta.className = "quote-meta";
+        meta.textContent = occ.filename;
+        const go = document.createElement("button");
+        go.className = "btn btn-small";
+        go.textContent = "IR AL CANVAS →";
+        go.addEventListener("click", () => {
+          dialog.close();
+          this.show("pentagrama");
+          Canvas.goToQuote({ doc_id: occ.doc_id, start: occ.start, end: occ.end });
+        });
+        line.append(text, meta, go);
+        body.appendChild(line);
+      }
+    } catch (error) {
+      body.textContent = error.message;
+    }
+  },
+
+  _escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
   },
 
   _exclusions: [],
