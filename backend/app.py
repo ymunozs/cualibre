@@ -283,6 +283,32 @@ def literature(q: str) -> dict:
         raise HTTPException(502, str(exc)) from exc
 
 
+# ----- Música de foco (FR-040) -----
+
+MUSIC_EXTENSIONS = {".mp3", ".m4a", ".aac", ".ogg", ".wav", ".flac"}
+
+
+@app.get("/api/music")
+def list_music() -> dict:
+    folder = storage.music_dir()
+    tracks = sorted(
+        f.name for f in folder.iterdir()
+        if f.is_file() and f.suffix.lower() in MUSIC_EXTENSIONS
+    )
+    return {"folder": str(folder), "tracks": tracks}
+
+
+@app.get("/api/music/{filename}")
+def serve_music(filename: str) -> FileResponse:
+    # Sin traversal: el nombre debe ser exactamente una entrada de la carpeta
+    if filename != Path(filename).name:
+        raise HTTPException(404, "Pista no encontrada")
+    path = storage.music_dir() / filename
+    if not path.is_file() or path.suffix.lower() not in MUSIC_EXTENSIONS:
+        raise HTTPException(404, "Pista no encontrada")
+    return FileResponse(path)
+
+
 # ----- SPA -----
 
 @app.get("/", include_in_schema=False)

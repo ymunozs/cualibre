@@ -38,6 +38,7 @@ const State = {
   Paleta.init();
   Relations.init();
   Views.init();
+  Musica.init();
   Nube.populateDomains();
   Paleta.populateDomains();
   await State.reload();

@@ -362,6 +362,15 @@ que se listan resultados con título, año, citas y DOI clicable.
   (grafo con nodos coloreados por dominio y aristas distinguibles por tipo sin depender
   solo del color) y como árbol construido desde las relaciones de jerarquía.
 
+**Música de foco (v1.1)**
+
+- **FR-040**: Una barra delgada fija al pie MUST ofrecer música de foco con dos fuentes:
+  (a) pistas locales del investigador desde la carpeta `musica/` del directorio de datos
+  (offline, fuente por defecto, con reproducción continua, siguiente y volumen) y
+  (b) Claude FM, el stream lo-fi de Anthropic en YouTube (online, opcional). La música
+  nunca MUST bloquear ni interferir el flujo de análisis; si no hay pistas, la barra
+  indica dónde depositarlas.
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del

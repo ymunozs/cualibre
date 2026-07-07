@@ -62,6 +62,9 @@ const API = {
   createRelation: (payload) => API._json("POST", "/api/relations", payload),
   deleteRelation: (id) => API._fetch(`/api/relations/${id}`, { method: "DELETE" }),
 
+  // Música de foco (FR-040)
+  music: () => API._fetch("/api/music"),
+
   // Análisis
   nlp: (lang, minLen) => API._fetch(`/api/nlp?lang=${lang}&min_len=${minLen}&top=60`),
   literature: (q) => API._fetch(`/api/literature?q=${encodeURIComponent(q)}`),

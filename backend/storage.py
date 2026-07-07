@@ -38,6 +38,13 @@ def projects_dir() -> Path:
     return d
 
 
+def music_dir() -> Path:
+    """Carpeta donde el investigador deposita su música de foco (FR-040)."""
+    d = base_dir() / "musica"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
 def _config_path() -> Path:
     return base_dir() / "config.json"
 

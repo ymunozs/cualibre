@@ -138,7 +138,8 @@ confianza del investigador en cada iteración.
   palabras + barras + tabla de conteo, con filtro de idioma y longitud mínima),
   Analytics (distribución por dominios + densidad de códigos), relaciones entre códigos
   (jerarquía/asociación/causalidad/contradicción con organizador y árbol), exportación
-  CSV UTF-8, búsqueda de literatura OpenAlex.
+  CSV UTF-8, búsqueda de literatura OpenAlex, barra de música de foco (pistas locales
+  del investigador + Claude FM opcional).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -163,7 +164,9 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
+**Version**: 1.2.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
+<!-- 1.2.0: inventario ampliado con la barra de música de foco (v1.1 de la app),
+solicitada por el investigador el 2026-07-06. -->
 <!-- 1.1.0: inventario del Principio I ampliado tras el cierre de v1 (pestañas de
 documentos, guardado explícito, arrastre a códigos, relaciones entre códigos),
 aprobado por el investigador en sesión del 2026-07-06. -->
