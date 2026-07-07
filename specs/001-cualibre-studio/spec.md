@@ -403,6 +403,20 @@ que se listan resultados con título, año, citas y DOI clicable.
   Guardar que lo abre en un diálogo (MANUAL.md convertido a HTML por el backend y
   empaquetado en los instaladores); Esc o ✕ lo cierran.
 
+**Cierre v1.4**
+
+- **FR-053**: Al iniciar, un diálogo omitible pregunta la meta de la sesión y el bloque
+  de foco (15/25/50/90 min); un indicador discreto muestra tiempo restante y códigos de
+  la sesión; al terminar, aviso suave sin alarmas.
+- **FR-054**: Modo oscuro conmutable (◐) y persistente; los dominios conservan sus
+  colores; organizador y nube quedan como tarjetas claras (coherentes con su export).
+- **FR-055**: Clic en el nombre de un código MUST mostrar todas sus citas (dominio,
+  documento, fecha, memo) con salto directo a cada una en el Canvas.
+- **FR-056**: Tipografía del corpus conmutable (Aa): serif ↔ máquina de escribir
+  (Courier), persistente.
+- **FR-057**: Numeración de líneas por documento (№, activada por defecto): los números
+  viven fuera del flujo de texto (no se seleccionan ni copian, no alteran offsets).
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del

@@ -77,6 +77,25 @@ const Views = {
       document.body.classList.toggle("immersion");
     });
 
+    // Recuperación de citas: cerrar diálogo
+    document.getElementById("quotes-close").addEventListener("click", () => {
+      document.getElementById("quotes-dialog").close();
+    });
+
+    // Preferencias de lectura persistentes (FR-054/056/057)
+    const prefToggles = [
+      ["btn-dark", "dark", "cua-dark"],
+      ["btn-font", "canvas-mono", "cua-font-mono"],
+      ["btn-linenum", "no-linenum", "cua-no-linenum"],
+    ];
+    for (const [btnId, cls, key] of prefToggles) {
+      if (localStorage.getItem(key) === "1") document.body.classList.add(cls);
+      document.getElementById(btnId).addEventListener("click", () => {
+        document.body.classList.toggle(cls);
+        localStorage.setItem(key, document.body.classList.contains(cls) ? "1" : "0");
+      });
+    }
+
     // Teclas globales: ⌘F busca en el corpus; Esc sale de inmersión
     document.addEventListener("keydown", (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "f") {
@@ -96,6 +115,54 @@ const Views = {
         this._undoLastCode();
       }
     });
+  },
+
+  /* Recuperación de citas por código (FR-055): todas las citas de un nombre */
+  showQuotes(codeName) {
+    const dialog = document.getElementById("quotes-dialog");
+    const body = document.getElementById("quotes-body");
+    const instances = State.project.codes.filter(c => c.name === codeName);
+    const docNames = {};
+    for (const d of State.project.documents) docNames[d.id] = d.filename;
+    document.getElementById("quotes-title").textContent =
+      `CITAS DE «${codeName.toUpperCase()}» (${instances.length})`;
+    body.textContent = "";
+    for (const code of instances) {
+      const item = document.createElement("div");
+      item.className = "quote-item";
+      const head = document.createElement("div");
+      head.className = "quote-meta";
+      const chip = document.createElement("span");
+      chip.className = "dom-chip";
+      chip.style.backgroundColor = State.domains[code.domain] || "#999";
+      head.append(chip, document.createTextNode(
+        ` ${code.domain} · ${code.doc_id ? docNames[code.doc_id] || "?" : "Manual"} · ${code.created_at.replace("T", " ")}`
+      ));
+      item.appendChild(head);
+      const quote = document.createElement("div");
+      quote.className = "quote-text";
+      quote.textContent = code.quote ? `“${code.quote}”` : "(código manual, sin cita)";
+      item.appendChild(quote);
+      if (code.memo) {
+        const memo = document.createElement("div");
+        memo.className = "quote-meta";
+        memo.textContent = `✎ ${code.memo}`;
+        item.appendChild(memo);
+      }
+      if (code.doc_id) {
+        const go = document.createElement("button");
+        go.className = "btn btn-small";
+        go.textContent = "IR AL CANVAS →";
+        go.addEventListener("click", () => {
+          dialog.close();
+          this.show("pentagrama");
+          Canvas.goToQuote(code);
+        });
+        item.appendChild(go);
+      }
+      body.appendChild(item);
+    }
+    dialog.showModal();
   },
 
   _manualLoaded: false,

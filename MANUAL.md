@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v1.3)
+# CUA-LIBRE STUDIO — Manual de uso (v1.4)
 
 Guía completa de comandos y flujos para el análisis cualitativo.
 
@@ -16,6 +16,7 @@ Si la app ya estaba corriendo y la abres de nuevo, simplemente reutiliza la inst
 - **Selector PROYECTO**: cambia entre tus investigaciones; cada proyecto aísla corpus, códigos, memos y relaciones.
 - **+ NUEVO** / **✎ RENOMBRAR**: crear o renombrar el proyecto activo.
 - **💾 GUARDAR**: fuerza un guardado y confirma la hora. El punto a su lado **pulsa en rojo** con cada guardado automático (que ocurre solo, tras cada acción).
+- **❓ MANUAL**: abre este manual dentro de la app. **◐**: alterna modo oscuro/claro.
 - Tus datos viven en `~/Library/Application Support/cualibre/` (Mac) o `%APPDATA%\cualibre\` (Windows). Copiar esa carpeta = respaldo completo.
 
 ## 3. Importar corpus (franja superior)
@@ -59,6 +60,9 @@ El fragmento queda pintado con el color del dominio, el código entra al banco y
 | **⌘F / Ctrl+F** | Buscar texto en el corpus: coincidencias con borde punteado rojo, navegación **‹ ›** con contador; `Esc` en el buscador limpia |
 | Chips **FILTRO DE RESALTADOS** | Apagar/encender los resaltados de cada dominio; **◻ LECTURA LIMPIA** apaga todos (los códigos no se borran, solo se ocultan) |
 | **⛶** (junto a "Canvas de Análisis") | **Modo inmersión**: solo el Canvas, centrado. `Esc` sale |
+| **Aa** | Alterna la tipografía del corpus: serif ↔ máquina de escribir (Courier) |
+| **№** | Muestra/oculta la **numeración de líneas** (los números no se copian al seleccionar) |
+| Clic en el **nombre de un código** (banco) | **Todas sus citas** en un panel, con «IR AL CANVAS →» para saltar a cada una |
 | Scroll | Tu posición de lectura se recuerda por documento, entre sesiones, y no se pierde al codificar |
 
 ## 6. Documentos del corpus (Paleta)
@@ -96,11 +100,18 @@ Tabla completa del banco y **descarga CSV** en UTF-8 con BOM: abre en Excel con 
 
 Búsqueda por conceptos en **OpenAlex** (título, año, citas, enlace DOI). Única función que requiere internet; si no hay conexión, el resto de la app sigue igual.
 
-## 12. ♫ Música de foco (barra inferior)
+## 12. ◷ Sesión de foco
+
+Al abrir la app (o con clic en **◷ sesión** en la barra inferior) puedes fijar una **meta**
+("codificar la entrevista 3") y un bloque de **15/25/50/90 minutos** — u **OMITIR**. El
+indicador muestra el tiempo restante y cuántos códigos llevas en la sesión; al terminar,
+un aviso suave sugiere la pausa (sin alarmas).
+
+## 13. ♫ Música de foco (barra inferior)
 
 Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` junto a tus datos — **clic en el título de la barra** te muestra la ruta exacta. `▶` reproduce en bucle, `⏭` salta de pista, y el volumen se recuerda.
 
-## 13. Tabla rápida de atajos
+## 14. Tabla rápida de atajos
 
 | Atajo | Acción |
 |-------|--------|
@@ -112,7 +123,7 @@ Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` ju
 | `⌘Z` / `Ctrl+Z` | Deshacer última codificación |
 | Arrastrar selección → código del banco | Re-aplicar ese código |
 
-## 14. Solución de problemas
+## 15. Solución de problemas
 
 - **Mac dice que la app no se puede abrir**: la primera vez, clic derecho → Abrir (la app no está firmada con certificado de Apple).
 - **Windows SmartScreen advierte**: "Más información → Ejecutar de todas formas".

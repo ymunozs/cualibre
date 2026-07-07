@@ -40,6 +40,7 @@ const State = {
   Relations.init();
   Views.init();
   Musica.init();
+  Sesion.init();
   Nube.populateDomains();
   Paleta.populateDomains();
   await State.reload();

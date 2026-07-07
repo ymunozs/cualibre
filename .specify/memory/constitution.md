@@ -101,9 +101,12 @@ irreproducible.
 
 La identidad visual es parte del producto y no se negocia por conveniencia técnica:
 
-- Tipografías: Space Grotesk (títulos), IBM Plex Mono (interfaz), serif para el corpus.
+- Tipografías: Space Grotesk (títulos), IBM Plex Mono (interfaz), serif para el corpus
+  (con variante conmutable "máquina de escribir" — Courier — a elección del lector).
 - Negro estructural, fondo claro (#FAFAFA / #FDFDF7), acento #FF3300, bordes sólidos
-  gruesos, sombras duras sin difuminar.
+  gruesos, sombras duras sin difuminar. Variante de lectura autorizada: modo oscuro
+  conmutable (superficies #141412/#1B1B16, tinta clara, mismo acento y paleta de
+  dominios); el organizador y la nube de conceptos permanecen como tarjetas claras.
 - Paleta de 9 colores por dominio de código: Emocional #FF3300, Descriptivo #0066FF,
   In Vivo #FFCC00, Tensión/CHAT #FF0066, Proceso #6600CC, Teórico #00CC66,
   Relacional #0099CC, Crítico #CC0000, Método #333333.
@@ -145,7 +148,9 @@ confianza del investigador en cada iteración.
   documento×código), modo inmersión, posición de lectura persistente, repetición de la
   última codificación (⌘↵), indicador de autoguardado, exclusiones de palabras en NLP
   por proyecto, exportación del organizador (PNG/SVG) y de la nube de conceptos (PNG),
-  deshacer última codificación (⌘Z) y manual de uso (MANUAL.md).
+  deshacer última codificación (⌘Z), manual de uso (MANUAL.md, también dentro de la
+  app), sesión de foco con meta y pomodoro omitible, modo oscuro, recuperación de citas
+  por código, tipografía del corpus conmutable y numeración de líneas.
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -170,7 +175,9 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.4.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-06
+**Version**: 1.5.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-07
+<!-- 1.5.0: Principio VI enmendado por el investigador (modo oscuro y tipografía
+Courier como variantes de lectura autorizadas) + inventario ampliado con v1.4. -->
 <!-- 1.2.0: inventario ampliado con la barra de música de foco (v1.1 de la app).
 1.3.0: inventario ampliado con co-ocurrencia y mejoras de experiencia de lectura
 (v1.2 de la app), solicitadas por el investigador el 2026-07-06. -->

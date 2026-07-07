@@ -128,16 +128,36 @@ const Canvas = {
       bounds.add(Math.min(hit.start, length));
       bounds.add(Math.min(hit.end, length));
     }
+    // Numeración de líneas (FR-057): cada \n es un límite; el texto se agrupa
+    // en divs .line y el número vive en un ::before CSS (fuera de la selección
+    // y del copiado). El \n real queda en un span oculto DENTRO del div para
+    // que Range.toString() siga reproduciendo doc.text exacto (offsets intactos).
+    for (let i = 0; i < length; i++) {
+      if (doc.text[i] === "\n") { bounds.add(i); bounds.add(i + 1); }
+    }
     const points = [...bounds].sort((a, b) => a - b);
 
+    let line = document.createElement("div");
+    line.className = "line";
     for (let i = 0; i < points.length - 1; i++) {
       const start = points[i];
       const end = points[i + 1];
       if (end <= start) continue;
+      const segText = doc.text.slice(start, end);
+      if (segText === "\n") {
+        const nl = document.createElement("span");
+        nl.className = "nl";
+        nl.textContent = "\n";
+        line.appendChild(nl);
+        container.appendChild(line);
+        line = document.createElement("div");
+        line.className = "line";
+        continue;
+      }
       const covering = anchored.filter(c => c.start <= start && c.end >= end);
       const span = document.createElement("span");
       span.className = "seg";
-      span.textContent = doc.text.slice(start, end);
+      span.textContent = segText;
       const hit = hits.find(h => h.start <= start && h.end >= end);
       if (hit) {
         span.classList.add("search-hit");
@@ -154,8 +174,18 @@ const Canvas = {
           .map(c => `[${c.domain}] ${c.name}`)
           .join("\n");
       }
-      container.appendChild(span);
+      line.appendChild(span);
     }
+    container.appendChild(line);
+  },
+
+  /* Ir a una cita concreta (recuperación por código, FR-055) */
+  goToQuote(code) {
+    this.activeDocId = null;
+    this.searchRanges = [{ docId: code.doc_id, start: code.start, end: code.end, idx: 0 }];
+    this.currentHit = 0;
+    this.render();
+    this._scrollToHit();
   },
 
   _contrastText(hex) {

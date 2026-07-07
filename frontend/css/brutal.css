@@ -186,7 +186,29 @@ body {
   user-select: none;
 }
 
-.doc-text { white-space: pre-wrap; word-wrap: break-word; }
+.doc-text { white-space: pre-wrap; word-wrap: break-word; counter-reset: line; padding-left: 48px; }
+
+/* Numeración de líneas (FR-057): en ::before — no se selecciona ni se copia */
+.line { position: relative; min-height: 1.75em; }
+.line::before {
+  counter-increment: line;
+  content: counter(line);
+  position: absolute;
+  left: -48px;
+  width: 38px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #b0b0a8;
+  line-height: 1.75;
+  user-select: none;
+}
+.line .nl { display: none; } /* el \n real, invisible pero presente para los offsets */
+body.no-linenum .doc-text { padding-left: 0; }
+body.no-linenum .line::before { content: none; }
+
+/* Tipografía industrial del corpus (FR-056) */
+body.canvas-mono #canvas { font-family: "Courier New", Courier, monospace; font-size: 16px; }
 
 .doc-text .hl { padding: 1px 2px; border-radius: 2px; cursor: help; }
 
@@ -462,15 +484,18 @@ body {
 
 /* ---------- Modo inmersión (FR-044) ---------- */
 
-#btn-immersion {
+#btn-immersion, #btn-font, #btn-linenum {
   float: right;
   border: 2px solid var(--ink);
   background: #fff;
+  color: var(--ink);
+  font-family: var(--mono);
   font-size: 12px;
   padding: 1px 7px;
   cursor: pointer;
+  margin-left: 6px;
 }
-#btn-immersion:hover { background: var(--accent); color: #fff; }
+#btn-immersion:hover, #btn-font:hover, #btn-linenum:hover { background: var(--accent); color: #fff; }
 
 body.immersion #topbar,
 body.immersion #importador,
@@ -597,6 +622,74 @@ dialog {
 dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 .dialog-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
 .dialog-buttons .btn { width: auto; margin-top: 0; }
+
+/* ---------- Sesión de foco (FR-053) ---------- */
+
+#session-indicator {
+  font-size: 10px;
+  font-weight: 700;
+  color: #aaa;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#session-indicator:hover { color: var(--accent); }
+
+/* ---------- Recuperación de citas (FR-055) ---------- */
+
+#quotes-dialog { max-width: 640px; width: 88vw; max-height: 80vh; overflow-y: auto; }
+#quotes-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.quote-item { border-bottom: 1px dashed #bbb; padding: 10px 0; }
+.quote-item:last-child { border-bottom: none; }
+.quote-text { font-family: var(--serif); font-size: 15px; line-height: 1.5; margin: 6px 0; }
+.quote-meta { font-size: 10px; color: #888; display: flex; align-items: center; gap: 5px; }
+.quote-item .btn { width: auto; margin-top: 4px; }
+
+/* ---------- Modo oscuro (FR-054) — brutalismo nocturno ---------- */
+
+body.dark { background: #141412; color: #E8E8E2; }
+body.dark #topbar { border-bottom-color: #E8E8E2; }
+body.dark .cua-title small { color: #999; }
+body.dark #canvas { background: #1B1B16; color: #E4E2D8; border-color: #E8E8E2; }
+body.dark #canvas-empty { color: #777; }
+body.dark .line::before { color: #55554e; }
+body.dark .panel, body.dark #importador, body.dark .lit-card,
+body.dark #chart-pie, body.dark #chart-bars {
+  background: #1E1E1A; border-color: #E8E8E2; color: #E8E8E2;
+}
+body.dark #importador { box-shadow: 5px 5px 0 var(--accent); }
+body.dark .tab { background: #26261F; border-color: #E8E8E2; color: #E8E8E2; }
+body.dark .tab:hover:not(.active) { background: #333; }
+body.dark .tab.active { background: var(--accent); color: #fff; }
+body.dark .doc-tab { background: #26261F; border-color: #E8E8E2; color: #E8E8E2; }
+body.dark .doc-tab.active { background: #E8E8E2; color: #141412; }
+body.dark .panel select, body.dark .panel input, body.dark .panel textarea,
+body.dark .controls-row select, body.dark .controls-row input {
+  background: #141412; color: #E8E8E2; border-color: #E8E8E2;
+}
+body.dark .btn { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
+body.dark .btn:hover { box-shadow: 3px 3px 0 #E8E8E2; }
+body.dark .btn-accent { background: var(--accent); color: #fff; }
+body.dark .btn-danger { background: #E8E8E2; color: #141412; }
+body.dark .filter-chip, body.dark .btn-export-mini,
+body.dark #btn-immersion, body.dark #btn-font, body.dark #btn-linenum {
+  background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2;
+}
+body.dark .table-scroll { background: #1E1E1A; border-color: #E8E8E2; }
+body.dark .data-table td { border-bottom-color: #333; }
+body.dark .data-table tr:nth-child(even) td { background: #24241E; }
+body.dark .heatmap tbody th { background: #1E1E1A; color: #E8E8E2; border-bottom-color: #333; }
+body.dark dialog { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; box-shadow: 5px 5px 0 #E8E8E2; }
+body.dark .code-quote { color: #aaa; }
+body.dark .code-memo { color: #ccc; }
+body.dark .plain-list li { border-bottom-color: #444; }
+body.dark .code-item { border-bottom-color: #444; }
+body.dark .quote-item { border-bottom-color: #444; }
+body.dark .section-title { color: #E8E8E2; }
+body.dark .empty-note { color: #888; }
+/* El organizador y la nube usan tinta negra: quedan como tarjetas claras */
+body.dark #rel-graph svg { background: #FDFDF7 !important; border-color: #E8E8E2 !important; }
+body.dark #wordcloud { border-color: #E8E8E2; }
+body.dark .mini-label { color: #E8E8E2; }
 
 /* ---------- Responsive ---------- */
 
