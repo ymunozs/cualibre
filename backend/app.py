@@ -6,6 +6,7 @@ Toda mutación persiste el proyecto de forma atómica ANTES de responder (FR-025
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -41,7 +42,11 @@ def _prune_relations(project: Project) -> None:
     ]
 from .nlp import word_frequencies
 
-FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+# Empaquetado (PyInstaller): los assets viven junto al ejecutable congelado
+if getattr(sys, "frozen", False):
+    FRONTEND_DIR = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "frontend"
+else:
+    FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 app = FastAPI(title="CUA-LIBRE STUDIO", version="1.0.0")
 

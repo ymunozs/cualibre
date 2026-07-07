@@ -59,6 +59,24 @@ fuerza un guardado y te confirma la hora, para trabajar tranquilo.
 Emocional · Descriptivo · In Vivo · Tensión/CHAT · Proceso · Teórico · Relacional ·
 Crítico · Método — cada uno con su color fijo en toda la aplicación.
 
+## Instaladores
+
+No necesitas Terminal si usas la app instalada:
+
+- **macOS**: `packaging/build_mac.sh` genera `dist/CUA-LIBRE-Studio-<v>-mac.dmg`.
+  Abre el DMG, arrastra la app a Aplicaciones. Como no está firmada con certificado de
+  Apple, **la primera vez ábrela con clic derecho → Abrir**. Para salir: clic derecho en
+  el ícono del Dock → Salir.
+- **Windows**: se construye en una máquina Windows con `packaging/windows/build_windows.bat`
+  (requiere Python 3.12+ e Inno Setup 6), **o automáticamente en GitHub**: sube este
+  repositorio a GitHub y ejecuta el workflow *Installers* (pestaña Actions), que produce
+  el `.dmg` de Mac y el `CUA-LIBRE-Studio-…-windows-setup.exe` de Windows como artefactos;
+  si además publicas un tag `v1.0`, quedan adjuntos a un Release. La app de Windows
+  muestra una ventana de consola mientras corre: ciérrala para apagar el servidor.
+
+En ambos casos la app instalada abre el navegador sola y usa la misma carpeta de datos,
+así que tus proyectos se comparten con la versión de desarrollo.
+
 ## Para desarrollo
 
 - Tests: `uv run -m pytest backend/tests/ -v`

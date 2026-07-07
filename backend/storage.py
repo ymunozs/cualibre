@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -17,10 +18,18 @@ from .models import Project
 
 
 def base_dir() -> Path:
+    """Directorio de datos por plataforma (macOS, Windows, Linux)."""
     env = os.environ.get("CUALIBRE_DATA_DIR")
     if env:
         return Path(env).expanduser()
-    return Path.home() / "Library" / "Application Support" / "cualibre"
+    home = Path.home()
+    if sys.platform == "darwin":
+        return home / "Library" / "Application Support" / "cualibre"
+    if sys.platform == "win32":
+        appdata = os.environ.get("APPDATA")
+        base = Path(appdata) if appdata else home / "AppData" / "Roaming"
+        return base / "cualibre"
+    return home / ".local" / "share" / "cualibre"
 
 
 def projects_dir() -> Path:
