@@ -9,7 +9,7 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.9</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.9.1</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label">PROYECTO</label>
     <select id="project-select"></select>
@@ -259,9 +259,15 @@
       </div>
       <div class="domain-menu-item domain-menu-new" id="nube-new-domain">✚ Nueva categoría…</div>
       <div id="nube-new-domain-form" class="domain-new-form hidden">
-        <input type="text" id="nube-new-domain-name" placeholder="Nombre…" maxlength="40" autocomplete="off">
-        <input type="color" id="nube-new-domain-color" value="#8855CC" title="Color de la categoría">
-        <button type="button" id="nube-new-domain-confirm" title="Crear categoría">✓</button>
+        <div class="dnf-row">
+          <span class="dnf-label">NOMBRE</span>
+          <input type="text" id="nube-new-domain-name" placeholder="Nombre de la categoría…" maxlength="40" autocomplete="off">
+        </div>
+        <div class="dnf-row">
+          <span class="dnf-label">COLOR</span>
+          <input type="color" id="nube-new-domain-color" value="#8855CC" title="Color de la categoría">
+        </div>
+        <button type="button" id="nube-new-domain-confirm" title="Crear categoría">✓ CREAR CATEGORÍA</button>
       </div>
     </div>
   </div>

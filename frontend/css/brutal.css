@@ -416,7 +416,9 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
   position: absolute;
   top: 100%;
   left: 0;
-  min-width: 100%;
+  min-width: 240px; /* más ancho que el botón: el mini-formulario de creación
+    necesita espacio para que nombre + color se vean sin apretarse (evita que
+    el selector nativo de color, que es grande, tape la casilla de nombre) */
   background: #1a1a1a;
   border: 1px solid #555;
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
@@ -439,17 +441,29 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
 .domain-menu-new { color: #9c9; font-weight: 700; border-top: 1px dashed #555; margin-top: 4px; }
 .domain-menu-new:hover { background: #2a2; color: #fff; }
 
-.domain-new-form { display: flex; align-items: center; gap: 6px; padding: 6px 10px; }
+/* Mini-formulario en filas verticales (no una fila apretada): así el nombre
+   y el color se ven cada uno con espacio propio, y el orden 1→2→3 queda
+   inequívoco aunque el selector nativo de color tape momentáneamente parte
+   de la pantalla al abrirse. */
+.domain-new-form { padding: 8px 10px 10px; border-top: 1px dashed #555; margin-top: 2px; }
+.domain-new-form .dnf-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.domain-new-form .dnf-label {
+  font-size: 9px; font-weight: 700; color: #999; letter-spacing: 0.06em;
+  width: 46px; flex-shrink: 0;
+}
 .domain-new-form input[type="text"] {
-  flex: 1; min-width: 0; font-family: var(--mono); font-size: 12px;
-  background: #1a1a1a; color: #fff; border: 1px solid #555; padding: 4px 6px; margin: 0;
+  flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px;
+  background: #1a1a1a; color: #fff; border: 1px solid #555; padding: 6px 8px; margin: 0;
 }
 .domain-new-form input[type="color"] {
-  width: 26px; height: 26px; padding: 0; border: 1px solid #555; background: none; cursor: pointer;
+  width: 36px; height: 30px; padding: 0; border: 1px solid #555; background: none; cursor: pointer;
 }
 .domain-new-form button {
-  background: #2a2; color: #fff; border: none; width: 26px; height: 26px;
-  font-weight: 700; cursor: pointer; flex-shrink: 0;
+  display: block; width: 100%;
+  background: #2a2; color: #fff; border: none; padding: 7px;
+  font-weight: 700; font-size: 12px; letter-spacing: 0.04em; cursor: pointer;
 }
 .domain-new-form button:hover { background: #3c3; }
 

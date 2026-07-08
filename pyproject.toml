@@ -1,6 +1,6 @@
 [project]
 name = "cualibre"
-version = "1.9.0"
+version = "1.9.1"
 description = "CUA-LIBRE STUDIO — Estudio de análisis cualitativo (QDA/CAQCAS) local"
 requires-python = ">=3.12,<3.13"
 dependencies = [
