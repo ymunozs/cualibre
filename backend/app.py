@@ -26,6 +26,7 @@ from .models import (
     CodeCreate,
     CodeUpdate,
     ConfirmPayload,
+    CustomDomainCreate,
     Document,
     Project,
     ProjectCreate,
@@ -33,6 +34,7 @@ from .models import (
     RelationCreate,
     utf16_len,
 )
+from .nlp import word_frequencies
 
 
 def _prune_relations(project: Project) -> None:
@@ -41,7 +43,11 @@ def _prune_relations(project: Project) -> None:
     project.relations = [
         r for r in project.relations if r.source in names and r.target in names
     ]
-from .nlp import word_frequencies
+
+
+def _all_domains(project: Project) -> dict[str, str]:
+    """Categorías Básicas + personalizadas del proyecto (FR-064)."""
+    return {**DOMAINS, **project.custom_domains}
 
 # Empaquetado (PyInstaller): los assets viven junto al ejecutable congelado
 if getattr(sys, "frozen", False):
@@ -192,6 +198,8 @@ def delete_document(doc_id: str, confirm: bool = False) -> dict:
 @app.post("/api/codes", status_code=201)
 def create_code(payload: CodeCreate) -> Code:
     project = storage.get_active_project()
+    if payload.domain not in _all_domains(project):
+        raise HTTPException(422, f"Dominio inválido: {payload.domain!r}")
     if payload.doc_id is not None:
         document = next((d for d in project.documents if d.id == payload.doc_id), None)
         if document is None:
@@ -224,6 +232,8 @@ def update_code(code_id: int, payload: CodeUpdate) -> Code:
     if payload.name is not None:
         code.name = payload.name
     if payload.domain is not None:
+        if payload.domain not in _all_domains(project):
+            raise HTTPException(422, f"Dominio inválido: {payload.domain!r}")
         code.domain = payload.domain
     if payload.memo is not None:
         code.memo = payload.memo
@@ -283,8 +293,39 @@ def delete_relation(relation_id: int) -> None:
 # ----- Análisis -----
 
 @app.get("/api/domains")
-def get_domains() -> dict[str, str]:
-    return DOMAINS
+def get_domains() -> dict[str, dict[str, str]]:
+    """Categorías Básicas (fijas) + personalizadas del proyecto activo (FR-064)."""
+    project = storage.get_active_project()
+    return {"basic": DOMAINS, "custom": project.custom_domains}
+
+
+@app.post("/api/domains/custom", status_code=201)
+def create_custom_domain(payload: CustomDomainCreate) -> dict[str, dict[str, str]]:
+    project = storage.get_active_project()
+    existing_ci = {name.lower() for name in _all_domains(project)}
+    if payload.name.lower() in existing_ci:
+        raise HTTPException(409, f"Ya existe una categoría llamada «{payload.name}»")
+    project.custom_domains[payload.name] = payload.color
+    storage.save_project(project)
+    return {"basic": DOMAINS, "custom": project.custom_domains}
+
+
+@app.delete("/api/domains/custom/{name}")
+def delete_custom_domain(name: str, confirm: bool = False) -> dict:
+    project = storage.get_active_project()
+    if name not in project.custom_domains:
+        raise HTTPException(404, "Categoría personalizada no encontrada")
+    in_use = sum(1 for c in project.codes if c.domain == name)
+    if in_use and not confirm:
+        raise HTTPException(
+            409,
+            f"{in_use} código(s) usan la categoría «{name}». Repite la operación con "
+            "confirmación: conservarán el nombre pero quedarán sin color propio.",
+            headers={"X-Code-Count": str(in_use)},
+        )
+    del project.custom_domains[name]
+    storage.save_project(project)
+    return {"in_use": in_use}
 
 
 @app.get("/api/nlp")

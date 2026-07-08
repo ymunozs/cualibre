@@ -458,6 +458,27 @@ que se listan resultados con título, año, citas y DOI clicable.
   adjetivo) busca por lema, mostrando la forma real encontrada (p. ej. "cantar" también
   encuentra "cantó" y "cantaba").
 
+**Categorías personalizadas (v1.8)**
+
+- **FR-064**: Las 9 Categorías Básicas (Constitución, Principio VI) MUST mantenerse fijas
+  e inmutables. El investigador MUST poder además crear categorías propias por proyecto
+  (nombre + color elegido), usadas exactamente igual que las básicas al codificar,
+  analizar y exportar.
+- **FR-065**: El selector de categoría de la Nube Negra MUST mostrar las categorías
+  personalizadas del proyecto de forma directa y las Categorías Básicas agrupadas bajo
+  un ítem que las despliega en un submenú lateral al pasar el cursor (patrón de menú de
+  familias, tipo iOS/Windows), con una opción para crear una categoría nueva.
+  Las teclas 1–9 MUST seguir eligiendo una Categoría Básica directamente.
+- **FR-066**: Eliminar una categoría personalizada en uso MUST advertir cuántos códigos
+  la usan y requerir confirmación explícita; los códigos existentes conservan su nombre
+  de categoría aunque esta se elimine (quedan sin color propio, con reserva gris).
+
+**Créditos y filosofía del proyecto (v1.8)**
+
+- **FR-067**: Un botón "Acerca de Cua-libre" en la cabecera MUST abrir un diálogo con la
+  filosofía del proyecto (software libre, decisión humana), el contacto del autor y el
+  enlace al repositorio.
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del

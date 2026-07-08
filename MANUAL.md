@@ -23,6 +23,7 @@ Si la app ya estaba corriendo y la abres de nuevo, simplemente reutiliza la inst
   presionas 💾 GUARDAR. Elige cualquier punto de la lista y pulsa **↺** para restaurar el
   proyecto a ese momento — el estado justo antes de restaurar también se respalda,
   así que nunca pierdes trabajo por equivocarte.
+- **ℹ ACERCA DE**: filosofía del proyecto, contacto y agradecimientos.
 - **❓ MANUAL**: abre este manual dentro de la app. **◐**: alterna modo oscuro/claro.
 - Tus datos viven en `~/Library/Application Support/cualibre/` (Mac) o `%APPDATA%\cualibre\` (Windows). Copiar esa carpeta = respaldo completo.
 
@@ -36,17 +37,34 @@ Elige archivos **PDF, DOCX o TXT** (puedes seleccionar varios). Cada documento s
 
 1. **Selecciona** un fragmento (3+ caracteres) en el Canvas.
 2. Aparece la Nube junto a la selección, con el cursor listo en el nombre.
-3. Elige el **dominio** con las teclas **1–9** o el selector.
+3. Elige la **categoría**: haz clic en el selector para abrir el menú, o usa las teclas **1–9** para una Categoría Básica directamente.
 4. Escribe el nombre del código y presiona **↵ Enter**.
 
-El fragmento queda pintado con el color del dominio, el código entra al banco y las Analytics se actualizan.
+El fragmento queda pintado con el color de la categoría, el código entra al banco y las Analytics se actualizan.
+
+### Categorías: Básicas y personalizadas
+
+Cua-libre trae **9 Categorías Básicas** de fábrica (Emocional, Descriptivo, In Vivo,
+Tensión/CHAT, Proceso, Teórico, Relacional, Crítico, Método) — siempre disponibles, con
+sus colores fijos. Al abrir el selector de categoría en la Nube:
+
+- Las **categorías personalizadas** que hayas creado aparecen primero, listas para elegir.
+- **"Categorías Básicas ▸"** despliega las 9 de fábrica en un submenú lateral al pasar el
+  cursor por encima (como los menús de iOS/Windows) — o con un clic si prefieres no usar hover.
+- **"✚ Nueva categoría…"** abre un mini-formulario: nombre + un color (clic en el cuadro
+  de color abre el selector nativo) + **✓** para crearla (o Enter en el nombre). Queda
+  disponible de inmediato en este proyecto — en el menú y en la Paleta.
+
+Para **eliminar** una categoría personalizada: panel "Categorías personalizadas" en la
+Paleta, botón ✕ en su chip. Si hay códigos usándola, se te advierte cuántos antes de
+confirmar — el código conserva su nombre de categoría, solo pierde el color propio.
 
 | Tecla en la Nube | Acción |
 |------------------|--------|
 | `↵` | Guardar el código |
-| `⌘↵` (Mac) / `Ctrl+↵` | Repetir la **última** codificación (mismo nombre y dominio) sobre esta selección |
+| `⌘↵` (Mac) / `Ctrl+↵` | Repetir la **última** codificación (mismo nombre y categoría) sobre esta selección |
 | `Esc` o clic fuera | Cancelar sin guardar |
-| `1`–`9` | Elegir dominio |
+| `1`–`9` | Elegir una Categoría Básica directamente |
 
 ### Otras formas de codificar
 

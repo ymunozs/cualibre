@@ -46,6 +46,9 @@ const API = {
 
   // Dominios (fuente única: backend/models.py)
   getDomains: () => API._fetch("/api/domains"),
+  createCustomDomain: (name, color) => API._json("POST", "/api/domains/custom", { name, color }),
+  deleteCustomDomain: (name, confirm = false) =>
+    API._fetch(`/api/domains/custom/${encodeURIComponent(name)}${confirm ? "?confirm=true" : ""}`, { method: "DELETE" }),
 
   // Documentos
   uploadDocument(file) {

@@ -13,7 +13,12 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-# Paleta de 9 dominios fijos (Constitución, Principio VI / FR-016)
+import re
+
+# Categorías Básicas: los 9 dominios de fábrica de Cua-libre, fijos e
+# inmutables (Constitución, Principio VI / FR-016). El investigador puede
+# además crear sus propias categorías personalizadas por proyecto (FR-064);
+# ambas conviven — "DOMAINS" es solo el conjunto de fábrica.
 DOMAINS: dict[str, str] = {
     "Emocional": "#FF3300",
     "Descriptivo": "#0066FF",
@@ -38,6 +43,9 @@ def new_id() -> str:
 def utf16_len(text: str) -> int:
     """Longitud del texto en unidades UTF-16 (la que ve JavaScript)."""
     return len(text.encode("utf-16-le")) // 2
+
+
+HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 
 class Document(BaseModel):
@@ -87,6 +95,7 @@ class Project(BaseModel):
     relations: list[Relation] = Field(default_factory=list)
     next_relation_id: int = 1
     nlp_exclusions: list[str] = Field(default_factory=list)
+    custom_domains: dict[str, str] = Field(default_factory=dict)  # nombre -> #hex (FR-064)
 
     def summary(self) -> dict:
         return {
@@ -122,11 +131,15 @@ class CodeCreate(BaseModel):
     end: Optional[int] = None
     memo: str = ""
 
+    # La pertenencia real del dominio (¿existe entre las Categorías Básicas o
+    # las personalizadas del proyecto?) se valida en el endpoint, que es quien
+    # tiene acceso al proyecto activo (FR-064) — aquí solo se exige no-vacío.
     @field_validator("domain")
     @classmethod
-    def valid_domain(cls, v: str) -> str:
-        if v not in DOMAINS:
-            raise ValueError(f"Dominio inválido: {v!r}. Debe ser uno de: {', '.join(DOMAINS)}")
+    def non_empty_domain(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("El dominio no puede estar vacío")
         return v
 
     @field_validator("name")
@@ -158,9 +171,11 @@ class CodeUpdate(BaseModel):
 
     @field_validator("domain")
     @classmethod
-    def valid_domain(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and v not in DOMAINS:
-            raise ValueError(f"Dominio inválido: {v!r}")
+    def non_empty_domain(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if not v:
+                raise ValueError("El dominio no puede estar vacío")
         return v
 
     @field_validator("name")
@@ -171,6 +186,26 @@ class CodeUpdate(BaseModel):
             if not v:
                 raise ValueError("El nombre del código no puede estar vacío")
         return v
+
+
+class CustomDomainCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    color: str
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("El nombre de la categoría no puede estar vacío")
+        return v
+
+    @field_validator("color")
+    @classmethod
+    def valid_hex(cls, v: str) -> str:
+        if not HEX_COLOR_RE.match(v):
+            raise ValueError(f"Color inválido: {v!r}. Debe ser hex tipo #RRGGBB")
+        return v.upper()
 
 
 class RelationCreate(BaseModel):

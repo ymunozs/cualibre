@@ -107,9 +107,11 @@ La identidad visual es parte del producto y no se negocia por conveniencia técn
   gruesos, sombras duras sin difuminar. Variante de lectura autorizada: modo oscuro
   conmutable (superficies #141412/#1B1B16, tinta clara, mismo acento y paleta de
   dominios); el organizador y la nube de conceptos permanecen como tarjetas claras.
-- Paleta de 9 colores por dominio de código: Emocional #FF3300, Descriptivo #0066FF,
-  In Vivo #FFCC00, Tensión/CHAT #FF0066, Proceso #6600CC, Teórico #00CC66,
-  Relacional #0099CC, Crítico #CC0000, Método #333333.
+- Paleta de 9 colores fijos para las Categorías Básicas de código: Emocional #FF3300,
+  Descriptivo #0066FF, In Vivo #FFCC00, Tensión/CHAT #FF0066, Proceso #6600CC,
+  Teórico #00CC66, Relacional #0099CC, Crítico #CC0000, Método #333333. Las categorías
+  personalizadas que el investigador cree (FR-064) usan un color de su elección; las 9
+  básicas permanecen inmutables como piso estético común.
 
 Racional: la coherencia estética distingue una herramienta profesional de un prototipo
 parchado.
@@ -169,7 +171,12 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   por proyecto, exportación del organizador (PNG/SVG) y de la nube de conceptos (PNG),
   deshacer última codificación (⌘Z), manual de uso (MANUAL.md, también dentro de la
   app), sesión de foco con meta y pomodoro omitible, modo oscuro, recuperación de citas
-  por código, tipografía del corpus conmutable, numeración de líneas foco gramatical del NLP (verbos/sustantivos/adjetivos con lematización spaCy offline) y análisis de sentimiento por léxico NRC-es (valencia, arco emocional, emociones; auditable y offline).
+  por código, tipografía del corpus conmutable, numeración de líneas, foco gramatical
+  del NLP (verbos/sustantivos/adjetivos con lematización spaCy offline), análisis de
+  sentimiento por léxico NRC-es (valencia, arco emocional, emociones; auditable y
+  offline), reporte académico exportable, proyecto de ejemplo, categorías
+  personalizadas por proyecto (además de las 9 Categorías Básicas fijas) y ventana
+  "Acerca de Cua-libre".
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -194,7 +201,11 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.8.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-07
+**Version**: 1.9.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-08
+<!-- 1.9.0: Principio VI enmendado — categorías personalizadas (FR-064/065/066) pueden
+usar cualquier color elegido por el investigador; las 9 Categorías Básicas permanecen
+fijas e inmutables. Inventario ampliado con categorías personalizadas y "Acerca de
+Cua-libre" (FR-067). -->
 <!-- 1.8.0: nuevo Principio VIII (Decisión Analítica 100% Humana) por instrucción del
 investigador; el asistente IA de codificación queda descartado permanentemente. -->
 <!-- 1.5.0: Principio VI enmendado por el investigador (modo oscuro y tipografía

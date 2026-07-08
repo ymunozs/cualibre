@@ -28,6 +28,14 @@ const Views = {
       }
     });
 
+    // Acerca de Cua-libre
+    document.getElementById("btn-about").addEventListener("click", () => {
+      document.getElementById("about-dialog").showModal();
+    });
+    document.getElementById("about-close").addEventListener("click", () => {
+      document.getElementById("about-dialog").close();
+    });
+
     // Manual en la app (FR-052)
     document.getElementById("btn-manual").addEventListener("click", () => this._openManual());
     document.getElementById("manual-close").addEventListener("click", () => {

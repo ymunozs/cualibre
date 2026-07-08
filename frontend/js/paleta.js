@@ -63,21 +63,99 @@ const Paleta = {
     clean.textContent = allHidden ? "◼ RESTAURAR RESALTADOS" : "◻ LECTURA LIMPIA";
   },
 
-  populateDomains() {
-    const select = document.getElementById("manual-domain");
+  /* Rellena un <select> con dos grupos: Categorías Básicas + Personalizadas
+     (FR-064). Reutilizado por el código manual y el formulario de edición. */
+  _fillDomainSelect(select, selected) {
     select.textContent = "";
-    for (const domain of Object.keys(State.domains)) {
+    const basicGroup = document.createElement("optgroup");
+    basicGroup.label = "Categorías Básicas";
+    for (const domain of Object.keys(State.basicDomains)) {
       const option = document.createElement("option");
       option.value = domain;
       option.textContent = domain;
-      select.appendChild(option);
+      option.selected = domain === selected;
+      basicGroup.appendChild(option);
     }
+    select.appendChild(basicGroup);
+    const customNames = Object.keys(State.customDomains);
+    if (customNames.length) {
+      const customGroup = document.createElement("optgroup");
+      customGroup.label = "Personalizadas";
+      for (const domain of customNames) {
+        const option = document.createElement("option");
+        option.value = domain;
+        option.textContent = domain;
+        option.selected = domain === selected;
+        customGroup.appendChild(option);
+      }
+      select.appendChild(customGroup);
+    }
+  },
+
+  populateDomains() {
+    this._fillDomainSelect(document.getElementById("manual-domain"));
   },
 
   render() {
     this._renderDocs();
     this._renderBank();
     this._renderFilter();
+    this._renderCustomDomains();
+  },
+
+  /* Gestión de categorías personalizadas (FR-064): solo eliminar aquí; se
+     crean desde la Nube Negra, que es donde ocurre el flujo de codificación. */
+  _renderCustomDomains() {
+    const box = document.getElementById("custom-domains-list");
+    box.textContent = "";
+    const names = Object.keys(State.customDomains);
+    if (!names.length) {
+      const p = document.createElement("p");
+      p.className = "empty-note";
+      p.textContent = "Aún no hay categorías propias. Créalas desde la Nube Negra (✚ Nueva categoría…).";
+      box.appendChild(p);
+      return;
+    }
+    for (const name of names) {
+      const chip = document.createElement("span");
+      chip.className = "filter-chip";
+      chip.title = `Eliminar «${name}»`;
+      const dot = document.createElement("span");
+      dot.className = "dom-chip";
+      dot.style.backgroundColor = State.customDomains[name];
+      chip.append(dot, document.createTextNode(name + " "));
+      const del = document.createElement("button");
+      del.className = "icon-btn";
+      del.textContent = "✕";
+      del.addEventListener("click", (e) => { e.stopPropagation(); this._deleteCustomDomain(name); });
+      chip.appendChild(del);
+      box.appendChild(chip);
+    }
+  },
+
+  async _deleteCustomDomain(name) {
+    try {
+      await API.deleteCustomDomain(name, false);
+    } catch (error) {
+      if (error.status === 409) {
+        const count = error.headers?.get?.("X-Code-Count") || "algunos";
+        const ok = await Views.confirm(
+          `${count} código(s) usan «${name}». Se conservarán con ese nombre pero sin color propio. ¿Eliminar la categoría de todas formas?`
+        );
+        if (!ok) return;
+        try {
+          await API.deleteCustomDomain(name, true);
+        } catch (err) {
+          Views.toast(err.message, true);
+          return;
+        }
+      } else {
+        Views.toast(error.message, true);
+        return;
+      }
+    }
+    await State.reload();
+    Views.toast(`Categoría eliminada: ${name}`);
   },
 
   _renderDocs() {
@@ -262,13 +340,7 @@ const Paleta = {
     form.className = "code-item code-edit-form";
 
     const domainSelect = document.createElement("select");
-    for (const domain of Object.keys(State.domains)) {
-      const option = document.createElement("option");
-      option.value = domain;
-      option.textContent = domain;
-      option.selected = domain === code.domain;
-      domainSelect.appendChild(option);
-    }
+    this._fillDomainSelect(domainSelect, code.domain);
     const nameInput = document.createElement("input");
     nameInput.type = "text";
     nameInput.value = code.name;
