@@ -76,6 +76,13 @@ confirmar — el código conserva su nombre de categoría, solo pierde el color 
 - **✎** en el banco: editar nombre, dominio (el color del resaltado cambia) y memo.
 - **🗑** en el banco: eliminar un código (su resaltado desaparece).
 - **⌘Z / Ctrl+Z** (fuera de un campo de texto): deshace la **última** codificación.
+- **Buscar en el banco**: campo sobre el banco de códigos — filtra por nombre, categoría
+  o texto de la cita, sin tocar el Canvas.
+- **⇄ Fusionar códigos** (codificación axial): elige un código de origen, escribe el
+  nombre destino (uno existente o nuevo) y confirma. Si el destino ya existía, todas las
+  citas fusionadas adoptan su categoría; si es un nombre nuevo, cada cita conserva la
+  suya. Las relaciones que involucraban al código de origen migran solas al nuevo
+  nombre — nunca se pierden por fusionar.
 
 ## 5. Navegar y leer
 
@@ -198,6 +205,12 @@ códigos, citas agrupadas por dominio y código con sus memos, gráficos, matric
 co-ocurrencia, organizador de relaciones y análisis de sentimiento. Se abre en una pestaña
 nueva: **⌘P** para guardarlo como PDF (anexo listo para tesis o paper) o **⌘S** para
 guardar el HTML.
+
+**🗄 Respaldo completo (.zip)**: un archivo autocontenido con el proyecto entero —
+`proyecto.json` (fidelidad total: corpus, códigos, relaciones, memos, categorías propias
+— restaurable copiándolo a la carpeta de proyectos), `codigos.csv` y el texto de cada
+documento en `.txt`. Pensado para depositar como evidencia de reproducibilidad al
+publicar, o como copia portable independiente de la app.
 
 ## 12. 📚 Literatura
 

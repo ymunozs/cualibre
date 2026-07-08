@@ -188,6 +188,31 @@ class CodeUpdate(BaseModel):
         return v
 
 
+class CodeMerge(BaseModel):
+    """Fusión/renombre en bloque (FR-068): todas las citas de from_name pasan
+    a llamarse to_name. Si to_name ya existe, es una fusión real: adoptan su
+    dominio (o el explícito, si se da). Si to_name es nuevo, es un renombre
+    puro y cada instancia conserva su dominio original."""
+
+    from_name: str = Field(min_length=1, max_length=200)
+    to_name: str = Field(min_length=1, max_length=200)
+    domain: Optional[str] = None
+
+    @field_validator("from_name", "to_name")
+    @classmethod
+    def strip_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("El nombre no puede estar vacío")
+        return v
+
+    @model_validator(mode="after")
+    def distinct_names(self) -> "CodeMerge":
+        if self.from_name == self.to_name:
+            raise ValueError("Elige dos nombres distintos para fusionar")
+        return self
+
+
 class CustomDomainCreate(BaseModel):
     name: str = Field(min_length=1, max_length=40)
     color: str

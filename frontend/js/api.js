@@ -63,6 +63,8 @@ const API = {
   createCode: (payload) => API._json("POST", "/api/codes", payload),
   updateCode: (id, payload) => API._json("PATCH", `/api/codes/${id}`, payload),
   deleteCode: (id) => API._fetch(`/api/codes/${id}`, { method: "DELETE" }),
+  mergeCodes: (fromName, toName) =>
+    API._json("POST", "/api/codes/merge", { from_name: fromName, to_name: toName }),
 
   // Relaciones (FR-038)
   getRelationTypes: () => API._fetch("/api/relation-types"),

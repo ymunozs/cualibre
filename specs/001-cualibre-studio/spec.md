@@ -479,6 +479,21 @@ que se listan resultados con título, año, citas y DOI clicable.
   filosofía del proyecto (software libre, decisión humana), el contacto del autor y el
   enlace al repositorio.
 
+**Codificación axial y respaldo (v1.9)**
+
+- **FR-068**: El sistema MUST permitir fusionar/renombrar códigos en bloque por nombre
+  (origen → destino): si el destino ya existe, todas las citas resultantes adoptan su
+  categoría (fusión real); si el destino es nuevo, cada cita conserva su categoría
+  original (renombre puro). Las relaciones que referencian al nombre de origen MUST
+  migrar al nuevo nombre (nunca eliminarse por una fusión), descartando solo las que
+  queden reflexivas o duplicadas tras el remapeo.
+- **FR-069**: El banco de códigos de la Paleta MUST ofrecer un buscador local que filtre
+  por nombre de código, categoría o texto de la cita, sin requerir llamada al backend.
+- **FR-070**: El sistema MUST ofrecer un respaldo completo autocontenido en un único
+  archivo .zip: el proyecto íntegro en JSON (fidelidad total, restaurable), el banco de
+  códigos en CSV y el texto de cada documento del corpus en .txt plano, para
+  reproducibilidad y portabilidad independiente de la aplicación.
+
 **Persistencia**
 
 - **FR-025**: El sistema MUST persistir automáticamente en disco local todo el estado del

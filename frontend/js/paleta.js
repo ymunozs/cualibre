@@ -3,10 +3,20 @@
 
 const Paleta = {
   editingId: null,
+  bankQuery: "",
 
   init() {
     document.getElementById("btn-manual-save").addEventListener("click", () => this._saveManual());
     document.getElementById("btn-reset").addEventListener("click", () => this._reset());
+
+    // Buscar en el banco de códigos (filtro local, sin llamada al backend)
+    document.getElementById("code-bank-search").addEventListener("input", (e) => {
+      this.bankQuery = e.target.value.trim().toLowerCase();
+      this._renderBank();
+    });
+
+    // Fusionar/renombrar códigos en bloque (FR-068, codificación axial)
+    document.getElementById("btn-merge-codes").addEventListener("click", () => this._mergeCodes());
 
     // Búsqueda en el corpus (FR-041)
     const input = document.getElementById("search-input");
@@ -101,6 +111,54 @@ const Paleta = {
     this._renderBank();
     this._renderFilter();
     this._renderCustomDomains();
+    this._renderMergeControls();
+  },
+
+  /* Fusionar/renombrar códigos en bloque (FR-068) */
+  _renderMergeControls() {
+    const names = [...new Set(State.project.codes.map(c => c.name))].sort();
+    const fromSelect = document.getElementById("merge-from");
+    const previous = fromSelect.value;
+    fromSelect.textContent = "";
+    for (const name of names) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      fromSelect.appendChild(option);
+    }
+    if (names.includes(previous)) fromSelect.value = previous;
+
+    const datalist = document.getElementById("merge-to-list");
+    datalist.textContent = "";
+    for (const name of names) {
+      const option = document.createElement("option");
+      option.value = name;
+      datalist.appendChild(option);
+    }
+  },
+
+  async _mergeCodes() {
+    const fromName = document.getElementById("merge-from").value;
+    const toInput = document.getElementById("merge-to");
+    const toName = toInput.value.trim();
+    if (!fromName || !toName) { Views.toast("Elige un código de origen y escribe el destino", true); return; }
+    if (fromName === toName) { Views.toast("Elige dos nombres distintos", true); return; }
+
+    const count = State.project.codes.filter(c => c.name === fromName).length;
+    const existsAsTarget = State.project.codes.some(c => c.name === toName);
+    const message = existsAsTarget
+      ? `Esto fusionará ${count} cita(s) de «${fromName}» dentro de «${toName}» (adoptarán su categoría). ¿Continuar?`
+      : `Esto renombrará ${count} cita(s) de «${fromName}» a «${toName}». ¿Continuar?`;
+    if (!await Views.confirm(message)) return;
+
+    try {
+      const result = await API.mergeCodes(fromName, toName);
+      toInput.value = "";
+      await State.reload();
+      Views.toast(`Fusionado: ${result.merged} cita(s) → «${result.name}»`);
+    } catch (error) {
+      Views.toast(error.message, true);
+    }
   },
 
   /* Gestión de categorías personalizadas (FR-064): solo eliminar aquí; se
@@ -237,11 +295,18 @@ const Paleta = {
   _renderBank() {
     const bank = document.getElementById("code-bank");
     bank.textContent = "";
-    const codes = [...State.project.codes].reverse(); // más recientes arriba
+    let codes = [...State.project.codes].reverse(); // más recientes arriba
+    if (this.bankQuery) {
+      codes = codes.filter(c =>
+        c.name.toLowerCase().includes(this.bankQuery)
+        || c.domain.toLowerCase().includes(this.bankQuery)
+        || (c.quote && c.quote.toLowerCase().includes(this.bankQuery))
+      );
+    }
     if (!codes.length) {
       const p = document.createElement("p");
       p.className = "empty-note";
-      p.textContent = "Aún no hay códigos.";
+      p.textContent = this.bankQuery ? "Sin coincidencias en el banco." : "Aún no hay códigos.";
       bank.appendChild(p);
       return;
     }

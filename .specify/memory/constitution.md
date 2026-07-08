@@ -175,8 +175,10 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   del NLP (verbos/sustantivos/adjetivos con lematización spaCy offline), análisis de
   sentimiento por léxico NRC-es (valencia, arco emocional, emociones; auditable y
   offline), reporte académico exportable, proyecto de ejemplo, categorías
-  personalizadas por proyecto (además de las 9 Categorías Básicas fijas) y ventana
-  "Acerca de Cua-libre".
+  personalizadas por proyecto (además de las 9 Categorías Básicas fijas), ventana
+  "Acerca de Cua-libre", fusión/renombre de códigos en bloque para codificación axial
+  (con migración automática de relaciones), buscador local en el banco de códigos y
+  respaldo completo autocontenido en .zip (proyecto JSON + CSV + textos del corpus).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -201,7 +203,9 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.9.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-08
+**Version**: 1.10.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-08
+<!-- 1.10.0: inventario ampliado — fusión/renombre de códigos (FR-068), buscador del
+banco (FR-069) y respaldo completo .zip (FR-070). -->
 <!-- 1.9.0: Principio VI enmendado — categorías personalizadas (FR-064/065/066) pueden
 usar cualquier color elegido por el investigador; las 9 Categorías Básicas permanecen
 fijas e inmutables. Inventario ampliado con categorías personalizadas y "Acerca de

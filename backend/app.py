@@ -17,13 +17,14 @@ from fastapi.staticfiles import StaticFiles
 
 from . import storage
 from .extraction import ExtractionError, extract_text
-from .export import project_to_csv
+from .export import project_to_csv, project_to_zip
 from .literature import LiteratureError, search_works
 from .models import (
     DOMAINS,
     RELATION_TYPES,
     Code,
     CodeCreate,
+    CodeMerge,
     CodeUpdate,
     ConfirmPayload,
     CustomDomainCreate,
@@ -43,6 +44,28 @@ def _prune_relations(project: Project) -> None:
     project.relations = [
         r for r in project.relations if r.source in names and r.target in names
     ]
+
+
+def _remap_relations(project: Project, old_name: str, new_name: str) -> None:
+    """Al fusionar/renombrar (FR-068), las relaciones migran con el nombre —
+    nunca se pierden por una simple fusión. Se descartan solo las que quedan
+    reflexivas (A→A) o duplicadas tras el remapeo."""
+    for r in project.relations:
+        if r.source == old_name:
+            r.source = new_name
+        if r.target == old_name:
+            r.target = new_name
+    seen: set[tuple[str, str, str]] = set()
+    deduped = []
+    for r in project.relations:
+        if r.source == r.target:
+            continue
+        key = (r.source, r.target, r.type)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(r)
+    project.relations = deduped
 
 
 def _all_domains(project: Project) -> dict[str, str]:
@@ -252,6 +275,35 @@ def delete_code(code_id: int) -> None:
     storage.save_project(project)
 
 
+@app.post("/api/codes/merge")
+def merge_codes(payload: CodeMerge) -> dict:
+    """Fusión/renombre en bloque de códigos por nombre (FR-068, codificación axial)."""
+    project = storage.get_active_project()
+    sources = [c for c in project.codes if c.name == payload.from_name]
+    if not sources:
+        raise HTTPException(404, f"No hay códigos llamados «{payload.from_name}»")
+
+    target_domain = payload.domain
+    if target_domain is not None and target_domain not in _all_domains(project):
+        raise HTTPException(422, f"Dominio inválido: {target_domain!r}")
+    existing_target = [c for c in project.codes if c.name == payload.to_name]
+    if target_domain is None and existing_target:
+        # Fusión real (to_name ya existía): unifica al dominio del destino
+        target_domain = existing_target[0].domain
+
+    for code in sources:
+        code.name = payload.to_name
+        if target_domain is not None:
+            code.domain = target_domain
+    if target_domain is not None:
+        for code in existing_target:
+            code.domain = target_domain
+
+    _remap_relations(project, payload.from_name, payload.to_name)
+    storage.save_project(project)
+    return {"merged": len(sources), "name": payload.to_name, "domain": target_domain}
+
+
 # ----- Relaciones entre códigos (FR-038) -----
 
 @app.get("/api/relation-types")
@@ -389,6 +441,20 @@ def export_csv() -> Response:
         media_type="text/csv; charset=utf-8",
         headers={
             "Content-Disposition": f'attachment; filename="cualibre_{safe_name}.csv"'
+        },
+    )
+
+
+@app.get("/api/export.zip")
+def export_zip() -> Response:
+    """Respaldo completo autocontenido: JSON + CSV + textos del corpus (FR-070)."""
+    project = storage.get_active_project()
+    safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in project.name)
+    return Response(
+        content=project_to_zip(project),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="cualibre_{safe_name}_respaldo.zip"'
         },
     )
 

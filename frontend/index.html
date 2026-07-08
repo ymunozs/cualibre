@@ -9,7 +9,7 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.8</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.9</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label">PROYECTO</label>
     <select id="project-select"></select>
@@ -86,7 +86,16 @@
         <ul id="doc-list" class="plain-list"></ul>
       </div>
       <div class="section-title">BANCO DE CÓDIGOS</div>
+      <input type="text" id="code-bank-search" placeholder="Buscar en el banco…" style="margin-bottom:6px">
       <div class="panel" id="code-bank"></div>
+      <div class="section-title">FUSIONAR CÓDIGOS</div>
+      <div class="panel" id="merge-panel">
+        <select id="merge-from"></select>
+        <div class="mini-label" style="text-align:center;margin:4px 0">↓ se renombra a ↓</div>
+        <input type="text" id="merge-to" list="merge-to-list" placeholder="Nombre nuevo o uno existente…">
+        <datalist id="merge-to-list"></datalist>
+        <button id="btn-merge-codes" class="btn btn-small" style="margin-top:6px;width:100%">⇄ FUSIONAR</button>
+      </div>
       <button id="btn-reset" class="btn btn-danger">⌦ REINICIAR PROYECTO</button>
     </aside>
   </section>
@@ -217,6 +226,10 @@
     <div class="section-title">GESTIÓN DE DATOS</div>
     <a id="btn-export" class="btn btn-accent" href="/api/export.csv" download>⇄ DESCARGAR CSV (UTF-8 · EXCEL)</a>
     <button id="btn-report" class="btn" style="width:auto;margin-left:10px">📄 REPORTE ACADÉMICO (HTML → PDF)</button>
+    <a id="btn-export-zip" class="btn" style="width:auto;margin-left:10px" href="/api/export.zip" download>🗄 RESPALDO COMPLETO (.ZIP)</a>
+    <p class="empty-note">El respaldo .zip incluye el proyecto completo (JSON, fidelidad total), el
+      banco de códigos en CSV y el texto de cada documento — útil para depositar como
+      evidencia de reproducibilidad al publicar, o como copia portable.</p>
     <div id="export-table" class="table-scroll"></div>
   </section>
 
