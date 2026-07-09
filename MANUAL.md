@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v1.7)
+# CUA-LIBRE STUDIO — Manual de uso (v1.10)
 
 Guía completa de comandos y flujos para el análisis cualitativo.
 
@@ -68,7 +68,11 @@ confirmar — el código conserva su nombre de categoría, solo pierde el color 
 
 ### Otras formas de codificar
 
-- **Arrastrar a un código existente**: selecciona texto y arrástralo sobre un código del banco (Paleta) → se crea otra cita con ese mismo código.
+- **Arrastrar a un código existente**: selecciona texto y arrástralo sobre un código del
+  banco compacto en la Paleta (columna derecha del Pentagrama) → se crea otra cita con
+  ese mismo código. El banco completo (con buscador) vive en la pestaña ▤ Códigos, pero
+  esta copia compacta en la Paleta existe justamente para poder arrastrar mientras lees
+  el Canvas.
 - **Código manual** (Paleta → PALETA DE CONTROL): dominio + etiqueta + memo, sin cita textual. Para códigos teóricos o emergentes.
 
 ### Corregir
@@ -76,13 +80,6 @@ confirmar — el código conserva su nombre de categoría, solo pierde el color 
 - **✎** en el banco: editar nombre, dominio (el color del resaltado cambia) y memo.
 - **🗑** en el banco: eliminar un código (su resaltado desaparece).
 - **⌘Z / Ctrl+Z** (fuera de un campo de texto): deshace la **última** codificación.
-- **Buscar en el banco**: campo sobre el banco de códigos — filtra por nombre, categoría
-  o texto de la cita, sin tocar el Canvas.
-- **⇄ Fusionar códigos** (codificación axial): elige un código de origen, escribe el
-  nombre destino (uno existente o nuevo) y confirma. Si el destino ya existía, todas las
-  citas fusionadas adoptan su categoría; si es un nombre nuevo, cada cita conserva la
-  suya. Las relaciones que involucraban al código de origen migran solas al nuevo
-  nombre — nunca se pierden por fusionar.
 
 ## 5. Navegar y leer
 
@@ -134,6 +131,11 @@ cada puntaje viene acompañado de las palabras que lo produjeron.
   las de "Relacional"? Barras divergentes desde el eje cero.
 - **Emociones detectadas** (8 de NRC: alegría, tristeza, miedo, rabia, confianza,
   anticipación, sorpresa, asco) y **ranking de palabras con carga** (± con conteos).
+- **Auditar cada clasificación**: haz clic en una **emoción** para ver exactamente qué
+  palabras la dispararon en tu corpus; haz clic en una **palabra con carga** (positiva o
+  negativa) para lo mismo. Desde ahí, clic en cualquier palabra abre sus **concordancias**
+  (todas sus menciones en contexto, con salto directo al Canvas) — para verificar con tus
+  propios ojos si la clasificación automática tiene sentido en tu corpus.
 - Maneja **negación**: "no siento alegría" invierte la polaridad de *alegría*.
 - Límites honestos: la ironía y el sarcasmo se le escapan; úsalo como brújula
   exploratoria, no como veredicto.
@@ -187,7 +189,21 @@ Intelligence, 29(3), 436–465.
 manual clásico del campo); Jockers, M., viñeta del paquete *syuzhet* (arcos narrativos);
 y saifmohammad.com para el léxico NRC y sus actualizaciones.
 
-## 10. ◈ Relaciones
+## 10. ▤ Códigos
+
+El banco de códigos completo, con buscador y fusión (antes vivía dentro de la Paleta).
+
+- **Buscar en el banco**: filtra por nombre de código, categoría o texto de la cita, sin
+  tocar el Canvas ni el backend.
+- **⇄ Fusionar códigos** (codificación axial): elige un código de origen, escribe el
+  nombre destino (uno existente o nuevo) y confirma. Si el destino ya existía, todas las
+  citas fusionadas adoptan su categoría; si es un nombre nuevo, cada cita conserva la
+  suya. Las relaciones que involucraban al código de origen migran solas al nuevo
+  nombre — nunca se pierden por fusionar.
+- Editar (✎) y eliminar (🗑) funcionan igual que en la Paleta — es el mismo banco, visto
+  con más espacio.
+
+## 11. ◈ Relaciones
 
 1. Elige código origen → **tipo** → código destino → **◉ CREAR RELACIÓN**.
 2. Tipos: **jerarquía** (contiene a), **asociación**, **causalidad** (influye en), **contradicción** (tensiona con).
@@ -195,7 +211,7 @@ y saifmohammad.com para el léxico NRC y sus actualizaciones.
 4. **Árbol de jerarquía**: se arma solo desde las relaciones "contiene a".
 5. Si un código desaparece del proyecto, sus relaciones se limpian automáticamente.
 
-## 11. ⇄ Exportar
+## 12. ⇄ Exportar
 
 Tabla completa del banco y **descarga CSV** en UTF-8 con BOM: abre en Excel con tildes y ñ intactas. Columnas: id, fecha, documento, dominio, código, cita, memo.
 
@@ -212,22 +228,22 @@ guardar el HTML.
 documento en `.txt`. Pensado para depositar como evidencia de reproducibilidad al
 publicar, o como copia portable independiente de la app.
 
-## 12. 📚 Literatura
+## 13. 📚 Literatura
 
 Búsqueda por conceptos en **OpenAlex** (título, año, citas, enlace DOI). Única función que requiere internet; si no hay conexión, el resto de la app sigue igual.
 
-## 13. ◷ Sesión de foco
+## 14. ◷ Sesión de foco
 
 Al abrir la app (o con clic en **◷ sesión** en la barra inferior) puedes fijar una **meta**
 ("codificar la entrevista 3") y un bloque de **15/25/50/90 minutos** — u **OMITIR**. El
 indicador muestra el tiempo restante y cuántos códigos llevas en la sesión; al terminar,
 un aviso suave sugiere la pausa (sin alarmas).
 
-## 14. ♫ Música de foco (barra inferior)
+## 15. ♫ Música de foco (barra inferior)
 
 Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` junto a tus datos — **clic en el título de la barra** te muestra la ruta exacta. `▶` reproduce en bucle, `⏭` salta de pista, y el volumen se recuerda.
 
-## 15. Tabla rápida de atajos
+## 16. Tabla rápida de atajos
 
 | Atajo | Acción |
 |-------|--------|
@@ -239,7 +255,7 @@ Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` ju
 | `⌘Z` / `Ctrl+Z` | Deshacer última codificación |
 | Arrastrar selección → código del banco | Re-aplicar ese código |
 
-## 16. Solución de problemas
+## 17. Solución de problemas
 
 - **Mac dice que la app no se puede abrir**: la primera vez, clic derecho → Abrir (la app no está firmada con certificado de Apple).
 - **En otra Mac no abre / no dice nada**: lo más probable es que sea el **DMG equivocado para su chip**. Hay dos instaladores: uno para Mac **Intel** y otro para Mac **Apple Silicon (M1/M2/M3/M4)** — no son intercambiables (a diferencia de Rosetta, que solo traduce Intel→Apple Silicon, nunca al revés). En esa Mac, ve a menú  → *Acerca de esta Mac* para ver qué chip tiene, y descarga el DMG correspondiente. Además, se necesita **macOS 10.15 (Catalina) o superior**.

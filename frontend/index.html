@@ -9,7 +9,7 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.9.2</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.10.0</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label">PROYECTO</label>
     <select id="project-select"></select>
@@ -36,6 +36,7 @@
   <button class="tab" data-view="nlp">⚡ NLP</button>
   <button class="tab" data-view="analytics">◫ ANALYTICS</button>
   <button class="tab" data-view="sentimiento">◑ SENTIMIENTO</button>
+  <button class="tab" data-view="codigos">▤ CÓDIGOS</button>
   <button class="tab" data-view="relaciones">◈ RELACIONES</button>
   <button class="tab" data-view="exportar">⇄ EXPORTAR</button>
   <button class="tab" data-view="literatura">📚 LITERATURA</button>
@@ -86,16 +87,8 @@
         <ul id="doc-list" class="plain-list"></ul>
       </div>
       <div class="section-title">BANCO DE CÓDIGOS</div>
-      <input type="text" id="code-bank-search" placeholder="Buscar en el banco…" style="margin-bottom:6px">
-      <div class="panel" id="code-bank"></div>
-      <div class="section-title">FUSIONAR CÓDIGOS</div>
-      <div class="panel" id="merge-panel">
-        <select id="merge-from"></select>
-        <div class="mini-label" style="text-align:center;margin:4px 0">↓ se renombra a ↓</div>
-        <input type="text" id="merge-to" list="merge-to-list" placeholder="Nombre nuevo o uno existente…">
-        <datalist id="merge-to-list"></datalist>
-        <button id="btn-merge-codes" class="btn btn-small" style="margin-top:6px;width:100%">⇄ FUSIONAR</button>
-      </div>
+      <p class="empty-note" style="padding:0 0 4px">Arrastra una selección aquí para re-aplicar un código. Buscador y fusión: pestaña ▤ CÓDIGOS.</p>
+      <div class="panel" id="code-bank-mini"></div>
       <button id="btn-reset" class="btn btn-danger">⌦ REINICIAR PROYECTO</button>
     </aside>
   </section>
@@ -185,9 +178,30 @@
         </div>
         <div>
           <div class="section-title">EMOCIONES DETECTADAS</div>
+          <p class="empty-note" style="padding:0 0 4px">Clic en una emoción → qué palabras la dispararon.</p>
           <div id="sent-emotions"></div>
           <div class="section-title">PALABRAS CON CARGA</div>
+          <p class="empty-note" style="padding:0 0 4px">Clic en una palabra → sus menciones en contexto.</p>
           <div id="sent-words" class="table-scroll"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÓDIGOS: banco completo + fusión en bloque (FR-068/069) -->
+  <section id="view-codigos" class="view hidden">
+    <div class="section-title">BANCO DE CÓDIGOS</div>
+    <input type="text" id="code-bank-search" placeholder="Buscar en el banco (nombre, categoría o cita)…" style="max-width:420px;margin-bottom:10px">
+    <div id="codigos-grid">
+      <div class="panel" id="code-bank"></div>
+      <div>
+        <div class="section-title">FUSIONAR CÓDIGOS (CODIFICACIÓN AXIAL)</div>
+        <div class="panel" id="merge-panel">
+          <select id="merge-from"></select>
+          <div class="mini-label" style="text-align:center;margin:4px 0">↓ se renombra a ↓</div>
+          <input type="text" id="merge-to" list="merge-to-list" placeholder="Nombre nuevo o uno existente…">
+          <datalist id="merge-to-list"></datalist>
+          <button id="btn-merge-codes" class="btn btn-small" style="margin-top:6px;width:100%">⇄ FUSIONAR</button>
         </div>
       </div>
     </div>
@@ -311,6 +325,14 @@
     <button id="kwic-close" class="btn btn-small">✕</button>
   </div>
   <div id="kwic-body"></div>
+</dialog>
+
+<dialog id="emotion-words-dialog">
+  <div id="emotion-words-head">
+    <span class="nube-title" id="emotion-words-title" style="color:var(--accent)">PALABRAS</span>
+    <button id="emotion-words-close" class="btn btn-small">✕</button>
+  </div>
+  <div id="emotion-words-body"></div>
 </dialog>
 
 <dialog id="quotes-dialog">

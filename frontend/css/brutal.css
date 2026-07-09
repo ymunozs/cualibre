@@ -284,9 +284,7 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
 }
 .icon-btn:hover { color: var(--accent); }
 
-/* Banco de códigos */
-
-#code-bank { max-height: 340px; overflow-y: auto; }
+/* Banco de códigos (ahora vive en su propia pestaña ▤ CÓDIGOS) */
 
 .code-item {
   border-bottom: 1px dashed #bbb;
@@ -345,6 +343,16 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
 /* ---------- Botón guardar ---------- */
 
 .btn-save { border-color: var(--accent); }
+
+/* ---------- Códigos: banco + fusión (FR-068/069) ---------- */
+
+#codigos-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 22px; align-items: start; }
+#code-bank { max-height: 70vh; overflow-y: auto; }
+#merge-panel select { max-width: 100%; }
+
+@media (max-width: 980px) {
+  #codigos-grid { grid-template-columns: 1fr; }
+}
 
 /* ---------- Relaciones (FR-038/039) ---------- */
 
@@ -749,6 +757,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 /* Concordancias / KWIC (FR-063) */
 #kwic-dialog { max-width: 680px; width: 88vw; max-height: 80vh; overflow-y: auto; }
 #kwic-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+
+#emotion-words-dialog { max-width: 420px; width: 86vw; max-height: 70vh; overflow-y: auto; }
+#emotion-words-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+#emotion-words-body .plain-list li { padding: 6px 0; }
 .kwic-line { border-bottom: 1px dashed #bbb; padding: 8px 0; }
 .kwic-line:last-child { border-bottom: none; }
 .kwic-text { font-family: var(--serif); font-size: 14px; line-height: 1.5; margin-bottom: 4px; }

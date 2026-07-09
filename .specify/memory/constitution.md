@@ -178,7 +178,12 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   personalizadas por proyecto (además de las 9 Categorías Básicas fijas), ventana
   "Acerca de Cua-libre", fusión/renombre de códigos en bloque para codificación axial
   (con migración automática de relaciones), buscador local en el banco de códigos y
-  respaldo completo autocontenido en .zip (proyecto JSON + CSV + textos del corpus).
+  respaldo completo autocontenido en .zip (proyecto JSON + CSV + textos del corpus),
+  pestaña ▤ Códigos (banco completo con buscador y fusión, más una copia compacta en la
+  Paleta para no romper el arrastre sobre el Canvas), trazabilidad de palabras por
+  emoción en el análisis de sentimiento (clic en una emoción o en una palabra con carga
+  MUST mostrar las menciones concretas que la produjeron, con salto a sus
+  concordancias).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -203,7 +208,11 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.10.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-08
+**Version**: 1.11.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-08
+<!-- 1.11.0: inventario ampliado — trazabilidad de palabras por emoción en sentimiento
+(FR-071) y relocalización del banco de códigos a su propia pestaña ▤ Códigos
+(FR-068/069), con copia compacta preservada en la Paleta para no romper el arrastre
+sobre el Canvas. -->
 <!-- 1.10.0: inventario ampliado — fusión/renombre de códigos (FR-068), buscador del
 banco (FR-069) y respaldo completo .zip (FR-070). -->
 <!-- 1.9.0: Principio VI enmendado — categorías personalizadas (FR-064/065/066) pueden

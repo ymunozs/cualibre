@@ -292,9 +292,12 @@ const Paleta = {
     }
   },
 
+  /* Dos vistas del mismo banco: la completa con buscador (pestaña ▤ CÓDIGOS,
+     #code-bank) y una compacta sin filtrar en la Paleta (#code-bank-mini) —
+     esta última existe para que arrastrar una selección del Canvas a un
+     código siga funcionando (FR-037) aunque el banco completo viva en otra
+     pestaña y no pueda verse a la vez que el Canvas. */
   _renderBank() {
-    const bank = document.getElementById("code-bank");
-    bank.textContent = "";
     let codes = [...State.project.codes].reverse(); // más recientes arriba
     if (this.bankQuery) {
       codes = codes.filter(c =>
@@ -303,10 +306,17 @@ const Paleta = {
         || (c.quote && c.quote.toLowerCase().includes(this.bankQuery))
       );
     }
+    this._renderBankInto(codes, "code-bank", this.bankQuery ? "Sin coincidencias en el banco." : "Aún no hay códigos.");
+    this._renderBankInto([...State.project.codes].reverse(), "code-bank-mini", "Aún no hay códigos.");
+  },
+
+  _renderBankInto(codes, containerId, emptyMessage) {
+    const bank = document.getElementById(containerId);
+    bank.textContent = "";
     if (!codes.length) {
       const p = document.createElement("p");
       p.className = "empty-note";
-      p.textContent = this.bankQuery ? "Sin coincidencias en el banco." : "Aún no hay códigos.";
+      p.textContent = emptyMessage;
       bank.appendChild(p);
       return;
     }

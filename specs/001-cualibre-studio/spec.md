@@ -487,12 +487,24 @@ que se listan resultados con título, año, citas y DOI clicable.
   original (renombre puro). Las relaciones que referencian al nombre de origen MUST
   migrar al nuevo nombre (nunca eliminarse por una fusión), descartando solo las que
   queden reflexivas o duplicadas tras el remapeo.
-- **FR-069**: El banco de códigos de la Paleta MUST ofrecer un buscador local que filtre
+- **FR-069**: El sistema MUST ofrecer un buscador local del banco de códigos que filtre
   por nombre de código, categoría o texto de la cita, sin requerir llamada al backend.
+  El banco completo (buscador + fusión, FR-068/069) vive en su propia pestaña ▤ Códigos
+  (v1.10); una copia compacta sin filtrar permanece en la Paleta para no romper el
+  arrastre de una selección del Canvas sobre un código existente (FR-037), ya que Canvas
+  y la pestaña ▤ Códigos nunca son visibles al mismo tiempo.
 - **FR-070**: El sistema MUST ofrecer un respaldo completo autocontenido en un único
   archivo .zip: el proyecto íntegro en JSON (fidelidad total, restaurable), el banco de
   códigos en CSV y el texto de cada documento del corpus en .txt plano, para
   reproducibilidad y portabilidad independiente de la aplicación.
+
+**Trazabilidad emocional y banco de códigos como pestaña (v1.10)**
+
+- **FR-071**: Cada emoción detectada por el análisis de sentimiento MUST exponer las
+  palabras concretas del corpus que la dispararon (con su conteo), excluyendo las que
+  fueron invertidas por negación. El investigador MUST poder hacer clic en una emoción
+  (o en una palabra con carga positiva/negativa) para ver esas menciones, y desde ahí
+  saltar a sus concordancias (KWIC, FR-063) para verificar la clasificación en contexto.
 
 **Persistencia**
 

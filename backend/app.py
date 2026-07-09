@@ -502,7 +502,8 @@ def sentiment() -> dict:
 
     project = storage.get_active_project()
     if not project.documents and not project.codes:
-        return {"documents": [], "domains": [], "codes": [], "words": {"positive": [], "negative": []}, "emotions": []}
+        return {"documents": [], "domains": [], "codes": [], "words": {"positive": [], "negative": []},
+                "emotions": [], "emotion_words": {}}
 
     # Documentos: valencia global + arco emocional
     doc_results = analyze_texts([d.text for d in project.documents])
@@ -510,6 +511,7 @@ def sentiment() -> dict:
     all_pos: dict = {}
     all_neg: dict = {}
     all_emos: dict = {}
+    all_emotion_words: dict[str, dict[str, int]] = {}
     for doc, result in zip(project.documents, doc_results):
         documents.append({
             "id": doc.id, "filename": doc.filename,
@@ -522,6 +524,10 @@ def sentiment() -> dict:
             all_neg[w] = all_neg.get(w, 0) + c
         for e, c in result["emotions"].items():
             all_emos[e] = all_emos.get(e, 0) + c
+        for e, words in result["emotion_words"].items():
+            bucket = all_emotion_words.setdefault(e, {})
+            for w, c in words.items():
+                bucket[w] = bucket.get(w, 0) + c
 
     # Tono por dominio y por código (sobre las citas ancladas)
     anchored = [c for c in project.codes if c.doc_id and c.quote]
@@ -557,6 +563,8 @@ def sentiment() -> dict:
             {"emotion": e, "count": c}
             for e, c in sorted(all_emos.items(), key=lambda x: -x[1])
         ],
+        # Trazabilidad por emoción (FR-071): qué palabras exactas la dispararon
+        "emotion_words": {e: top(words) for e, words in all_emotion_words.items()},
     }
 
 

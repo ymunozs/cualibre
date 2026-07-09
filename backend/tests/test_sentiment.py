@@ -39,6 +39,18 @@ def test_lemma_matching():
     assert result["negatives"].get("llorar", 0) == 1
 
 
+def test_emotion_words_traceability():
+    # FR-071: cada emoción debe rastrear qué palabras la dispararon
+    result = analyze_texts(["El miedo paralizaba al niño en la oscuridad."])[0]
+    assert result["emotion_words"]["miedo"]["miedo"] == 1
+
+
+def test_emotion_words_excludes_negated():
+    # Una palabra negada no debe figurar en la trazabilidad de la emoción
+    result = analyze_texts(["No siento alegría en este lugar."])[0]
+    assert "alegría" not in result["emotion_words"].get("alegría", {})
+
+
 def test_sentiment_endpoint(client):
     text = "Primer párrafo de alegría y amor.\nSegundo párrafo de miedo y tristeza."
     client.post("/api/documents", files={"file": ("e.txt", text.encode(), "text/plain")})
@@ -52,3 +64,6 @@ def test_sentiment_endpoint(client):
     assert any(d["domain"] == "Emocional" and d["score"] > 0 for d in data["domains"])
     assert any(w["word"] == "alegría" for w in data["words"]["positive"])
     assert any(e["emotion"] == "miedo" for e in data["emotions"])
+    # FR-071: la trazabilidad viaja en la respuesta del endpoint
+    assert "miedo" in data["emotion_words"]
+    assert any(w["word"] == "miedo" for w in data["emotion_words"]["miedo"])

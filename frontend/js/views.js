@@ -54,6 +54,11 @@ const Views = {
       document.getElementById("kwic-dialog").close();
     });
 
+    // Trazabilidad de emociones (FR-071)
+    document.getElementById("emotion-words-close").addEventListener("click", () => {
+      document.getElementById("emotion-words-dialog").close();
+    });
+
     // NLP
     document.getElementById("nlp-lang").addEventListener("change", () => this.renderNlp());
     const minLen = document.getElementById("nlp-minlen");
@@ -347,9 +352,12 @@ const Views = {
     Charts.diverging(document.getElementById("sent-codes"),
       data.codes.map(c => ({ label: c.name, value: c.score, sublabel: `${c.n} citas`, color: State.domains[c.domain] })));
 
-    // Emociones (conteos, un solo tono) y palabras con carga
+    // Emociones (conteos, un solo tono) y palabras con carga — ambos clicables
+    // hacia su trazabilidad (FR-071): qué menciones exactas produjeron el número.
     Charts.hbar(document.getElementById("sent-emotions"),
-      data.emotions.map(e => ({ label: e.emotion, value: e.count, color: "#FF3300" })));
+      data.emotions.map(e => ({ label: e.emotion, value: e.count, color: "#FF3300" })),
+      (d) => this.openEmotionWords(d.label, data.emotion_words[d.label] || []));
+
     const rows = [];
     const maxLen = Math.max(data.words.positive.length, data.words.negative.length);
     for (let i = 0; i < maxLen; i++) {
@@ -357,6 +365,60 @@ const Views = {
       rows.push([p ? `${p.word} (${p.count})` : "", n ? `${n.word} (${n.count})` : ""]);
     }
     Charts.table(document.getElementById("sent-words"), ["Positivas ↑", "Negativas ↓"], rows);
+    const wordsTable = document.querySelector("#sent-words table");
+    if (wordsTable) {
+      const posWords = data.words.positive, negWords = data.words.negative;
+      [...wordsTable.tBodies[0].rows].forEach((row, i) => {
+        if (posWords[i]) {
+          row.cells[0].classList.add("clickable-word");
+          row.cells[0].title = "Ver menciones en contexto";
+          row.cells[0].addEventListener("click", () => this.openKwic(posWords[i].word, "all"));
+        }
+        if (negWords[i]) {
+          row.cells[1].classList.add("clickable-word");
+          row.cells[1].title = "Ver menciones en contexto";
+          row.cells[1].addEventListener("click", () => this.openKwic(negWords[i].word, "all"));
+        }
+      });
+    }
+  },
+
+  /* Trazabilidad de una emoción (FR-071): qué palabras exactas la dispararon,
+     cada una clicable hacia sus concordancias en el corpus. */
+  openEmotionWords(emotion, words) {
+    const dialog = document.getElementById("emotion-words-dialog");
+    const body = document.getElementById("emotion-words-body");
+    document.getElementById("emotion-words-title").textContent = `PALABRAS QUE DETECTARON «${emotion.toUpperCase()}»`;
+    body.textContent = "";
+    if (!words.length) {
+      const p = document.createElement("p");
+      p.className = "empty-note";
+      p.textContent = "Sin palabras registradas para esta emoción.";
+      body.appendChild(p);
+      dialog.showModal();
+      return;
+    }
+    const intro = document.createElement("p");
+    intro.className = "empty-note";
+    intro.style.paddingTop = "0";
+    intro.textContent = "Clic en una palabra para ver sus menciones en contexto (Concordancias).";
+    body.appendChild(intro);
+    const list = document.createElement("ul");
+    list.className = "plain-list";
+    for (const w of words) {
+      const li = document.createElement("li");
+      const label = document.createElement("span");
+      label.className = "clickable-word";
+      label.textContent = `${w.word} (${w.count})`;
+      label.addEventListener("click", () => {
+        dialog.close();
+        this.openKwic(w.word, "all");
+      });
+      li.appendChild(label);
+      list.appendChild(li);
+    }
+    body.appendChild(list);
+    dialog.showModal();
   },
 
   async _saveProject() {
@@ -569,8 +631,11 @@ const Views = {
     }
   },
 
-  /* Concordancias (KWIC): todas las ocurrencias de una palabra en contexto (FR-063) */
-  async openKwic(word) {
+  /* Concordancias (KWIC): todas las ocurrencias de una palabra en contexto (FR-063).
+     forcedPos: pásalo (p. ej. "all") cuando el origen no es la vista NLP —
+     las palabras del léxico de sentimiento no están filtradas por categoría
+     gramatical, así que buscarlas literalmente es lo correcto (FR-071). */
+  async openKwic(word, forcedPos) {
     const dialog = document.getElementById("kwic-dialog");
     const body = document.getElementById("kwic-body");
     document.getElementById("kwic-title").textContent = `CONCORDANCIAS DE «${word.toUpperCase()}»`;
@@ -578,7 +643,7 @@ const Views = {
     dialog.showModal();
     try {
       const lang = document.getElementById("nlp-lang").value;
-      const pos = document.getElementById("nlp-pos").value;
+      const pos = forcedPos || document.getElementById("nlp-pos").value;
       const { count, occurrences } = await API.kwic(word, lang, pos);
       body.textContent = "";
       if (!count) {

@@ -46,11 +46,15 @@ def _model():
 
 
 def _score_doc(doc) -> dict:
-    """Puntúa un doc de spaCy: valencia media, palabras con carga y emociones."""
+    """Puntúa un doc de spaCy: valencia media, palabras con carga y emociones.
+
+    emotion_words rastrea, por emoción, qué palabras exactas la dispararon —
+    la trazabilidad que permite auditar cada clasificación (FR-071)."""
     lex = _lexicon()
     positives: Counter = Counter()
     negatives: Counter = Counter()
     emotions: Counter = Counter()
+    emotion_words: dict[str, Counter] = {}
     total = 0
     tokens = [t for t in doc if t.is_alpha]
     for i, token in enumerate(tokens):
@@ -69,6 +73,7 @@ def _score_doc(doc) -> dict:
         if not negated:
             for emo in emos:
                 emotions[emo] += 1
+                emotion_words.setdefault(emo, Counter())[word] += 1
         total += polarity
     matched = sum(positives.values()) + sum(negatives.values())
     return {
@@ -77,6 +82,7 @@ def _score_doc(doc) -> dict:
         "positives": positives,
         "negatives": negatives,
         "emotions": emotions,
+        "emotion_words": emotion_words,
     }
 
 
