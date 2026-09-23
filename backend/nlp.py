@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import threading
 from collections import Counter
 
 STOPWORDS_ES = frozenset("""
@@ -52,36 +53,72 @@ whom why why's with won't would wouldn't you you'd you'll you're you've your you
 yourself yourselves
 """.split())
 
+# Portugués (corpus de colegas de Brasil): frecuencias, foco gramatical y sentimiento.
+STOPWORDS_PT = frozenset("""
+a à ao aos aquela aquelas aquele aqueles aquilo as às até com como da das de dela
+delas dele deles depois do dos e é ela elas ele eles em entre era eram essa essas
+esse esses esta está estamos estão estas estava estavam este esteja estejam estes
+esteve estive estivemos estiveram eu foi fomos for foram fosse fossem fui há isso
+isto já lhe lhes mais mas me mesmo meu meus minha minhas muito na não nas nem no
+nos nós nossa nossas nosso nossos num numa o os ou para pela pelas pelo pelos por
+qual quando que quem se seja sejam sem ser será serão seu seus só sua suas também
+te tem têm temos tenho teu teus tinha tinham tu tua tuas um uma umas uns você vocês
+vos ainda assim aqui ali lá então porque pois sobre tudo todo toda todos todas
+cada coisa outra outro outras outros tão bem vai vou ter fazer faz fez sim né tá
+aí daí gente pra pro coisas estar sendo sido havia houve
+""".split())
+
+STOPWORDS = {"es": STOPWORDS_ES, "en": STOPWORDS_EN, "pt": STOPWORDS_PT}
+
+
+def detect_language(text: str) -> str:
+    """Idioma probable de un corpus (es/en/pt) por sus palabras vacías más
+    distintivas. Solo propone el valor inicial del selector: el investigador
+    puede cambiarlo cuando quiera."""
+    words = _WORD_RE.findall(text[:30000].lower())
+    scores = {lang: sum(1 for w in words if w in STOPWORDS[lang] - shared)
+              for lang, shared in (("es", STOPWORDS_EN | STOPWORDS_PT),
+                                   ("en", STOPWORDS_ES | STOPWORDS_PT),
+                                   ("pt", STOPWORDS_ES | STOPWORDS_EN))}
+    best = max(scores, key=scores.get)
+    return best if scores[best] > 0 else "es"
+
 _WORD_RE = re.compile(r"\b\w+\b", re.UNICODE)
 
 # ---- Foco gramatical con spaCy (FR-058) ----
 # Los modelos pequeños es/en viajan dentro de los instaladores (decisión del
 # investigador 2026-07-07: engordar instaladores a cambio de POS offline).
+# El análisis por documento se calcula una vez y se reutiliza (analysis.py).
 
+POS_LANGS = ("es", "en", "pt")
 POS_MAP = {"verb": {"VERB"}, "noun": {"NOUN", "PROPN"}, "adj": {"ADJ"}}
+MODEL_LOCK = threading.RLock()  # spaCy no garantiza uso concurrente del mismo modelo
 _NLP_CACHE: dict = {}
 
 
 def _get_model(lang: str):
-    if lang not in _NLP_CACHE:
-        import es_core_news_sm, en_core_web_sm  # noqa: PLC0415
+    with MODEL_LOCK:
+        if lang not in _NLP_CACHE:
+            import en_core_web_sm, es_core_news_sm, pt_core_news_sm  # noqa: PLC0415
 
-        module = es_core_news_sm if lang == "es" else en_core_web_sm
-        model = module.load(exclude=["parser", "ner"])
-        model.max_length = 2_000_000
-        _NLP_CACHE[lang] = model
-    return _NLP_CACHE[lang]
+            module = {"es": es_core_news_sm, "en": en_core_web_sm, "pt": pt_core_news_sm}[lang]
+            model = module.load(exclude=["parser", "ner"])
+            model.max_length = 2_000_000
+            _NLP_CACHE[lang] = model
+        return _NLP_CACHE[lang]
 
 
-def _kwic_entry(doc, start: int, end: int, window: int) -> dict:
+def _kwic_entry(doc, start: int, end: int, window: int, offsets) -> dict:
+    """Entrada de concordancia. start/end llegan en puntos de código (Python)
+    y salen en unidades UTF-16, que es como cuenta el Canvas (JS)."""
     text = doc.text
     before = text[max(0, start - window):start].replace("\n", " ")
     after = text[end:end + window].replace("\n", " ")
     return {
         "doc_id": doc.id,
         "filename": doc.filename,
-        "start": start,
-        "end": end,
+        "start": offsets.to_utf16(start),
+        "end": offsets.to_utf16(end),
         "before": before,
         "match": text[start:end],
         "after": after,
@@ -98,6 +135,8 @@ def kwic_occurrences(
     En modo verb/noun/adj busca por LEMA (así "cantar" también encuentra
     "cantó" y "cantaba" en su forma real, con offsets exactos para saltar
     al Canvas — FR-063)."""
+    from . import analysis
+
     query_norm = query.strip().lower()
     if not query_norm:
         return []
@@ -105,51 +144,50 @@ def kwic_occurrences(
     if pos == "all":
         pattern = re.compile(r"\b" + re.escape(query_norm) + r"\b", re.IGNORECASE)
         for doc in documents:
+            offsets = analysis.OffsetMap(doc.text)
             for m in pattern.finditer(doc.text):
                 if len(results) >= limit:
                     return results
-                results.append(_kwic_entry(doc, m.start(), m.end(), window))
+                results.append(_kwic_entry(doc, m.start(), m.end(), window, offsets))
     else:
-        wanted = POS_MAP.get(pos, set())
-        model = _get_model(lang)
         for doc in documents:
-            if len(results) >= limit:
-                return results
-            for token in model(doc.text):
+            offsets = analysis.OffsetMap(doc.text)
+            for start, end, key, lemma, word in analysis.get(doc.text, lang)["pos"]:
                 if len(results) >= limit:
-                    break
-                if not token.is_alpha or token.pos_ not in wanted:
-                    continue
-                if token.lemma_.lower() != query_norm and token.text.lower() != query_norm:
-                    continue
-                results.append(_kwic_entry(doc, token.idx, token.idx + len(token.text), window))
+                    return results
+                if key == pos and (lemma == query_norm or word == query_norm):
+                    results.append(_kwic_entry(doc, start, end, window, offsets))
     return results
+
+
+def pos_counts(
+    analyses, pos: str, lang: str, min_len: int = 4, top: int = 50,
+    exclusions: set[str] | None = None,
+) -> list[dict]:
+    """Frecuencias de lemas de una categoría gramatical sobre análisis ya
+    calculados. 'cantó' y 'cantaba' cuentan como 'cantar'."""
+    stopwords = STOPWORDS.get(lang, STOPWORDS_ES)
+    excluded = {w.lower() for w in (exclusions or set())}
+    counter: Counter = Counter()
+    for data in analyses:
+        for _start, _end, key, lemma, word in data["pos"]:
+            if key != pos:
+                continue
+            if (len(lemma) < min_len or lemma in stopwords or word in stopwords
+                    or lemma in excluded or word in excluded):
+                continue
+            counter[lemma] += 1
+    return [{"word": w, "count": c} for w, c in counter.most_common(top)]
 
 
 def pos_frequencies(
     text: str, lang: str, pos: str, min_len: int = 4, top: int = 50,
     exclusions: set[str] | None = None,
 ) -> list[dict]:
-    """Frecuencias de lemas filtradas por categoría gramatical (verbos,
-    sustantivos o adjetivos). 'cantó' y 'cantaba' cuentan como 'cantar'."""
-    stopwords = STOPWORDS_ES if lang == "es" else STOPWORDS_EN
-    excluded = {w.lower() for w in (exclusions or set())}
-    wanted = POS_MAP[pos]
-    model = _get_model(lang)
-    counter: Counter = Counter()
-    # Por párrafos: acota memoria en corpus grandes
-    chunks = [c for c in text.split("\n\n") if c.strip()]
-    for doc in model.pipe(chunks, batch_size=32):
-        for token in doc:
-            if token.pos_ not in wanted or not token.is_alpha:
-                continue
-            lemma = token.lemma_.lower().strip()
-            word = token.text.lower()
-            if (len(lemma) < min_len or lemma in stopwords or word in stopwords
-                    or lemma in excluded or word in excluded):
-                continue
-            counter[lemma] += 1
-    return [{"word": w, "count": c} for w, c in counter.most_common(top)]
+    """Frecuencias por categoría gramatical de un texto suelto."""
+    from . import analysis
+
+    return pos_counts([analysis.get(text, lang)], pos, lang, min_len, top, exclusions)
 
 
 def word_frequencies(
@@ -158,7 +196,7 @@ def word_frequencies(
 ) -> list[dict]:
     """Frecuencias del corpus: stopwords por idioma + longitud mínima (FR-017)
     + exclusiones del investigador, p. ej. marcas de transcripción (FR-048)."""
-    stopwords = STOPWORDS_ES if lang == "es" else STOPWORDS_EN
+    stopwords = STOPWORDS.get(lang, STOPWORDS_ES)
     excluded = {w.lower() for w in (exclusions or set())}
     words = _WORD_RE.findall(text.lower())
     filtered = (

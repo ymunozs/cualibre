@@ -18,9 +18,14 @@ MACOSX_DEPLOYMENT_TARGET="$MACOS_MIN" uv run pyinstaller --noconfirm --clean --w
   --icon packaging/cualibre.icns \
   --add-data "frontend:frontend" \
   --add-data "MANUAL.md:." \
+  --add-data "MANUAL.en.md:." \
+  --add-data "MANUAL.pt.md:." \
   --add-data "backend/data_nrc_es.json:." \
   --collect-all es_core_news_sm \
   --collect-all en_core_web_sm \
+  --collect-all pt_core_news_sm \
+  --collect-all webview \
+  --hidden-import Vision \
   --osx-bundle-identifier cl.cualibre.studio \
   run.py
 

@@ -1,7 +1,7 @@
 [project]
 name = "cualibre"
-version = "1.10.0"
-description = "CUA-LIBRE STUDIO — Estudio de análisis cualitativo (QDA/CAQCAS) local"
+version = "1.12.0"
+description = "CUA-LIBRE STUDIO — Estudio de análisis cualitativo (QDA/CAQDAS) local"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi>=0.115",
@@ -14,12 +14,25 @@ dependencies = [
     "numpy==1.26.4",
     "es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl",
     "en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
+    "pt-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl",
+    # Ventana propia (WKWebView en Mac, WebView2 en Windows); si falla, se usa el navegador
+    "pywebview>=5.3",
+    # OCR nativo del sistema, sin modelos que empaquetar (Vision en Mac, Windows.Media.Ocr)
+    "pyobjc-framework-Vision>=10.3; sys_platform == 'darwin'",
+    "winrt-runtime>=2.2; sys_platform == 'win32'",
+    "winrt-Windows.Media.Ocr>=2.2; sys_platform == 'win32'",
+    "winrt-Windows.Graphics.Imaging>=2.2; sys_platform == 'win32'",
+    "winrt-Windows.Storage.Streams>=2.2; sys_platform == 'win32'",
+    "winrt-Windows.Globalization>=2.2; sys_platform == 'win32'",
+    "winrt-Windows.Foundation>=2.2; sys_platform == 'win32'",
+    "winrt-Windows.Foundation.Collections>=2.2; sys_platform == 'win32'",
 ]
 
 [dependency-groups]
 dev = [
     "pyinstaller>=6.21.0",
     "pytest>=8.0",
+    "xmlschema>=4.3.2",
 ]
 
 [tool.uv]

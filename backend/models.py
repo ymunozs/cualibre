@@ -11,9 +11,11 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
+import re
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-import re
+from .i18n import tr
 
 # Categorías Básicas: los 9 dominios de fábrica de Cua-libre, fijos e
 # inmutables (Constitución, Principio VI / FR-016). El investigador puede
@@ -53,6 +55,9 @@ class Document(BaseModel):
     filename: str
     text: str
     imported_at: str = Field(default_factory=now_iso)
+    # Páginas cuyo texto se obtuvo por OCR (FR-080): transparencia sobre qué
+    # parte del corpus es lectura automática de una imagen y no texto original
+    ocr_pages: list[int] = Field(default_factory=list)
 
 
 class Code(BaseModel):
@@ -96,6 +101,7 @@ class Project(BaseModel):
     next_relation_id: int = 1
     nlp_exclusions: list[str] = Field(default_factory=list)
     custom_domains: dict[str, str] = Field(default_factory=dict)  # nombre -> #hex (FR-064)
+    corpus_lang: Optional[str] = None  # es/en/pt (FR-077); None = aún no definido
 
     def summary(self) -> dict:
         return {
@@ -118,7 +124,7 @@ class ProjectCreate(BaseModel):
     def strip_name(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("El nombre del proyecto no puede estar vacío")
+            raise ValueError(tr("project_name_empty"))
         return v
 
 
@@ -139,7 +145,7 @@ class CodeCreate(BaseModel):
     def non_empty_domain(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("El dominio no puede estar vacío")
+            raise ValueError(tr("domain_empty"))
         return v
 
     @field_validator("name")
@@ -147,20 +153,20 @@ class CodeCreate(BaseModel):
     def non_empty_name(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("El nombre del código no puede estar vacío")
+            raise ValueError(tr("code_name_empty"))
         return v
 
     @model_validator(mode="after")
     def anchored_or_manual(self) -> "CodeCreate":
         if self.doc_id is None:
             if self.start is not None or self.end is not None:
-                raise ValueError("Un código manual no puede llevar offsets")
+                raise ValueError(tr("manual_no_offsets"))
             self.quote = ""
         else:
             if self.start is None or self.end is None:
-                raise ValueError("Un código anclado requiere offsets start y end")
+                raise ValueError(tr("anchored_needs_offsets"))
             if self.start < 0 or self.end <= self.start:
-                raise ValueError("Offsets incoherentes: se requiere 0 <= start < end")
+                raise ValueError(tr("offsets_incoherent"))
         return self
 
 
@@ -175,7 +181,7 @@ class CodeUpdate(BaseModel):
         if v is not None:
             v = v.strip()
             if not v:
-                raise ValueError("El dominio no puede estar vacío")
+                raise ValueError(tr("domain_empty"))
         return v
 
     @field_validator("name")
@@ -184,7 +190,7 @@ class CodeUpdate(BaseModel):
         if v is not None:
             v = v.strip()
             if not v:
-                raise ValueError("El nombre del código no puede estar vacío")
+                raise ValueError(tr("code_name_empty"))
         return v
 
 
@@ -203,13 +209,13 @@ class CodeMerge(BaseModel):
     def strip_name(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("El nombre no puede estar vacío")
+            raise ValueError(tr("name_empty"))
         return v
 
     @model_validator(mode="after")
     def distinct_names(self) -> "CodeMerge":
         if self.from_name == self.to_name:
-            raise ValueError("Elige dos nombres distintos para fusionar")
+            raise ValueError(tr("merge_same_names"))
         return self
 
 
@@ -222,14 +228,14 @@ class CustomDomainCreate(BaseModel):
     def strip_name(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("El nombre de la categoría no puede estar vacío")
+            raise ValueError(tr("category_name_empty"))
         return v
 
     @field_validator("color")
     @classmethod
     def valid_hex(cls, v: str) -> str:
         if not HEX_COLOR_RE.match(v):
-            raise ValueError(f"Color inválido: {v!r}. Debe ser hex tipo #RRGGBB")
+            raise ValueError(tr("invalid_color", value=v))
         return v.upper()
 
 
@@ -242,15 +248,13 @@ class RelationCreate(BaseModel):
     @classmethod
     def valid_type(cls, v: str) -> str:
         if v not in RELATION_TYPES:
-            raise ValueError(
-                f"Tipo de relación inválido: {v!r}. Usa: {', '.join(RELATION_TYPES)}"
-            )
+            raise ValueError(tr("invalid_relation_type", value=v))
         return v
 
     @model_validator(mode="after")
     def distinct_ends(self) -> "RelationCreate":
         if self.source == self.target:
-            raise ValueError("Una relación requiere dos códigos distintos")
+            raise ValueError(tr("relation_same_ends"))
         return self
 
 

@@ -51,6 +51,11 @@
   --mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   --display: "Space Grotesk", "Helvetica Neue", sans-serif;
   --serif: Charter, Georgia, "Times New Roman", serif;
+  /* Íconos (🗑 ✎ ✕ ↺): declarar la fuente de símbolos evita que el navegador
+     busque una de respaldo en CADA botón (medido: 200 ítems del banco pasaban
+     de ~625 ms a ~30 ms de maquetación) */
+  --symbols: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Apple Symbols",
+             "Noto Color Emoji", sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,10 +74,10 @@ body {
 
 #topbar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px 16px;
   border-bottom: 4px solid var(--ink);
   padding-bottom: 10px;
   margin-bottom: 18px;
@@ -87,7 +92,20 @@ body {
 .title-accent { color: var(--accent); }
 .cua-title small { font-size: 0.9rem; font-family: var(--mono); font-weight: 400; color: #666; }
 
-#project-bar { display: flex; align-items: center; gap: 8px; }
+/* La cabecera se reparte en dos grupos que bajan de línea cuando no caben
+   (etiquetas más largas en inglés/portugués, ventanas angostas en Windows) */
+#project-bar, #app-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* Fila 1: título + herramientas de la app. Fila 2: todo lo del proyecto. */
+#project-bar { order: 3; flex-basis: 100%; padding-top: 2px; }
+#project-bar .btn-save { margin-left: 4px; }
+#project-select {
+  font-family: var(--mono); font-size: 12px; border: var(--border-thin);
+  padding: 4px 6px; background: #fff; max-width: 260px;
+}
+.lang-select {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  border: var(--border-thin); padding: 4px 6px; background: #fff; cursor: pointer;
+}
 
 .mini-label {
   font-size: 10px;
@@ -109,7 +127,14 @@ body {
   gap: 16px;
   flex-wrap: wrap;
 }
-.import-label { font-weight: 700; font-size: 12px; letter-spacing: 0.05em; }
+.import-label { font-weight: 700; font-size: 12px; letter-spacing: 0.05em; display: inline-block; }
+.import-label.btn { background: var(--accent); color: #fff; }
+.import-label:has(+ #file-input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; }
+.import-hint { color: #777; text-transform: none; letter-spacing: 0.02em; font-weight: 400; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
 
 /* ---------- Pestañas ---------- */
 
@@ -156,10 +181,13 @@ body {
 
 /* ---------- Pentagrama: Canvas + Paleta ---------- */
 
-#view-pentagrama { display: grid; grid-template-columns: 2.3fr 1fr; gap: 22px; align-items: start; }
+/* minmax(0, …): la grilla no mide el ancho intrínseco del corpus completo
+   (con corpus grandes, cada cambio en la Paleta re-maquetaba todo el texto) */
+#view-pentagrama { display: grid; grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+#canvas-col { min-width: 0; }
 
 #canvas {
-  height: 640px;
+  height: clamp(420px, calc(100vh - 290px), 1100px); /* aprovecha pantallas grandes */
   overflow-y: auto;
   background: var(--canvas);
   border: var(--border);
@@ -168,9 +196,14 @@ body {
   font-size: 18px;
   line-height: 1.75;
   color: #111;
+  contain: size layout paint; /* lo que pasa dentro del Canvas no re-maqueta la página */
 }
 
 .doc { margin-bottom: 26px; }
+/* Corpus grandes (clase puesta por canvas.js): el navegador no maqueta ni pinta
+   los documentos fuera de pantalla y recuerda su último alto real. Con corpus
+   normales no se activa, para que la posición de lectura se restaure exacta. */
+#canvas.big-corpus .doc { content-visibility: auto; contain-intrinsic-size: auto 2400px; }
 
 .doc-header {
   font-family: var(--mono);
@@ -281,7 +314,10 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
   cursor: pointer;
   font-size: 14px;
   padding: 2px 4px;
+  font-family: var(--symbols);
+  color: inherit;
 }
+.sym { font-family: var(--symbols); }
 .icon-btn:hover { color: var(--accent); }
 
 /* Banco de códigos (ahora vive en su propia pestaña ▤ CÓDIGOS) */
@@ -313,7 +349,13 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
 
 /* ---------- Pestañas de documentos (navegación, no entrada — FR-035) ---------- */
 
-#doc-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+/* Una sola fila desplazable: con decenas de documentos, las pestañas en varias
+   filas empujaban el Canvas fuera de la pantalla */
+#doc-tabs {
+  display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto;
+  margin-bottom: 8px; padding-bottom: 4px; scrollbar-width: thin;
+}
+.doc-tab { flex-shrink: 0; }
 
 .doc-tab {
   font-family: var(--mono);
@@ -532,10 +574,33 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
 #chart-pie, #chart-bars { border: var(--border); background: #fff; padding: 14px; }
 
 .empty-note { color: #777; font-size: 13px; padding: 14px 0; }
+.muted { color: #999; }
+
+/* Avance del análisis de corpus grandes */
+.progress-note {
+  border: var(--border-thin);
+  border-left: 6px solid var(--accent);
+  background: #fff;
+  padding: 8px 12px;
+  margin: 6px 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  animation: progress-pulse 1.6s ease-in-out infinite;
+}
+@keyframes progress-pulse { 50% { border-left-color: #FFB199; } }
+
+.bank-more { display: block; width: 100%; margin-top: 8px; }
+#nlp-pos:disabled { opacity: 0.45; cursor: not-allowed; }
+#code-bank-search {
+  width: 100%; max-width: 420px; margin-bottom: 10px;
+  font-family: var(--mono); font-size: 13px; border: var(--border-thin); padding: 7px 8px;
+}
 
 /* ---------- Exportar ---------- */
 
-#btn-export { display: inline-block; width: auto; text-decoration: none; margin-bottom: 12px; }
+.export-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+.export-actions .btn { display: inline-block; width: auto; text-decoration: none; color: inherit; }
+.export-actions .btn-accent { color: #fff; }
 
 /* ---------- Literatura ---------- */
 
@@ -697,6 +762,7 @@ body.immersion #canvas { height: calc(100vh - 130px); }
 #toast.error { background: var(--accent); border-color: var(--ink); }
 
 dialog {
+  margin: auto; /* el reset global (margin: 0) anulaba el centrado nativo del diálogo */
   border: var(--border);
   box-shadow: var(--shadow);
   padding: 22px;
@@ -731,12 +797,26 @@ body.dark #about-body .about-dedication { border-top-color: #444; color: #bbb; }
 #manual-body h2 { font-family: var(--display); font-size: 1.05rem; border-left: 4px solid var(--accent); padding-left: 10px; margin: 18px 0 8px; }
 #manual-body h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 14px 0 6px; }
 #manual-body p, #manual-body li { line-height: 1.55; margin: 5px 0; }
-#manual-body ul { padding-left: 22px; }
+#manual-body ul, #manual-body ol { padding-left: 22px; }
 #manual-body table { margin: 8px 0; }
 #manual-body code { background: #eee; border: 1px solid #ccc; padding: 0 4px; font-size: 12px; }
 #manual-body a { color: var(--accent); font-weight: 700; }
 dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 .dialog-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+.dialog-note { font-size: 12px; color: #666; margin: 8px 0; line-height: 1.5; }
+.dialog-input {
+  width: 100%; font-family: inherit; font-size: 13px;
+  border: 2px solid var(--ink); padding: 8px; background: #fff; color: var(--ink);
+}
+#ask-dialog { width: 420px; max-width: 90vw; }
+#confirm-message { line-height: 1.55; }
+
+/* Barras de desplazamiento sobrias (Windows muestra las clásicas, anchas) */
+#canvas, .table-scroll, #code-bank, #manual-body, dialog {
+  scrollbar-width: thin;
+  scrollbar-color: #999 transparent;
+}
 .dialog-buttons .btn { width: auto; margin-top: 0; }
 
 /* ---------- Sesión de foco (FR-053) ---------- */
@@ -802,6 +882,7 @@ body.dark .controls-row select, body.dark .controls-row input {
 body.dark .btn { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
 body.dark .btn:hover { box-shadow: 3px 3px 0 #E8E8E2; }
 body.dark .btn-accent { background: var(--accent); color: #fff; }
+body.dark .import-label.btn { background: var(--accent); color: #fff; border-color: #E8E8E2; }
 body.dark .btn-danger { background: #E8E8E2; color: #141412; }
 body.dark .filter-chip, body.dark .btn-export-mini,
 body.dark #btn-immersion, body.dark #btn-font, body.dark #btn-linenum {
@@ -824,6 +905,15 @@ body.dark .empty-note { color: #888; }
 body.dark #rel-graph svg { background: #FDFDF7 !important; border-color: #E8E8E2 !important; }
 body.dark #wordcloud { border-color: #E8E8E2; }
 body.dark .mini-label { color: #E8E8E2; }
+body.dark #project-select, body.dark .lang-select, body.dark #code-bank-search,
+body.dark .dialog-input {
+  background: #141412; color: #E8E8E2; border-color: #E8E8E2;
+}
+body.dark .dialog-note { color: #aaa; }
+body.dark .progress-note { background: #1E1E1A; border-color: #E8E8E2; border-left-color: var(--accent); }
+body.dark .muted { color: #777; }
+body.dark .export-actions .btn { color: #E8E8E2; }
+body.dark .export-actions .btn-accent { color: #fff; }
 /* Manual en oscuro: los chips de código llevaban fondo claro con texto claro */
 body.dark #manual-body code { background: #2E2E28; border-color: #555; color: #E8E8E2; }
 body.dark #manual-body h1 { border-bottom-color: #E8E8E2; }
@@ -842,6 +932,48 @@ body.dark .sent-doc-card { background: #1E1E1A; border-color: #E8E8E2; }
 /* ---------- Responsive ---------- */
 
 @media (max-width: 980px) {
-  #view-pentagrama, #nlp-bottom, #analytics-charts { grid-template-columns: 1fr; }
+  #view-pentagrama, #nlp-bottom, #analytics-charts { grid-template-columns: minmax(0, 1fr); }
   #canvas { height: 480px; }
+  #project-bar { justify-content: flex-start; }
 }
+@media (max-width: 640px) {
+  body { padding: 14px 12px 84px; }
+  .cua-title { font-size: 1.5rem; }
+  .tab { padding: 8px 12px; }
+  #canvas { padding: 18px 16px; font-size: 16px; }
+}
+
+/* ---------- v1.12: acuerdo, léxicos, OCR, salir ---------- */
+
+.agr-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 10px 0 14px; }
+.agr-kpi { border: var(--border-thin); background: #fff; padding: 10px 12px; }
+.agr-kpi b { display: block; font-family: var(--display); font-size: 1.6rem; color: var(--accent); }
+.agr-kpi span { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; }
+.clickable-row { cursor: pointer; }
+.clickable-row:hover td { background: #FFF3F0 !important; }
+.clickable-row td:last-child { font-weight: 700; }
+.band-poor td:last-child, .band-slight td:last-child { color: #B3261E; }
+.band-fair td:last-child, .band-moderate td:last-child { color: #9A6200; }
+.band-substantial td:last-child, .band-almost_perfect td:last-child { color: #0E7A3E; }
+#agr-other { font-family: var(--mono); font-size: 13px; border: var(--border-thin); padding: 7px 8px; min-width: 260px; }
+#btn-agr-csv { text-decoration: none; color: inherit; }
+.lexicon-panel { border-left: 6px solid var(--accent); margin: 8px 0 14px; }
+.lexicon-panel .section-title { margin-top: 0; }
+.ocr-badge {
+  display: inline-block; margin-left: 6px; padding: 0 5px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  border: 1px solid var(--accent); color: var(--accent);
+}
+.closed-note { font-family: var(--mono); font-size: 15px; padding: 40px; text-align: center; }
+#about-body .about-credits { font-size: 11px; color: #666; border-top: 1px dashed #bbb; padding-top: 10px; }
+
+body.dark .agr-kpi, body.dark #agr-other { background: #1E1E1A; border-color: #E8E8E2; color: #E8E8E2; }
+body.dark .clickable-row:hover td { background: #2E2A26 !important; }
+body.dark #about-body .about-credits { color: #aaa; border-top-color: #444; }
+body.dark .band-poor td:last-child, body.dark .band-slight td:last-child { color: #F2786D; }
+body.dark .band-fair td:last-child, body.dark .band-moderate td:last-child { color: #E3A73D; }
+body.dark .band-substantial td:last-child, body.dark .band-almost_perfect td:last-child { color: #4CC47F; }
+.qdpx-group { display: inline-flex; gap: 0; align-items: stretch; }
+.qdpx-group .btn { border-right: none; }
+#qdpx-profile { font-family: var(--mono); font-size: 11px; font-weight: 700; border: var(--border-thin); padding: 0 6px; background: #fff; }
+body.dark #qdpx-profile { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }

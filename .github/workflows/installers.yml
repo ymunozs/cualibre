@@ -10,6 +10,20 @@ on:
     tags: ["v*"]
 
 jobs:
+  # Suite de tests en los sistemas reales de los usuarios (Windows y macOS):
+  # rutas, codificaciones y reemplazo atómico de archivos se comportan distinto.
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Pytest
+        run: uv run -m pytest backend/tests/ -q
+
   # Solo Apple Silicon (macos-14) queda automático: se probó (v1.7.3,
   # 2026-07-07) que el pool hosted de GitHub para macos-13 (Intel) puede
   # quedar sin capacidad disponible por horas, atascando este job y con
@@ -20,6 +34,7 @@ jobs:
   # workflow. Si GitHub restaura capacidad estable de macos-13, se puede
   # volver a añadir aquí como segunda entrada del matrix.
   mac:
+    needs: tests
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +49,7 @@ jobs:
           path: dist/*.dmg
 
   windows:
+    needs: tests
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,17 +57,22 @@ jobs:
         with:
           python-version: "3.12"
       - name: Dependencies
-        run: python -m pip install fastapi uvicorn pymupdf python-docx python-multipart httpx pyinstaller "spacy>=3.8,<3.9" "numpy==1.26.4" https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+        run: python -m pip install fastapi uvicorn pymupdf python-docx python-multipart httpx pyinstaller "spacy>=3.8,<3.9" "numpy==1.26.4" "pywebview>=5.3" "winrt-runtime>=2.2" "winrt-Windows.Media.Ocr>=2.2" "winrt-Windows.Graphics.Imaging>=2.2" "winrt-Windows.Storage.Streams>=2.2" "winrt-Windows.Globalization>=2.2" "winrt-Windows.Foundation>=2.2" "winrt-Windows.Foundation.Collections>=2.2" https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl
       - name: PyInstaller
         run: >
-          python -m PyInstaller --noconfirm --clean
+          python -m PyInstaller --noconfirm --clean --windowed
           --name "CUA-LIBRE Studio"
           --icon packaging/cualibre.ico
           --add-data "frontend;frontend"
           --add-data "MANUAL.md;."
+          --add-data "MANUAL.en.md;."
+          --add-data "MANUAL.pt.md;."
           --add-data "backend/data_nrc_es.json;."
           --collect-all es_core_news_sm
           --collect-all en_core_web_sm
+          --collect-all pt_core_news_sm
+          --collect-all webview
+          --collect-all winrt
           run.py
       - name: Inno Setup
         shell: pwsh

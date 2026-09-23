@@ -149,12 +149,17 @@ interpretación a un modelo destruye la validez del método y la autoría del an
 
 ## Restricciones Técnicas y de Diseño
 
-- Aplicación local de escritorio/navegador para macOS; sin dependencia de servicios en la
-  nube para el trabajo de análisis (OpenAlex es consulta opcional en línea).
+- Aplicación local de escritorio/navegador para macOS y Windows; sin dependencia de
+  servicios en la nube para el trabajo de análisis (OpenAlex es consulta opcional en
+  línea).
 - Python como lenguaje del backend de procesamiento (extracción PDF/DOCX, NLP, datos);
   las bibliotecas ya validadas (PyMuPDF, python-docx, pandas) se prefieren.
 - Formatos de corpus soportados: PDF, DOCX, TXT (UTF-8).
-- Idiomas del corpus: español e inglés (stopwords y NLP para ambos).
+- Idiomas del corpus: español, inglés y portugués (stopwords, foco gramatical y
+  sentimiento). Idiomas de la interfaz: es-419, en-GB, pt-BR.
+- Recursos de terceros se usan según sus licencias: el léxico NRC no se redistribuye
+  fuera de lo ya decidido para el castellano; inglés y portugués se obtienen de la fuente
+  oficial en cada equipo.
 - Inventario de funcionalidades protegidas por el Principio I: importación de corpus,
   Canvas con resaltado por dominio y pestañas de documentos, Nube Negra, Paleta con
   códigos manuales y memos, edición/eliminación de códigos, arrastre de selección a
@@ -183,7 +188,16 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   Paleta para no romper el arrastre sobre el Canvas), trazabilidad de palabras por
   emoción en el análisis de sentimiento (clic en una emoción o en una palabra con carga
   MUST mostrar las menciones concretas que la produjeron, con salto a sus
-  concordancias).
+  concordancias), interfaz trilingüe (español latinoamericano, inglés británico,
+  portugués de Brasil) con cambio en caliente y datos invariantes entre idiomas,
+  importación de proyectos (.zip/.json) y eliminación de proyectos a papelera
+  recuperable, análisis lingüístico reutilizable para corpus voluminosos (caché por
+  documento, trabajo en segundo plano con avance visible), ventana propia de escritorio
+  con respaldo en el navegador, OCR de PDF escaneados con el motor del sistema (páginas
+  marcadas como OCR), sentimiento y foco gramatical en español, inglés y portugués según
+  el idioma del corpus, acuerdo entre codificadores (kappa de Cohen, alfa de
+  Krippendorff, fragmentos en desacuerdo; solo lectura) e intercambio REFI-QDA (.qdpx)
+  con NVivo, ATLAS.ti, MAXQDA y QualCoder.
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -208,7 +222,16 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.11.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-07-08
+**Version**: 1.13.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-09-23
+<!-- 1.13.0: inventario ampliado por pedido del investigador (2026-09-23): sentimiento
+y foco gramatical multilingües (FR-077), acuerdo entre codificadores (FR-078), REFI-QDA
+(FR-079), OCR (FR-080) y ventana propia (FR-081). El acuerdo es análisis de solo
+lectura, coherente con el Principio VIII. La ventana propia se comunica con el backend
+solo por HTTP (Principio IV): guardar/abrir archivos pasan por endpoints. -->
+<!-- 1.12.0: inventario ampliado por pedido del investigador (2026-09-23): interfaz
+trilingüe (FR-072), importar/eliminar proyectos (FR-073), extracción robusta para
+Windows (FR-074), corpus en portugués (FR-075) y análisis reutilizable para corpus
+voluminosos (FR-076). Restricción técnica aclarada: macOS y Windows. -->
 <!-- 1.11.0: inventario ampliado — trazabilidad de palabras por emoción en sentimiento
 (FR-071) y relocalización del banco de códigos a su propia pestaña ▤ Códigos
 (FR-068/069), con copia compacta preservada en la Paleta para no romper el arrastre

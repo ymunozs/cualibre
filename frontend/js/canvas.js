@@ -20,13 +20,13 @@ const Canvas = {
     this.el.addEventListener("mouseup", (event) => this._onMouseUp(event));
     try {
       this.hiddenDomains = new Set(JSON.parse(localStorage.getItem("cua-hidden-domains") || "[]"));
-    } catch (_) { /* preferencia corrupta: partir limpia */ }
+    } catch (_) { /* preferencia corrupta o sin almacenamiento: partir limpia */ }
     // Posición de lectura persistente (FR-045)
     let scrollTimer = null;
     this.el.addEventListener("scroll", () => {
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
-        localStorage.setItem(this._scrollKey(), String(this.el.scrollTop));
+        this._writePref(this._scrollKey(), String(this.el.scrollTop));
       }, 300);
     });
     // Arrastrar la selección: capturar sus offsets antes de soltarla en el banco
@@ -46,6 +46,12 @@ const Canvas = {
     return `cua-scroll-${pid}-${this.activeDocId || "all"}`;
   },
 
+  /* Render con caché por documento: cada .doc se reconstruye solo si cambió
+     algo que lo afecte (sus códigos, colores, filtro, búsqueda o idioma).
+     Con corpus grandes, codificar ya no redibuja todo el corpus: solo el
+     documento tocado. */
+  _docCache: new Map(), // docId -> {sig, el}
+
   render() {
     const { documents, codes } = State.project;
     // Si el documento activo ya no existe, volver a "Todos"
@@ -54,37 +60,94 @@ const Canvas = {
     }
     this._renderDocTabs(documents);
     // No perder el punto de lectura al re-renderizar (FR-045)
-    const savedScroll = this.el.scrollTop || parseInt(localStorage.getItem(this._scrollKey()) || "0", 10);
+    const savedScroll = this.el.scrollTop || parseInt(this._readPref(this._scrollKey()) || "0", 10);
 
-    this.el.textContent = "";
     if (!documents.length) {
+      this._docCache.clear();
+      this.el.textContent = "";
       const empty = document.createElement("p");
       empty.id = "canvas-empty";
-      empty.textContent = "El corpus está vacío. Importa un PDF, DOCX o TXT desde la zona superior.";
+      empty.textContent = I18N.t("canvas.empty");
       this.el.appendChild(empty);
       return;
     }
+    const byDoc = new Map();
+    for (const code of codes) {
+      if (!code.doc_id) continue;
+      if (!byDoc.has(code.doc_id)) byDoc.set(code.doc_id, []);
+      byDoc.get(code.doc_id).push(code);
+    }
+    const alive = new Set(documents.map(d => d.id));
+    for (const id of [...this._docCache.keys()]) if (!alive.has(id)) this._docCache.delete(id);
+
     const visible = this.activeDocId
       ? documents.filter(d => d.id === this.activeDocId)
       : documents;
-    for (const doc of visible) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "doc";
-
-      const header = document.createElement("div");
-      header.className = "doc-header";
-      header.textContent = `— ${doc.filename} —`;
-      wrapper.appendChild(header);
-
-      const textEl = document.createElement("div");
-      textEl.className = "doc-text";
-      textEl.dataset.doc = doc.id;
-      this._renderSegments(textEl, doc, codes);
-      wrapper.appendChild(textEl);
-
-      this.el.appendChild(wrapper);
+    const visibleChars = visible.reduce((sum, d) => sum + d.text.length, 0);
+    this.el.classList.toggle("big-corpus", visibleChars > 400_000);
+    const wanted = visible.map(doc => {
+      const docCodes = byDoc.get(doc.id) || [];
+      const sig = this._signature(doc, docCodes);
+      let entry = this._docCache.get(doc.id);
+      if (!entry || entry.sig !== sig) {
+        entry = { sig, el: this._buildDoc(doc, docCodes) };
+        this._docCache.set(doc.id, entry);
+      }
+      return entry.el;
+    });
+    // Reconciliar en su sitio: desmontar y volver a montar todo el corpus
+    // obligaba al navegador a maquetar millones de caracteres (segundos con
+    // corpus grandes). Si la lista de documentos es la misma, solo se
+    // reemplaza el que cambió.
+    const current = [...this.el.children];
+    const sameShape = current.length === wanted.length
+      && current.every((el, i) => el.dataset.docId === wanted[i].dataset.docId);
+    if (sameShape) {
+      current.forEach((el, i) => { if (el !== wanted[i]) el.replaceWith(wanted[i]); });
+    } else {
+      const fragment = document.createDocumentFragment();
+      for (const el of wanted) fragment.appendChild(el);
+      this.el.textContent = "";
+      this.el.appendChild(fragment);
     }
-    this.el.scrollTop = savedScroll;
+    this._markCurrentHit();
+    if (this.el.scrollTop !== savedScroll) this.el.scrollTop = savedScroll;
+  },
+
+  _signature(doc, docCodes) {
+    const parts = [I18N.lang, doc.filename, [...this.hiddenDomains].sort().join(",")];
+    for (const c of docCodes) {
+      parts.push(`${c.id}:${c.start}:${c.end}:${c.domain}:${State.domains[c.domain] || ""}:${c.name}`);
+    }
+    for (const h of this.searchRanges) {
+      if (h.docId === doc.id) parts.push(`h${h.idx}:${h.start}:${h.end}`);
+    }
+    return parts.join("|");
+  },
+
+  _buildDoc(doc, docCodes) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "doc";
+    wrapper.dataset.docId = doc.id;
+    const header = document.createElement("div");
+    header.className = "doc-header";
+    const ocr = doc.ocr_pages && doc.ocr_pages.length ? ` · ${I18N.t("docs.ocr")}` : "";
+    header.textContent = `— ${doc.filename}${ocr} —`;
+    if (ocr) header.title = I18N.t("docs.ocr.title", { pages: doc.ocr_pages.join(", ") });
+    wrapper.appendChild(header);
+    const textEl = document.createElement("div");
+    textEl.className = "doc-text";
+    textEl.dataset.doc = doc.id;
+    this._renderSegments(textEl, doc, docCodes);
+    wrapper.appendChild(textEl);
+    return wrapper;
+  },
+
+  _readPref(key) {
+    try { return localStorage.getItem(key); } catch (_) { return null; }
+  },
+  _writePref(key, value) {
+    try { localStorage.setItem(key, value); } catch (_) { /* sin almacenamiento: no persiste */ }
   },
 
   /* Pestañas de documentos: navegación, nunca entrada de datos (Principio II). */
@@ -107,18 +170,28 @@ const Canvas = {
       });
       bar.appendChild(tab);
     };
-    makeTab("TODOS", null);
+    makeTab(I18N.t("canvas.all"), null);
     for (const doc of documents) makeTab(doc.filename, doc.id);
+    const active = this.activeDocId && bar.querySelector(".doc-tab.active");
+    if (active && active.offsetLeft + active.offsetWidth > bar.clientWidth) {
+      bar.scrollLeft = active.offsetLeft - 40; // la pestaña activa queda a la vista
+    }
   },
 
   /* Segmentación: límites ordenados → segmentos contiguos → spans planos.
-     Incluye filtro de dominios (FR-042) y marcas de búsqueda (FR-041). */
-  _renderSegments(container, doc, codes) {
-    const anchored = codes.filter(
-      c => c.doc_id === doc.id && !this.hiddenDomains.has(c.domain)
-    );
-    const hits = this.searchRanges.filter(r => r.docId === doc.id);
-    const length = doc.text.length;
+     Incluye filtro de dominios (FR-042) y marcas de búsqueda (FR-041).
+     Barrido lineal: los códigos activos se mantienen en una lista corta en
+     vez de filtrar TODOS los códigos en cada segmento (antes O(segmentos ×
+     códigos), lento con miles de códigos). */
+  _renderSegments(container, doc, docCodes) {
+    const anchored = docCodes
+      .filter(c => !this.hiddenDomains.has(c.domain))
+      .sort((a, b) => a.start - b.start);
+    const hits = this.searchRanges
+      .filter(r => r.docId === doc.id)
+      .sort((a, b) => a.start - b.start);
+    const text = doc.text;
+    const length = text.length;
     const bounds = new Set([0, length]);
     for (const code of anchored) {
       bounds.add(Math.min(code.start, length));
@@ -132,18 +205,30 @@ const Canvas = {
     // en divs .line y el número vive en un ::before CSS (fuera de la selección
     // y del copiado). El \n real queda en un span oculto DENTRO del div para
     // que Range.toString() siga reproduciendo doc.text exacto (offsets intactos).
-    for (let i = 0; i < length; i++) {
-      if (doc.text[i] === "\n") { bounds.add(i); bounds.add(i + 1); }
+    for (let nl = text.indexOf("\n"); nl !== -1; nl = text.indexOf("\n", nl + 1)) {
+      bounds.add(nl);
+      bounds.add(nl + 1);
     }
     const points = [...bounds].sort((a, b) => a - b);
 
+    let nextCode = 0;
+    let active = [];
+    let nextHit = 0;
     let line = document.createElement("div");
     line.className = "line";
     for (let i = 0; i < points.length - 1; i++) {
       const start = points[i];
       const end = points[i + 1];
       if (end <= start) continue;
-      const segText = doc.text.slice(start, end);
+      // Códigos que cubren [start, end): empezaron en o antes de start y
+      // terminan después de start (todo inicio/fin es un límite).
+      while (nextCode < anchored.length && anchored[nextCode].start <= start) {
+        active.push(anchored[nextCode++]);
+      }
+      if (active.length) active = active.filter(c => c.end > start);
+      while (nextHit < hits.length && hits[nextHit].end <= start) nextHit++;
+
+      const segText = text.slice(start, end);
       if (segText === "\n") {
         const nl = document.createElement("span");
         nl.className = "nl";
@@ -154,29 +239,36 @@ const Canvas = {
         line.className = "line";
         continue;
       }
-      const covering = anchored.filter(c => c.start <= start && c.end >= end);
       const span = document.createElement("span");
       span.className = "seg";
       span.textContent = segText;
-      const hit = hits.find(h => h.start <= start && h.end >= end);
+      const hit = nextHit < hits.length && hits[nextHit].start <= start ? hits[nextHit] : null;
       if (hit) {
         span.classList.add("search-hit");
         span.dataset.hit = hit.idx;
-        if (hit.idx === this.currentHit) span.classList.add("search-current");
       }
-      if (covering.length) {
+      if (active.length) {
         // El código más reciente (id mayor) define el color visible
-        const top = covering.reduce((a, b) => (a.id > b.id ? a : b));
+        const covering = [...active].sort((a, b) => a.id - b.id);
+        const top = covering[covering.length - 1];
         span.classList.add("hl");
         span.style.backgroundColor = State.domains[top.domain] || "#999";
         span.style.color = this._contrastText(State.domains[top.domain]);
         span.title = covering
-          .map(c => `[${c.domain}] ${c.name}`)
+          .map(c => `[${I18N.domain(c.domain)}] ${c.name}`)
           .join("\n");
       }
       line.appendChild(span);
     }
     container.appendChild(line);
+  },
+
+  /* Marca el resultado de búsqueda actual sin reconstruir el texto. */
+  _markCurrentHit() {
+    this.el.querySelectorAll(".search-current").forEach(el => el.classList.remove("search-current"));
+    if (this.currentHit < 0) return;
+    this.el.querySelectorAll(`[data-hit="${this.currentHit}"]`)
+      .forEach(el => el.classList.add("search-current"));
   },
 
   /* Ir a una cita concreta (recuperación por código, FR-055) */
@@ -280,7 +372,7 @@ const Canvas = {
   nextHit(delta) {
     if (!this.searchRanges.length) return;
     this.currentHit = (this.currentHit + delta + this.searchRanges.length) % this.searchRanges.length;
-    this.render();
+    this._markCurrentHit(); // sin redibujar el corpus
     this._scrollToHit();
   },
 
@@ -302,13 +394,13 @@ const Canvas = {
     this.hiddenDomains.has(domain)
       ? this.hiddenDomains.delete(domain)
       : this.hiddenDomains.add(domain);
-    localStorage.setItem("cua-hidden-domains", JSON.stringify([...this.hiddenDomains]));
+    this._writePref("cua-hidden-domains", JSON.stringify([...this.hiddenDomains]));
     this.render();
   },
 
   setAllDomains(hidden) {
     this.hiddenDomains = hidden ? new Set(Object.keys(State.domains)) : new Set();
-    localStorage.setItem("cua-hidden-domains", JSON.stringify([...this.hiddenDomains]));
+    this._writePref("cua-hidden-domains", JSON.stringify([...this.hiddenDomains]));
     this.render();
   },
 };

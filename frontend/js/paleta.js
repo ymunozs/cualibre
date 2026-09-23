@@ -4,6 +4,8 @@
 const Paleta = {
   editingId: null,
   bankQuery: "",
+  PAGE: 200, // ítems por tanda: con miles de códigos, el banco se dibuja por partes
+  bankLimit: { "code-bank": 200, "code-bank-mini": 200 },
 
   init() {
     document.getElementById("btn-manual-save").addEventListener("click", () => this._saveManual());
@@ -12,6 +14,7 @@ const Paleta = {
     // Buscar en el banco de códigos (filtro local, sin llamada al backend)
     document.getElementById("code-bank-search").addEventListener("input", (e) => {
       this.bankQuery = e.target.value.trim().toLowerCase();
+      this.bankLimit["code-bank"] = this.PAGE;
       this._renderBank();
     });
 
@@ -39,7 +42,7 @@ const Paleta = {
   _runSearch() {
     const total = Canvas.search(document.getElementById("search-input").value);
     this._updateCount();
-    if (!total) Views.toast("Sin resultados en el corpus", true);
+    if (!total) Views.toast(I18N.t("search.none"), true);
   },
 
   _clearSearch() {
@@ -60,17 +63,18 @@ const Paleta = {
     for (const [domain, color] of Object.entries(State.domains)) {
       const chip = document.createElement("button");
       chip.className = "filter-chip" + (Canvas.hiddenDomains.has(domain) ? " off" : "");
-      chip.title = `${domain} — clic para ${Canvas.hiddenDomains.has(domain) ? "mostrar" : "ocultar"} sus resaltados`;
+      chip.title = I18N.t(Canvas.hiddenDomains.has(domain) ? "filter.chip.show" : "filter.chip.hide",
+        { domain: I18N.domain(domain) });
       const dot = document.createElement("span");
       dot.className = "dom-chip";
       dot.style.backgroundColor = color;
-      chip.append(dot, document.createTextNode(domain));
+      chip.append(dot, document.createTextNode(I18N.domain(domain)));
       chip.addEventListener("click", () => { Canvas.toggleDomain(domain); this._renderFilter(); });
       box.appendChild(chip);
     }
     const clean = document.getElementById("btn-clean-read");
     const allHidden = Canvas.hiddenDomains.size === Object.keys(State.domains).length;
-    clean.textContent = allHidden ? "◼ RESTAURAR RESALTADOS" : "◻ LECTURA LIMPIA";
+    clean.textContent = I18N.t(allHidden ? "filter.restore" : "filter.clean");
   },
 
   /* Rellena un <select> con dos grupos: Categorías Básicas + Personalizadas
@@ -78,11 +82,11 @@ const Paleta = {
   _fillDomainSelect(select, selected) {
     select.textContent = "";
     const basicGroup = document.createElement("optgroup");
-    basicGroup.label = "Categorías Básicas";
+    basicGroup.label = I18N.t("optgroup.basic");
     for (const domain of Object.keys(State.basicDomains)) {
       const option = document.createElement("option");
       option.value = domain;
-      option.textContent = domain;
+      option.textContent = I18N.domain(domain);
       option.selected = domain === selected;
       basicGroup.appendChild(option);
     }
@@ -90,7 +94,7 @@ const Paleta = {
     const customNames = Object.keys(State.customDomains);
     if (customNames.length) {
       const customGroup = document.createElement("optgroup");
-      customGroup.label = "Personalizadas";
+      customGroup.label = I18N.t("optgroup.custom");
       for (const domain of customNames) {
         const option = document.createElement("option");
         option.value = domain;
@@ -103,7 +107,8 @@ const Paleta = {
   },
 
   populateDomains() {
-    this._fillDomainSelect(document.getElementById("manual-domain"));
+    const select = document.getElementById("manual-domain");
+    this._fillDomainSelect(select, select.value);
   },
 
   render() {
@@ -141,21 +146,20 @@ const Paleta = {
     const fromName = document.getElementById("merge-from").value;
     const toInput = document.getElementById("merge-to");
     const toName = toInput.value.trim();
-    if (!fromName || !toName) { Views.toast("Elige un código de origen y escribe el destino", true); return; }
-    if (fromName === toName) { Views.toast("Elige dos nombres distintos", true); return; }
+    if (!fromName || !toName) { Views.toast(I18N.t("codes.merge.missing"), true); return; }
+    if (fromName === toName) { Views.toast(I18N.t("codes.merge.same"), true); return; }
 
     const count = State.project.codes.filter(c => c.name === fromName).length;
     const existsAsTarget = State.project.codes.some(c => c.name === toName);
-    const message = existsAsTarget
-      ? `Esto fusionará ${count} cita(s) de «${fromName}» dentro de «${toName}» (adoptarán su categoría). ¿Continuar?`
-      : `Esto renombrará ${count} cita(s) de «${fromName}» a «${toName}». ¿Continuar?`;
+    const message = I18N.t(existsAsTarget ? "codes.merge.confirm.merge" : "codes.merge.confirm.rename",
+      { n: count, from: fromName, to: toName });
     if (!await Views.confirm(message)) return;
 
     try {
       const result = await API.mergeCodes(fromName, toName);
       toInput.value = "";
       await State.reload();
-      Views.toast(`Fusionado: ${result.merged} cita(s) → «${result.name}»`);
+      Views.toast(I18N.t("codes.merge.done", { n: result.merged, name: result.name }));
     } catch (error) {
       Views.toast(error.message, true);
     }
@@ -170,14 +174,14 @@ const Paleta = {
     if (!names.length) {
       const p = document.createElement("p");
       p.className = "empty-note";
-      p.textContent = "Aún no hay categorías propias. Créalas desde la Nube Negra (✚ Nueva categoría…).";
+      p.textContent = I18N.t("custom.empty");
       box.appendChild(p);
       return;
     }
     for (const name of names) {
       const chip = document.createElement("span");
       chip.className = "filter-chip";
-      chip.title = `Eliminar «${name}»`;
+      chip.title = I18N.t("custom.delete.title", { name });
       const dot = document.createElement("span");
       dot.className = "dom-chip";
       dot.style.backgroundColor = State.customDomains[name];
@@ -196,10 +200,8 @@ const Paleta = {
       await API.deleteCustomDomain(name, false);
     } catch (error) {
       if (error.status === 409) {
-        const count = error.headers?.get?.("X-Code-Count") || "algunos";
-        const ok = await Views.confirm(
-          `${count} código(s) usan «${name}». Se conservarán con ese nombre pero sin color propio. ¿Eliminar la categoría de todas formas?`
-        );
+        const count = error.headers?.get?.("X-Code-Count") || I18N.t("custom.some");
+        const ok = await Views.confirm(I18N.t("custom.inuse.confirm", { n: count, name }));
         if (!ok) return;
         try {
           await API.deleteCustomDomain(name, true);
@@ -213,7 +215,7 @@ const Paleta = {
       }
     }
     await State.reload();
-    Views.toast(`Categoría eliminada: ${name}`);
+    Views.toast(I18N.t("custom.deleted", { name }));
   },
 
   _renderDocs() {
@@ -222,19 +224,29 @@ const Paleta = {
     const { documents, codes } = State.project;
     if (!documents.length) {
       const li = document.createElement("li");
-      li.textContent = "Sin documentos aún.";
-      li.style.color = "#999";
+      li.textContent = I18N.t("docs.empty");
+      li.className = "muted";
       list.appendChild(li);
       return;
     }
+    const counts = new Map();
+    for (const c of codes) if (c.doc_id) counts.set(c.doc_id, (counts.get(c.doc_id) || 0) + 1);
     for (const doc of documents) {
       const li = document.createElement("li");
       const name = document.createElement("span");
-      const count = codes.filter(c => c.doc_id === doc.id).length;
-      name.textContent = `${doc.filename}${count ? ` (${count} cód.)` : ""}`;
+      const count = counts.get(doc.id) || 0;
+      name.textContent = `${doc.filename}${count ? ` ${I18N.t("docs.codes", { n: count })}` : ""}`;
+      if (doc.ocr_pages && doc.ocr_pages.length) {
+        // Transparencia (FR-080): este texto es lectura automática de una imagen
+        const badge = document.createElement("span");
+        badge.className = "ocr-badge";
+        badge.textContent = I18N.t("docs.ocr");
+        badge.title = I18N.t("docs.ocr.title", { pages: doc.ocr_pages.join(", ") });
+        name.appendChild(badge);
+      }
       const del = document.createElement("button");
       del.className = "icon-btn";
-      del.title = "Eliminar documento";
+      del.title = I18N.t("docs.delete.title");
       del.textContent = "🗑";
       del.addEventListener("click", () => this._deleteDoc(doc));
       li.append(name, del);
@@ -245,13 +257,13 @@ const Paleta = {
   async _deleteDoc(doc) {
     const anchored = State.project.codes.filter(c => c.doc_id === doc.id).length;
     const message = anchored
-      ? `Eliminar «${doc.filename}» borrará también sus ${anchored} código(s) asociado(s). ¿Continuar?`
-      : `¿Eliminar «${doc.filename}» del corpus?`;
+      ? I18N.t("docs.delete.withcodes", { name: doc.filename, n: anchored })
+      : I18N.t("docs.delete.plain", { name: doc.filename });
     if (!await Views.confirm(message)) return;
     try {
       await API.deleteDocument(doc.id, true);
       await State.reload();
-      Views.toast(`Documento eliminado${anchored ? ` (con ${anchored} códigos)` : ""}`);
+      Views.toast(anchored ? I18N.t("docs.deleted.codes", { n: anchored }) : I18N.t("docs.deleted"));
     } catch (error) {
       Views.toast(error.message, true);
     }
@@ -260,7 +272,7 @@ const Paleta = {
   async _saveManual() {
     const name = document.getElementById("manual-name").value.trim();
     if (!name) {
-      Views.toast("Escribe una etiqueta para el código manual", true);
+      Views.toast(I18N.t("manual.missing"), true);
       return;
     }
     try {
@@ -272,21 +284,19 @@ const Paleta = {
       document.getElementById("manual-name").value = "";
       document.getElementById("manual-memo").value = "";
       await State.reload();
-      Views.toast(`Código manual guardado: ${name}`);
+      Views.toast(I18N.t("manual.saved", { name }));
     } catch (error) {
       Views.toast(error.message, true);
     }
   },
 
   async _reset() {
-    const ok = await Views.confirm(
-      "Esto borrará TODO el proyecto activo: corpus, códigos y memos. ¿Estás seguro?"
-    );
+    const ok = await Views.confirm(I18N.t("reset.confirm"));
     if (!ok) return;
     try {
       await API.resetProject();
       await State.reload();
-      Views.toast("Proyecto reiniciado");
+      Views.toast(I18N.t("reset.done"));
     } catch (error) {
       Views.toast(error.message, true);
     }
@@ -298,16 +308,19 @@ const Paleta = {
      código siga funcionando (FR-037) aunque el banco completo viva en otra
      pestaña y no pueda verse a la vez que el Canvas. */
   _renderBank() {
-    let codes = [...State.project.codes].reverse(); // más recientes arriba
+    const all = [...State.project.codes].reverse(); // más recientes arriba
+    this._docNames = new Map(State.project.documents.map(d => [d.id, d.filename]));
+    let codes = all;
     if (this.bankQuery) {
-      codes = codes.filter(c =>
+      codes = all.filter(c =>
         c.name.toLowerCase().includes(this.bankQuery)
         || c.domain.toLowerCase().includes(this.bankQuery)
+        || I18N.domain(c.domain).toLowerCase().includes(this.bankQuery)
         || (c.quote && c.quote.toLowerCase().includes(this.bankQuery))
       );
     }
-    this._renderBankInto(codes, "code-bank", this.bankQuery ? "Sin coincidencias en el banco." : "Aún no hay códigos.");
-    this._renderBankInto([...State.project.codes].reverse(), "code-bank-mini", "Aún no hay códigos.");
+    this._renderBankInto(codes, "code-bank", I18N.t(this.bankQuery ? "bank.nomatch" : "bank.empty"));
+    this._renderBankInto(all, "code-bank-mini", I18N.t("bank.empty"));
   },
 
   _renderBankInto(codes, containerId, emptyMessage) {
@@ -320,11 +333,26 @@ const Paleta = {
       bank.appendChild(p);
       return;
     }
-    for (const code of codes) {
-      bank.appendChild(
+    const limit = this.bankLimit[containerId] || this.PAGE;
+    const fragment = document.createDocumentFragment();
+    for (const code of codes.slice(0, limit)) {
+      fragment.appendChild(
         this.editingId === code.id ? this._editForm(code) : this._codeItem(code)
       );
     }
+    if (codes.length > limit) {
+      const more = document.createElement("button");
+      more.className = "btn btn-small bank-more";
+      more.textContent = I18N.t("bank.more", {
+        n: Math.min(this.PAGE, codes.length - limit), shown: limit, total: codes.length,
+      });
+      more.addEventListener("click", () => {
+        this.bankLimit[containerId] = limit + this.PAGE;
+        this._renderBankInto(codes, containerId, emptyMessage);
+      });
+      fragment.appendChild(more);
+    }
+    bank.appendChild(fragment);
   },
 
   _codeItem(code) {
@@ -357,7 +385,7 @@ const Paleta = {
           memo: "",
         });
         await State.reload();
-        Views.toast(`Cita añadida a «${code.name}»`);
+        Views.toast(I18N.t("bank.added", { name: code.name }));
       } catch (error) {
         Views.toast(error.message, true);
       }
@@ -368,20 +396,20 @@ const Paleta = {
     const chip = document.createElement("span");
     chip.className = "dom-chip";
     chip.style.backgroundColor = State.domains[code.domain] || "#999";
-    chip.title = code.domain;
+    chip.title = I18N.domain(code.domain);
     const name = document.createElement("span");
     name.className = "code-name";
     name.textContent = code.name;
-    name.title = "Clic: ver todas las citas de este código";
+    name.title = I18N.t("bank.quotes.title");
     name.addEventListener("click", () => Views.showQuotes(code.name));
     const edit = document.createElement("button");
     edit.className = "icon-btn";
-    edit.title = "Editar código";
+    edit.title = I18N.t("bank.edit.title");
     edit.textContent = "✎";
     edit.addEventListener("click", () => { this.editingId = code.id; this._renderBank(); });
     const del = document.createElement("button");
     del.className = "icon-btn";
-    del.title = "Eliminar código";
+    del.title = I18N.t("bank.delete.title");
     del.textContent = "🗑";
     del.addEventListener("click", () => this._deleteCode(code));
     head.append(chip, name, edit, del);
@@ -397,15 +425,18 @@ const Paleta = {
     if (code.memo) {
       const memo = document.createElement("div");
       memo.className = "code-memo";
-      memo.textContent = `✎ ${code.memo}`;
+      const pencil = document.createElement("span");
+      pencil.className = "sym";
+      pencil.textContent = "✎ ";
+      memo.append(pencil, code.memo);
       item.appendChild(memo);
     }
     const meta = document.createElement("div");
     meta.className = "code-meta";
     const docName = code.doc_id
-      ? (State.project.documents.find(d => d.id === code.doc_id) || {}).filename || "?"
-      : "Manual";
-    meta.textContent = `#${code.id} · ${code.domain} · ${docName} · ${code.created_at.replace("T", " ")}`;
+      ? (this._docNames && this._docNames.get(code.doc_id)) || "?"
+      : I18N.t("origin.manual");
+    meta.textContent = `#${code.id} · ${I18N.domain(code.domain)} · ${docName} · ${I18N.dateTime(code.created_at)}`;
     item.appendChild(meta);
     return item;
   },
@@ -423,30 +454,30 @@ const Paleta = {
     const memoInput = document.createElement("textarea");
     memoInput.rows = 2;
     memoInput.value = code.memo;
-    memoInput.placeholder = "Memo…";
+    memoInput.placeholder = I18N.t("bank.memo.placeholder");
 
     const buttons = document.createElement("div");
     buttons.className = "code-edit-buttons";
     const save = document.createElement("button");
     save.className = "btn btn-small btn-accent";
-    save.textContent = "GUARDAR";
+    save.textContent = I18N.t("bank.save");
     save.addEventListener("click", async () => {
       const name = nameInput.value.trim();
-      if (!name) { Views.toast("El nombre no puede quedar vacío", true); return; }
+      if (!name) { Views.toast(I18N.t("bank.name.empty"), true); return; }
       try {
         await API.updateCode(code.id, {
           name, domain: domainSelect.value, memo: memoInput.value.trim(),
         });
         this.editingId = null;
         await State.reload(); // el color del resaltado cambia con el dominio (FR-030)
-        Views.toast("Código actualizado");
+        Views.toast(I18N.t("bank.updated"));
       } catch (error) {
         Views.toast(error.message, true);
       }
     });
     const cancel = document.createElement("button");
     cancel.className = "btn btn-small";
-    cancel.textContent = "CANCELAR";
+    cancel.textContent = I18N.t("dlg.cancel");
     cancel.addEventListener("click", () => { this.editingId = null; this._renderBank(); });
     buttons.append(save, cancel);
 
@@ -455,11 +486,11 @@ const Paleta = {
   },
 
   async _deleteCode(code) {
-    if (!await Views.confirm(`¿Eliminar el código «${code.name}»? Su resaltado desaparecerá del Canvas.`)) return;
+    if (!await Views.confirm(I18N.t("bank.delete.confirm", { name: code.name }))) return;
     try {
       await API.deleteCode(code.id);
       await State.reload(); // FR-031: resaltado fuera, analytics al día
-      Views.toast("Código eliminado");
+      Views.toast(I18N.t("bank.deleted"));
     } catch (error) {
       Views.toast(error.message, true);
     }

@@ -22,12 +22,20 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 
 ## Estructura
 
-- `backend/` — FastAPI: `app.py` (rutas), `models.py` (Pydantic + 9 dominios), `storage.py`
-  (JSON atómico por proyecto), `extraction.py`, `nlp.py`, `export.py`, `literature.py`,
-  `tests/` (pytest).
+- `backend/` — FastAPI: `app.py` (rutas + middleware de idioma y escrituras en fila),
+  `models.py` (Pydantic + 9 dominios), `storage.py` (JSON atómico por proyecto, caché en
+  memoria, papelera, importación), `analysis.py` (análisis spaCy por documento, una vez,
+  con caché en disco y trabajo de fondo), `i18n.py`, `extraction.py` (+ `ocr.py`: Vision /
+  Windows.Media.Ocr), `nlp.py`, `sentiment.py` (+ `lexicons.py`: NRC por idioma),
+  `agreement.py` (kappa/alfa), `qdpx.py` (REFI-QDA), `export.py`, `literature.py`,
+  `tests/` (pytest; `tests/data/` trae el XSD oficial REFI-QDA para validar).
 - `frontend/` — `index.html`, `css/brutal.css`, `js/` (api, state, canvas, nube, paleta,
   charts, wordcloud, views), `fonts/` (woff2 locales, sin CDN).
-- `run.py` / `start.sh` — arranque con un comando; puerto 8734.
+- `run.py` / `start.sh` / `start.bat` — arranque con un comando: ventana propia
+  (pywebview) con respaldo en el navegador (`--navegador`); puerto 8734 (o el siguiente
+  libre hasta 8743). pywebview DEBE crearse con `text_select=True` (si no, no se puede
+  seleccionar texto para codificar) y `webview.start(private_mode=False, storage_path=…)`
+  (si no, se pierde el localStorage al cerrar).
 - `specs/001-cualibre-studio/` — spec, plan, research, data-model, contracts, quickstart.
 
 ## Decisiones clave (ver specs/001-cualibre-studio/research.md)
@@ -35,12 +43,26 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 - Resaltados anclados por `doc_id + start/end` (offsets UTF-16 calculados y consumidos
   solo en JS; el backend los trata como opacos). Render por segmentación de rangos:
   spans planos, jamás anidados — así los solapamientos no rompen el HTML.
-- Persistencia: `~/Library/Application Support/cualibre/projects/<uuid>.json`, escritura
-  atómica (temp + `os.replace`) tras cada mutación, antes de responder.
+- Persistencia: `~/Library/Application Support/cualibre/projects/<uuid>.json` (Windows:
+  `%APPDATA%\cualibre\`), escritura atómica (temp + `os.replace` con reintentos para
+  Windows) tras cada mutación, antes de responder. Proyectos en memoria validados por
+  mtime/tamaño; ante un error a mitad de una mutación se invalida la caché.
+- Rendimiento con corpus grandes: el Canvas reconstruye solo el documento que cambió
+  (firma por documento) y usa `content-visibility` sobre 400k caracteres; los íconos
+  usan `var(--symbols)` (sin eso, la búsqueda de fuente de respaldo costaba ~3 ms por
+  botón). Medir en navegador antes de declarar mejoras (ver bench en la sesión v1.11).
 - Gráficos SVG/canvas propios (sin Plotly/Chart.js); word cloud con espiral propia.
 - Estética brutalista: Space Grotesk (títulos), IBM Plex Mono (UI), serif (corpus),
   fondo #FAFAFA, canvas #FDFDF7, acento #FF3300, bordes negros 3px, sombras duras.
   Paleta de dominios en `models.py` y `brutal.css` (mantener sincronizadas).
+
+- Licencia NRC: prohíbe redistribuir el léxico. El castellano viene incluido desde v1.6
+  (decisión previa, pendiente de revisar con el investigador); inglés y portugués se
+  descargan en cada equipo desde el sitio oficial (`lexicons.py`). NO incluirlos en el repo
+  ni en los instaladores. Los tests usan un .zip sintético con el mismo formato.
+- REFI-QDA: posiciones en puntos de código según el estándar, PERO NVivo para Windows usa
+  UTF-16 + saltos de línea como 2 (verificado con un .qdpx real). La importación detecta
+  la convención por fuente; la exportación tiene perfil `standard` y `nvivo`.
 
 ## Comandos
 
@@ -49,4 +71,15 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 
 ## Idioma
 
-Interfaz, mensajes de error y documentación de cara al usuario: **español**.
+Idioma fuente: **español** (código, comentarios, commits, documentación interna).
+La interfaz es trilingüe desde v1.11 (es-419 · en-GB · pt-BR):
+
+- Texto de la SPA: `frontend/js/i18n.js` (atributos `data-i18n*` en el HTML +
+  `I18N.t("clave")` en JS). Toda cadena nueva de cara al usuario DEBE ir en los tres
+  diccionarios. Reporte académico: `Reporte.TEXT` en `reporte.js`.
+- Mensajes del backend (errores, CSV/ZIP, demo): `backend/i18n.py` (`tr("clave")`);
+  el idioma llega en la cabecera `X-Cua-Lang` o el parámetro `?ui=`.
+- Manual: `MANUAL.md` + `MANUAL.en.md` + `MANUAL.pt.md` (actualizar los tres; los tres
+  viajan en los instaladores vía `--add-data`).
+- Los DATOS no se traducen: claves de Categorías Básicas y tipos de relación siempre en
+  castellano; solo cambian sus etiquetas visibles (`I18N.domain`, `I18N.relType`).

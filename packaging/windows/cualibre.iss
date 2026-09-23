@@ -2,7 +2,7 @@
 ; Compilar tras PyInstaller: ISCC.exe packaging\windows\cualibre.iss
 
 #define AppName "CUA-LIBRE Studio"
-#define AppVersion GetEnv("CUALIBRE_VERSION") == "" ? "1.0" : GetEnv("CUALIBRE_VERSION")
+#define AppVersion GetEnv("CUALIBRE_VERSION") == "" ? "1.11.0" : GetEnv("CUALIBRE_VERSION")
 #define AppExe "CUA-LIBRE Studio.exe"
 
 [Setup]
@@ -22,7 +22,21 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 
 [Languages]
+; El instalador se muestra en el idioma de Windows (español, inglés o portugués de Brasil)
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+
+[CustomMessages]
+spanish.DesktopIcon=Crear acceso directo en el Escritorio
+spanish.Shortcuts=Accesos directos:
+spanish.OpenNow=Abrir %1 ahora
+english.DesktopIcon=Create a desktop shortcut
+english.Shortcuts=Shortcuts:
+english.OpenNow=Open %1 now
+brazilianportuguese.DesktopIcon=Criar atalho na Área de Trabalho
+brazilianportuguese.Shortcuts=Atalhos:
+brazilianportuguese.OpenNow=Abrir o %1 agora
 
 [Files]
 Source: "..\..\dist\CUA-LIBRE Studio\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
@@ -32,7 +46,7 @@ Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Tasks]
-Name: "desktopicon"; Description: "Crear acceso directo en el Escritorio"; GroupDescription: "Accesos directos:"
+Name: "desktopicon"; Description: "{cm:DesktopIcon}"; GroupDescription: "{cm:Shortcuts}"
 
 [Run]
-Filename: "{app}\{#AppExe}"; Description: "Abrir {#AppName} ahora"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#AppExe}"; Description: "{cm:OpenNow,{#AppName}}"; Flags: nowait postinstall skipifsilent

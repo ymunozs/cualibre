@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import httpx
 
+from .i18n import tr
+
 OPENALEX_URL = "https://api.openalex.org/works"
 MAILTO = "ymunozsalinas@gmail.com"  # cortesía requerida por la API pública
 MAX_RESULTS = 10
@@ -25,17 +27,14 @@ def search_works(query: str, client: httpx.Client | None = None) -> list[dict]:
         response.raise_for_status()
         results = response.json().get("results", [])
     except (httpx.HTTPError, ValueError) as exc:
-        raise LiteratureError(
-            "No se pudo consultar OpenAlex (¿hay conexión a internet?). "
-            "Tu trabajo local no se ve afectado."
-        ) from exc
+        raise LiteratureError(tr("openalex_error")) from exc
     finally:
         if own_client:
             client.close()
 
     return [
         {
-            "title": work.get("display_name") or "(sin título)",
+            "title": work.get("display_name") or tr("untitled"),
             "year": work.get("publication_year"),
             "cited_by_count": work.get("cited_by_count", 0),
             "doi": work.get("doi"),

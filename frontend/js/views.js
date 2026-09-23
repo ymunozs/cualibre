@@ -13,54 +13,59 @@ const Views = {
     // Importador (FR-001: jerarquía superior)
     document.getElementById("file-input").addEventListener("change", (e) => this._import(e));
 
-    // Proyectos (FR-032)
+    // Proyectos (FR-032) + importar/eliminar (FR-073)
     document.getElementById("project-select").addEventListener("change", (e) => this._switchProject(e));
     document.getElementById("btn-new-project").addEventListener("click", () => this._newProject());
     document.getElementById("btn-rename-project").addEventListener("click", () => this._renameProject());
     document.getElementById("btn-save-project").addEventListener("click", () => this._saveProject());
+    document.getElementById("btn-delete-project").addEventListener("click", () => this._deleteProject());
+    const projectFile = document.getElementById("project-file");
+    document.getElementById("btn-import-project").addEventListener("click", () => projectFile.click());
+    projectFile.addEventListener("change", (e) => this._importProject(e));
     document.getElementById("btn-example").addEventListener("click", async () => {
       try {
-        await API._fetch("/api/projects/example", { method: "POST" });
+        await API.createExample();
         await State.reload();
-        this.toast("Proyecto de ejemplo creado — explóralo sin miedo, es ficticio");
+        this.toast(I18N.t("toast.demo"));
       } catch (error) {
         this.toast(error.message, true);
       }
     });
 
-    // Acerca de Cua-libre
-    document.getElementById("btn-about").addEventListener("click", () => {
-      document.getElementById("about-dialog").showModal();
-    });
-    document.getElementById("about-close").addEventListener("click", () => {
-      document.getElementById("about-dialog").close();
-    });
-
-    // Manual en la app (FR-052)
+    // Diálogos con botón de cierre
+    for (const [openId, dialogId, closeId] of [
+      ["btn-about", "about-dialog", "about-close"],
+      [null, "manual-dialog", "manual-close"],
+      [null, "history-dialog", "history-close"],
+      [null, "kwic-dialog", "kwic-close"],
+      [null, "emotion-words-dialog", "emotion-words-close"],
+      [null, "quotes-dialog", "quotes-close"],
+    ]) {
+      const dialog = document.getElementById(dialogId);
+      if (openId) document.getElementById(openId).addEventListener("click", () => dialog.showModal());
+      document.getElementById(closeId).addEventListener("click", () => dialog.close());
+    }
     document.getElementById("btn-manual").addEventListener("click", () => this._openManual());
-    document.getElementById("manual-close").addEventListener("click", () => {
-      document.getElementById("manual-dialog").close();
-    });
-
-    // Historial de respaldos (FR-062)
     document.getElementById("btn-history").addEventListener("click", () => this._openHistory());
-    document.getElementById("history-close").addEventListener("click", () => {
-      document.getElementById("history-dialog").close();
-    });
 
     // Concordancias / KWIC (FR-063)
     WordCloud.onWordClick = (word) => this.openKwic(word);
-    document.getElementById("kwic-close").addEventListener("click", () => {
-      document.getElementById("kwic-dialog").close();
-    });
-
-    // Trazabilidad de emociones (FR-071)
-    document.getElementById("emotion-words-close").addEventListener("click", () => {
-      document.getElementById("emotion-words-dialog").close();
-    });
 
     // NLP
-    document.getElementById("nlp-lang").addEventListener("change", () => this.renderNlp());
+    // Idioma del corpus: un solo valor por proyecto, compartido por NLP y Sentimiento
+    document.querySelectorAll("select.corpus-lang").forEach(select => {
+      select.addEventListener("change", () => this._setCorpusLang(select.value));
+    });
+
+    // Léxicos de sentimiento en inglés y portugués (FR-077)
+    document.getElementById("btn-lex-download").addEventListener("click", () => this._installLexicons());
+    document.getElementById("lexicon-file").addEventListener("change", (e) => this._installLexicons(e));
+
+    // Modo navegador: botón para apagar la app (en la ventana basta con cerrarla)
+    const quit = document.getElementById("btn-quit");
+    quit.classList.toggle("hidden", Files.mode !== "browser");
+    quit.addEventListener("click", () => this._quit());
+    this._renderOcrHint();
     const minLen = document.getElementById("nlp-minlen");
     minLen.addEventListener("input", () => {
       document.getElementById("nlp-minlen-value").textContent = minLen.value;
@@ -83,7 +88,9 @@ const Views = {
         const { exclusions } = await API.setNlpExclusions(merged);
         this._exclusions = exclusions;
         input.value = "";
-        this.toast(nuevas.length ? `Omitiendo ${exclusions.length} palabra(s) en total` : "Sin cambios");
+        this.toast(nuevas.length
+          ? I18N.t("nlp.exclusions.count", { n: exclusions.length })
+          : I18N.t("nlp.exclusions.nochange"));
         this.renderNlp();
       } catch (error) {
         this.toast(error.message, true);
@@ -102,12 +109,12 @@ const Views = {
     document.getElementById("btn-export-graph-svg").addEventListener("click", () => {
       const svg = graphSvg();
       svg ? Charts.downloadSvg(svg, "cualibre_organizador.svg")
-          : this.toast("Crea relaciones para exportar el organizador", true);
+          : this.toast(I18N.t("rel.graph.export.empty"), true);
     });
     document.getElementById("btn-export-graph-png").addEventListener("click", () => {
       const svg = graphSvg();
       svg ? Charts.downloadSvgAsPng(svg, "cualibre_organizador.png")
-          : this.toast("Crea relaciones para exportar el organizador", true);
+          : this.toast(I18N.t("rel.graph.export.empty"), true);
     });
 
     // Modo inmersión (FR-044): solo el Canvas, para leer sin ruido
@@ -115,13 +122,15 @@ const Views = {
       document.body.classList.toggle("immersion");
     });
 
+    // REFI-QDA: perfil de destino (NVivo cuenta posiciones distinto, ver qdpx.py)
+    document.getElementById("qdpx-profile").addEventListener("change", (e) => {
+      const link = document.getElementById("btn-export-qdpx");
+      link.dataset.download = `/api/export.qdpx?profile=${e.target.value}`;
+      I18N.apply(link.parentElement);
+    });
+
     // Reporte académico (FR-060)
     document.getElementById("btn-report").addEventListener("click", () => Reporte.generar());
-
-    // Recuperación de citas: cerrar diálogo
-    document.getElementById("quotes-close").addEventListener("click", () => {
-      document.getElementById("quotes-dialog").close();
-    });
 
     // Preferencias de lectura persistentes (FR-054/056/057)
     const prefToggles = [
@@ -130,16 +139,17 @@ const Views = {
       ["btn-linenum", "no-linenum", "cua-no-linenum"],
     ];
     for (const [btnId, cls, key] of prefToggles) {
-      if (localStorage.getItem(key) === "1") document.body.classList.add(cls);
+      if (Canvas._readPref(key) === "1") document.body.classList.add(cls);
       document.getElementById(btnId).addEventListener("click", () => {
         document.body.classList.toggle(cls);
-        localStorage.setItem(key, document.body.classList.contains(cls) ? "1" : "0");
+        Canvas._writePref(key, document.body.classList.contains(cls) ? "1" : "0");
       });
     }
 
-    // Teclas globales: ⌘F busca en el corpus; Esc sale de inmersión
+    // Teclas globales: ⌘F / Ctrl+F busca en el corpus; Esc sale de inmersión
     document.addEventListener("keydown", (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+      const key = (e.key || "").toLowerCase(); // Bloq Mayús activo → "F"
+      if ((e.metaKey || e.ctrlKey) && key === "f") {
         e.preventDefault();
         document.body.classList.remove("immersion");
         this.show("pentagrama");
@@ -150,12 +160,77 @@ const Views = {
         document.body.classList.remove("immersion");
       }
       // Deshacer última codificación (FR-050) — fuera de campos de texto
-      if ((e.metaKey || e.ctrlKey) && e.key === "z"
+      if ((e.metaKey || e.ctrlKey) && key === "z" && !e.shiftKey
           && !e.target.matches("input, textarea, select")) {
         e.preventDefault();
         this._undoLastCode();
       }
     });
+
+    // Cambio de idioma: el manual se vuelve a pedir en el idioma nuevo
+    I18N.onChange(() => {
+      this._manualLoaded = false;
+      if (document.getElementById("manual-dialog").open) this._openManual();
+      this._renderOcrHint();
+    });
+  },
+
+  _renderOcrHint() {
+    document.getElementById("import-ocr-hint").textContent =
+      Files.ocr ? I18N.t("import.ocr.hint", { engine: Files.ocr }) : "";
+  },
+
+  get corpusLang() {
+    return (State.project && State.project.corpus_lang) || "es";
+  },
+
+  _syncCorpusLang() {
+    document.querySelectorAll("select.corpus-lang").forEach(s => { s.value = this.corpusLang; });
+  },
+
+  async _setCorpusLang(lang) {
+    try {
+      await API.setCorpusLang(lang);
+      State.project.corpus_lang = lang;
+      this._syncCorpusLang();
+      this.refreshCurrent();
+    } catch (error) {
+      this.toast(error.message, true);
+      this._syncCorpusLang();
+    }
+  },
+
+  async _installLexicons(event) {
+    const file = event && event.target.files[0];
+    if (event) event.target.value = "";
+    if (event && !file) return;
+    const progress = this._progress("sent-progress");
+    document.getElementById("sent-progress").textContent = I18N.t("lex.downloading");
+    document.getElementById("sent-progress").classList.remove("hidden");
+    try {
+      const { installed } = file ? await API.importLexicons(file) : await API.downloadLexicons();
+      const names = Object.keys(installed).map(l => I18N.t(`langname.${l}`)).join(", ");
+      this.toast(I18N.t("lex.installed", { langs: names }));
+      progress.hide();
+      this.renderSentiment();
+    } catch (error) {
+      progress.hide();
+      this.toast(error.message, true);
+    }
+  },
+
+  async _quit() {
+    if (!await this.confirm(I18N.t("app.quit.confirm"))) return;
+    try {
+      await API.quit();
+      document.body.textContent = "";
+      const message = document.createElement("p");
+      message.className = "closed-note";
+      message.textContent = I18N.t("app.closed");
+      document.body.appendChild(message);
+    } catch (error) {
+      this.toast(error.message, true);
+    }
   },
 
   /* Recuperación de citas por código (FR-055): todas las citas de un nombre */
@@ -166,7 +241,7 @@ const Views = {
     const docNames = {};
     for (const d of State.project.documents) docNames[d.id] = d.filename;
     document.getElementById("quotes-title").textContent =
-      `CITAS DE «${codeName.toUpperCase()}» (${instances.length})`;
+      I18N.t("quotes.title.code", { name: codeName.toUpperCase(), n: instances.length });
     body.textContent = "";
     for (const code of instances) {
       const item = document.createElement("div");
@@ -176,13 +251,14 @@ const Views = {
       const chip = document.createElement("span");
       chip.className = "dom-chip";
       chip.style.backgroundColor = State.domains[code.domain] || "#999";
+      const origin = code.doc_id ? docNames[code.doc_id] || "?" : I18N.t("origin.manual");
       head.append(chip, document.createTextNode(
-        ` ${code.domain} · ${code.doc_id ? docNames[code.doc_id] || "?" : "Manual"} · ${code.created_at.replace("T", " ")}`
+        ` ${I18N.domain(code.domain)} · ${origin} · ${I18N.dateTime(code.created_at)}`
       ));
       item.appendChild(head);
       const quote = document.createElement("div");
       quote.className = "quote-text";
-      quote.textContent = code.quote ? `“${code.quote}”` : "(código manual, sin cita)";
+      quote.textContent = code.quote ? `“${code.quote}”` : I18N.t("quotes.manual");
       item.appendChild(quote);
       if (code.memo) {
         const memo = document.createElement("div");
@@ -190,33 +266,37 @@ const Views = {
         memo.textContent = `✎ ${code.memo}`;
         item.appendChild(memo);
       }
-      if (code.doc_id) {
-        const go = document.createElement("button");
-        go.className = "btn btn-small";
-        go.textContent = "IR AL CANVAS →";
-        go.addEventListener("click", () => {
-          dialog.close();
-          this.show("pentagrama");
-          Canvas.goToQuote(code);
-        });
-        item.appendChild(go);
-      }
+      if (code.doc_id) item.appendChild(this._goToCanvasButton(dialog, code));
       body.appendChild(item);
     }
     dialog.showModal();
   },
 
+  _goToCanvasButton(dialog, target) {
+    const go = document.createElement("button");
+    go.className = "btn btn-small";
+    go.textContent = I18N.t("go.canvas");
+    go.addEventListener("click", () => {
+      dialog.close();
+      this.show("pentagrama");
+      Canvas.goToQuote(target);
+    });
+    return go;
+  },
+
   _manualLoaded: false,
   async _openManual() {
     const dialog = document.getElementById("manual-dialog");
-    dialog.showModal();
+    const body = document.getElementById("manual-body");
+    if (!dialog.open) dialog.showModal();
     if (!this._manualLoaded) {
+      body.textContent = I18N.t("dlg.loading");
       try {
         const { html } = await API._fetch("/api/manual");
-        document.getElementById("manual-body").innerHTML = html;
+        body.innerHTML = html;
         this._manualLoaded = true;
       } catch (error) {
-        document.getElementById("manual-body").textContent = error.message;
+        body.textContent = error.message;
       }
     }
   },
@@ -225,14 +305,14 @@ const Views = {
     const dialog = document.getElementById("history-dialog");
     const body = document.getElementById("history-body");
     dialog.showModal();
-    body.textContent = "Cargando…";
+    body.textContent = I18N.t("dlg.loading");
     try {
       const { snapshots } = await API.getSnapshots();
       body.textContent = "";
       if (!snapshots.length) {
         const p = document.createElement("p");
         p.className = "empty-note";
-        p.textContent = "Aún no hay respaldos. Se crean automáticamente mientras trabajas (o al presionar 💾 GUARDAR).";
+        p.textContent = I18N.t("hist.empty");
         body.appendChild(p);
         return;
       }
@@ -241,21 +321,19 @@ const Views = {
       for (const snap of snapshots) {
         const li = document.createElement("li");
         const label = document.createElement("span");
-        label.textContent = `${snap.saved_at} · ${snap.size_kb} KB`;
+        const date = I18N.dateTime(snap.saved_at.replace(" ", "T"));
+        label.textContent = `${date} · ${snap.size_kb} KB`;
         const restore = document.createElement("button");
         restore.className = "icon-btn";
-        restore.title = "Restaurar este respaldo";
+        restore.title = I18N.t("hist.restore.title");
         restore.textContent = "↺";
         restore.addEventListener("click", async () => {
-          const ok = await this.confirm(
-            `¿Restaurar el proyecto al estado del ${snap.saved_at}? Se perderán los cambios posteriores (aunque quedan respaldados aparte, por seguridad).`
-          );
-          if (!ok) return;
+          if (!await this.confirm(I18N.t("hist.restore.confirm", { date }))) return;
           try {
             await API.restoreSnapshot(snap.name);
             await State.reload();
             dialog.close();
-            this.toast(`Proyecto restaurado al ${snap.saved_at}`);
+            this.toast(I18N.t("hist.restored", { date }));
           } catch (error) {
             this.toast(error.message, true);
           }
@@ -271,12 +349,12 @@ const Views = {
 
   async _undoLastCode() {
     const codes = State.project.codes;
-    if (!codes.length) { this.toast("Nada que deshacer", true); return; }
+    if (!codes.length) { this.toast(I18N.t("undo.none"), true); return; }
     const last = codes.reduce((a, b) => (a.id > b.id ? a : b));
     try {
       await API.deleteCode(last.id);
       await State.reload();
-      this.toast(`Deshecho: «${last.name}»`);
+      this.toast(I18N.t("undo.done", { name: last.name }));
     } catch (error) {
       this.toast(error.message, true);
     }
@@ -307,20 +385,60 @@ const Views = {
     else if (this.current === "exportar") this.renderExport();
     else if (this.current === "relaciones") Relations.render();
     else if (this.current === "sentimiento") this.renderSentiment();
+    else if (this.current === "acuerdo") Acuerdo.render();
+  },
+
+  /* Avance del análisis de corpus grandes (202 del backend). */
+  _progress(elementId) {
+    const el = document.getElementById(elementId);
+    return {
+      update: ({ done, total }) => {
+        el.textContent = I18N.t("analysis.progress", { done, total });
+        el.classList.remove("hidden");
+      },
+      hide: () => el.classList.add("hidden"),
+    };
   },
 
   /* ---------- Sentimiento (FR-059) ---------- */
 
+  _sentimentRun: 0,
   async renderSentiment() {
+    const run = ++this._sentimentRun; // descarta respuestas de sondeos anteriores
+    const progress = this._progress("sent-progress");
+    const lang = this.corpusLang;
+    this._syncCorpusLang();
     let data;
     try {
-      data = await API.sentiment();
+      data = await API.sentiment(lang, progress.update);
     } catch (error) {
+      progress.hide();
       this.toast(error.message, true);
       return;
     }
+    progress.hide();
+    if (run !== this._sentimentRun) return;
     const empty = document.getElementById("sent-empty");
     const body = document.getElementById("sent-body");
+    const language = I18N.t(`langname.${data.lang}`);
+    document.getElementById("sent-title").textContent =
+      I18N.t("sent.title.lang", { code: data.lang.toUpperCase() });
+    const intro = document.getElementById("sent-intro");
+    intro.textContent = I18N.t("sent.intro.lang", {
+      n: (data.lexicon_size || 0).toLocaleString(I18N.locale), language });
+    intro.classList.toggle("hidden", !!data.lexicon_missing);
+    const mt = document.getElementById("sent-mt");
+    mt.textContent = I18N.t("sent.mt", { language });
+    mt.classList.toggle("hidden", data.lang === "en" || !!data.lexicon_missing);
+    const panel = document.getElementById("lexicon-panel");
+    panel.classList.toggle("hidden", !data.lexicon_missing);
+    if (data.lexicon_missing) {
+      document.getElementById("lexicon-title").textContent =
+        I18N.t("lex.missing.title", { LANG: language.toUpperCase() });
+      empty.classList.add("hidden");
+      body.classList.add("hidden");
+      return;
+    }
     if (!data.documents.length) {
       empty.classList.remove("hidden");
       body.classList.add("hidden");
@@ -337,8 +455,7 @@ const Views = {
       card.className = "sent-doc-card";
       const head = document.createElement("div");
       head.className = "sent-doc-head";
-      const sign = doc.score > 0.05 ? "positivo" : doc.score < -0.05 ? "negativo" : "neutro";
-      head.textContent = `${doc.filename} — valencia ${doc.score > 0 ? "+" : ""}${doc.score} (${sign}, ${doc.matched} palabras con carga)`;
+      head.textContent = this.sentimentHead(doc);
       card.appendChild(head);
       const arcBox = document.createElement("div");
       Charts.line(arcBox, doc.arc);
@@ -347,16 +464,15 @@ const Views = {
     }
 
     // Dominios y códigos: barras divergentes con colores oficiales
-    Charts.diverging(document.getElementById("sent-domains"),
-      data.domains.map(d => ({ label: d.domain, value: d.score, sublabel: `${d.n} citas`, color: State.domains[d.domain] })));
+    Charts.diverging(document.getElementById("sent-domains"), this.sentimentDomains(data));
     Charts.diverging(document.getElementById("sent-codes"),
-      data.codes.map(c => ({ label: c.name, value: c.score, sublabel: `${c.n} citas`, color: State.domains[c.domain] })));
+      data.codes.map(c => ({ label: c.name, value: c.score,
+        sublabel: I18N.t("sent.quotes", { n: c.n }), color: State.domains[c.domain] })));
 
     // Emociones (conteos, un solo tono) y palabras con carga — ambos clicables
     // hacia su trazabilidad (FR-071): qué menciones exactas produjeron el número.
-    Charts.hbar(document.getElementById("sent-emotions"),
-      data.emotions.map(e => ({ label: e.emotion, value: e.count, color: "#FF3300" })),
-      (d) => this.openEmotionWords(d.label, data.emotion_words[d.label] || []));
+    Charts.hbar(document.getElementById("sent-emotions"), this.sentimentEmotions(data),
+      (d) => this.openEmotionWords(d.key, data.emotion_words[d.key] || []));
 
     const rows = [];
     const maxLen = Math.max(data.words.positive.length, data.words.negative.length);
@@ -364,23 +480,35 @@ const Views = {
       const p = data.words.positive[i], n = data.words.negative[i];
       rows.push([p ? `${p.word} (${p.count})` : "", n ? `${n.word} (${n.count})` : ""]);
     }
-    Charts.table(document.getElementById("sent-words"), ["Positivas ↑", "Negativas ↓"], rows);
+    Charts.table(document.getElementById("sent-words"), [I18N.t("sent.col.pos"), I18N.t("sent.col.neg")], rows);
     const wordsTable = document.querySelector("#sent-words table");
     if (wordsTable) {
       const posWords = data.words.positive, negWords = data.words.negative;
       [...wordsTable.tBodies[0].rows].forEach((row, i) => {
-        if (posWords[i]) {
-          row.cells[0].classList.add("clickable-word");
-          row.cells[0].title = "Ver menciones en contexto";
-          row.cells[0].addEventListener("click", () => this.openKwic(posWords[i].word, "all"));
-        }
-        if (negWords[i]) {
-          row.cells[1].classList.add("clickable-word");
-          row.cells[1].title = "Ver menciones en contexto";
-          row.cells[1].addEventListener("click", () => this.openKwic(negWords[i].word, "all"));
-        }
+        [[0, posWords[i]], [1, negWords[i]]].forEach(([col, entry]) => {
+          if (!entry) return;
+          row.cells[col].classList.add("clickable-word");
+          row.cells[col].title = I18N.t("sent.mentions");
+          row.cells[col].addEventListener("click", () => this.openKwic(entry.word, "all"));
+        });
       });
     }
+  },
+
+  /* Piezas del sentimiento compartidas con el reporte académico. */
+  sentimentHead(doc) {
+    const sign = I18N.t(doc.score > 0.05 ? "sent.positive" : doc.score < -0.05 ? "sent.negative" : "sent.neutral");
+    return I18N.t("sent.doc.head", {
+      file: doc.filename, score: `${doc.score > 0 ? "+" : ""}${doc.score}`, sign, n: doc.matched,
+    });
+  },
+  sentimentDomains(data) {
+    return data.domains.map(d => ({ label: I18N.domain(d.domain), value: d.score,
+      sublabel: I18N.t("sent.quotes", { n: d.n }), color: State.domains[d.domain] }));
+  },
+  sentimentEmotions(data) {
+    return data.emotions.map(e => ({ key: e.emotion, label: I18N.emotion(e.emotion),
+      value: e.count, color: "#FF3300" }));
   },
 
   /* Trazabilidad de una emoción (FR-071): qué palabras exactas la dispararon,
@@ -388,21 +516,20 @@ const Views = {
   openEmotionWords(emotion, words) {
     const dialog = document.getElementById("emotion-words-dialog");
     const body = document.getElementById("emotion-words-body");
-    document.getElementById("emotion-words-title").textContent = `PALABRAS QUE DETECTARON «${emotion.toUpperCase()}»`;
+    document.getElementById("emotion-words-title").textContent =
+      I18N.t("sent.emo.title", { emotion: I18N.emotion(emotion).toUpperCase() });
     body.textContent = "";
+    const note = document.createElement("p");
+    note.className = "empty-note";
     if (!words.length) {
-      const p = document.createElement("p");
-      p.className = "empty-note";
-      p.textContent = "Sin palabras registradas para esta emoción.";
-      body.appendChild(p);
+      note.textContent = I18N.t("sent.emo.empty");
+      body.appendChild(note);
       dialog.showModal();
       return;
     }
-    const intro = document.createElement("p");
-    intro.className = "empty-note";
-    intro.style.paddingTop = "0";
-    intro.textContent = "Clic en una palabra para ver sus menciones en contexto (Concordancias).";
-    body.appendChild(intro);
+    note.style.paddingTop = "0";
+    note.textContent = I18N.t("sent.emo.hint");
+    body.appendChild(note);
     const list = document.createElement("ul");
     list.className = "plain-list";
     for (const w of words) {
@@ -425,7 +552,7 @@ const Views = {
     try {
       const { updated_at } = await API.saveProject();
       const time = updated_at.split("T")[1] || updated_at;
-      this.toast(`💾 Proyecto guardado (${time})`);
+      this.toast(I18N.t("toast.saved", { time }));
     } catch (error) {
       this.toast(error.message, true);
     }
@@ -437,17 +564,20 @@ const Views = {
     const files = [...event.target.files];
     if (!files.length) return;
     const status = document.getElementById("import-status");
-    for (const file of files) {
-      status.textContent = `Importando ${file.name}…`;
+    let ok = 0;
+    for (const [i, file] of files.entries()) {
+      status.textContent = I18N.t("import.progress", { name: file.name, i: i + 1, n: files.length });
       try {
         await API.uploadDocument(file);
-        this.toast(`Importado: ${file.name}`);
+        ok++;
+        if (files.length === 1) this.toast(I18N.t("import.done", { name: file.name }));
       } catch (error) {
-        this.toast(error.message, true);
+        this.toast(`${file.name}: ${error.message}`, true);
       }
     }
     status.textContent = "";
     event.target.value = "";
+    if (files.length > 1) this.toast(I18N.t("import.summary", { ok, n: files.length }), ok < files.length);
     await State.reload();
   },
 
@@ -469,31 +599,69 @@ const Views = {
     try {
       await API.activateProject(event.target.value);
       await State.reload();
-      this.toast(`Proyecto activo: ${State.project.name}`);
+      this.toast(I18N.t("toast.active", { name: State.project.name }));
     } catch (error) {
       this.toast(error.message, true);
     }
   },
 
   async _newProject() {
-    const name = prompt("Nombre del nuevo proyecto:");
-    if (!name || !name.trim()) return;
+    const name = await this.ask(I18N.t("ask.new"));
+    if (!name) return;
     try {
-      await API.createProject(name.trim());
+      await API.createProject(name);
       await State.reload();
-      this.toast(`Proyecto creado: ${name.trim()}`);
+      this.toast(I18N.t("toast.created", { name }));
     } catch (error) {
       this.toast(error.message, true);
     }
   },
 
   async _renameProject() {
-    const name = prompt("Nuevo nombre del proyecto:", State.project.name);
-    if (!name || !name.trim() || name.trim() === State.project.name) return;
+    const name = await this.ask(I18N.t("ask.rename"), State.project.name);
+    if (!name || name === State.project.name) return;
     try {
-      await API.renameProject(State.project.id, name.trim());
+      await API.renameProject(State.project.id, name);
       await State.reload();
-      this.toast("Proyecto renombrado");
+      this.toast(I18N.t("toast.renamed"));
+    } catch (error) {
+      this.toast(error.message, true);
+    }
+  },
+
+  async _deleteProject() {
+    const project = State.project;
+    const ok = await this.confirm(I18N.t("confirm.delete.project", {
+      name: project.name, docs: project.documents.length, codes: project.codes.length,
+    }));
+    if (!ok) return;
+    try {
+      await API.deleteProject(project.id);
+      Canvas.activeDocId = null;
+      await State.reload();
+      this.toast(I18N.t("toast.deleted", { name: project.name }));
+    } catch (error) {
+      this.toast(error.message, true);
+    }
+  },
+
+  async _importProject(event) {
+    const file = event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const project = await API.importProject(file);
+      Canvas.activeDocId = null;
+      await State.reload();
+      const report = project.import_report;
+      if (report) {
+        let message = I18N.t("import.report", {
+          name: project.name, sources: report.sources, selections: report.selections });
+        if (report.skipped_sources) message += I18N.t("import.skipped", { n: report.skipped_sources });
+        this.toast(message, report.skipped_sources > 0);
+      } else {
+        this.toast(I18N.t("toast.imported", { name: project.name }));
+      }
     } catch (error) {
       this.toast(error.message, true);
     }
@@ -508,6 +676,7 @@ const Views = {
     if (!codes.length) {
       empty.classList.remove("hidden");
       charts.classList.add("hidden");
+      document.getElementById("cooc-section").classList.add("hidden");
       return;
     }
     empty.classList.add("hidden");
@@ -518,7 +687,7 @@ const Views = {
     for (const code of codes) byDomain[code.domain] = (byDomain[code.domain] || 0) + 1;
     const pieData = Object.keys(State.domains)
       .filter(domain => byDomain[domain])
-      .map(domain => ({ label: domain, value: byDomain[domain], color: State.domains[domain] }));
+      .map(domain => ({ label: I18N.domain(domain), value: byDomain[domain], color: State.domains[domain] }));
     Charts.pie(document.getElementById("chart-pie"), pieData);
 
     // Barras: densidad por código (color = dominio del código)
@@ -530,7 +699,7 @@ const Views = {
     const barData = [...byName.entries()]
       .map(([key, value]) => {
         const [label, domain] = JSON.parse(key);
-        return { label, sublabel: domain, value, color: State.domains[domain] };
+        return { label, sublabel: I18N.domain(domain), value, color: State.domains[domain] };
       })
       .sort((a, b) => b.value - a.value)
       .slice(0, 20);
@@ -540,7 +709,9 @@ const Views = {
   },
 
   /* Co-ocurrencia (FR-043): dos códigos co-ocurren cuando sus citas se solapan
-     en el mismo documento. Matrices código×código y documento×código. */
+     en el mismo documento. Matrices código×código y documento×código.
+     Barrido por documento ordenado por inicio: con miles de citas, comparar
+     todos los pares era cuadrático. */
   _renderCooccurrence(codes) {
     const section = document.getElementById("cooc-section");
     const anchored = codes.filter(c => c.doc_id !== null);
@@ -559,13 +730,20 @@ const Views = {
 
     const index = new Map(names.map((n, i) => [n, i]));
     const matrix = names.map(() => names.map(() => 0));
-    for (let a = 0; a < anchored.length; a++) {
-      for (let b = a + 1; b < anchored.length; b++) {
-        const A = anchored[a], B = anchored[b];
-        if (A.doc_id !== B.doc_id || A.name === B.name) continue;
-        if (A.start < B.end && B.start < A.end) { // solapamiento de rangos
+    const byDoc = new Map();
+    for (const code of anchored) {
+      if (!index.has(code.name)) continue;
+      if (!byDoc.has(code.doc_id)) byDoc.set(code.doc_id, []);
+      byDoc.get(code.doc_id).push(code);
+    }
+    for (const list of byDoc.values()) {
+      list.sort((a, b) => a.start - b.start);
+      for (let a = 0; a < list.length; a++) {
+        const A = list[a];
+        for (let b = a + 1; b < list.length && list[b].start < A.end; b++) {
+          const B = list[b];
+          if (A.name === B.name) continue;
           const i = index.get(A.name), j = index.get(B.name);
-          if (i === undefined || j === undefined) continue;
           matrix[i][j]++;
           matrix[j][i]++;
         }
@@ -575,11 +753,11 @@ const Views = {
 
     // Documento × código
     const docs = State.project.documents;
-    const docMatrix = docs.map(doc =>
-      names.map(name =>
-        anchored.filter(c => c.doc_id === doc.id && c.name === name).length
-      )
-    );
+    const docMatrix = docs.map(doc => {
+      const row = names.map(() => 0);
+      for (const code of byDoc.get(doc.id) || []) row[index.get(code.name)]++;
+      return row;
+    });
     Charts.heatmap(
       document.getElementById("chart-doccode"),
       docs.map(d => d.filename), names, docMatrix
@@ -588,26 +766,32 @@ const Views = {
 
   // ---------- NLP (FR-017/018/034) ----------
 
+  _nlpRun: 0,
   async renderNlp() {
     if (this.current !== "nlp") return;
+    const run = ++this._nlpRun;
     const emptyNote = document.getElementById("nlp-empty");
     const hasCorpus = State.project.documents.length > 0;
     emptyNote.classList.toggle("hidden", hasCorpus);
     const lang = document.getElementById("nlp-lang").value;
     const minLen = document.getElementById("nlp-minlen").value;
+    const progress = this._progress("nlp-progress");
 
     let words = [];
     if (hasCorpus) {
       try {
-        const data = await API.nlp(lang, minLen, document.getElementById("nlp-pos").value);
+        const data = await API.nlp(lang, minLen, document.getElementById("nlp-pos").value, progress.update);
+        if (run !== this._nlpRun) return; // hubo un cambio de filtro mientras tanto
         words = data.words;
         this._exclusions = data.exclusions || [];
         this._renderExclusionChips();
       } catch (error) {
+        progress.hide();
         this.toast(error.message, true);
         return;
       }
     }
+    progress.hide();
     // Tres visualizaciones simultáneas y coherentes (FR-018), todas clicables → KWIC
     WordCloud.render(document.getElementById("wordcloud"), words);
     Charts.hbar(
@@ -617,7 +801,7 @@ const Views = {
     );
     Charts.table(
       document.getElementById("nlp-table"),
-      ["#", "Palabra", "Frecuencia"],
+      ["#", I18N.t("nlp.col.word"), I18N.t("nlp.col.freq")],
       words.map((w, i) => [i + 1, w.word, w.count])
     );
     const table = document.querySelector("#nlp-table table");
@@ -625,7 +809,7 @@ const Views = {
       [...table.tBodies[0].rows].forEach((row, i) => {
         const cell = row.cells[1]; // columna "Palabra"
         cell.classList.add("clickable-word");
-        cell.title = "Ver concordancias";
+        cell.title = I18N.t("kwic.see");
         cell.addEventListener("click", () => this.openKwic(words[i].word));
       });
     }
@@ -638,55 +822,45 @@ const Views = {
   async openKwic(word, forcedPos) {
     const dialog = document.getElementById("kwic-dialog");
     const body = document.getElementById("kwic-body");
-    document.getElementById("kwic-title").textContent = `CONCORDANCIAS DE «${word.toUpperCase()}»`;
-    body.textContent = "Buscando…";
+    document.getElementById("kwic-title").textContent = I18N.t("kwic.title.word", { word: word.toUpperCase() });
+    body.textContent = I18N.t("kwic.searching");
     dialog.showModal();
     try {
       const lang = document.getElementById("nlp-lang").value;
       const pos = forcedPos || document.getElementById("nlp-pos").value;
-      const { count, occurrences } = await API.kwic(word, lang, pos);
+      const { count, occurrences } = await API.kwic(word, lang, pos,
+        ({ done, total }) => { body.textContent = I18N.t("analysis.progress", { done, total }); });
       body.textContent = "";
       if (!count) {
         const p = document.createElement("p");
         p.className = "empty-note";
-        p.textContent = "Sin ocurrencias en el corpus.";
+        p.textContent = I18N.t("kwic.none");
         body.appendChild(p);
         return;
       }
       const summary = document.createElement("p");
       summary.className = "empty-note";
       summary.style.paddingTop = "0";
-      summary.textContent = `${count} ocurrencia(s)${count >= 300 ? " (mostrando las primeras 300)" : ""}.`;
+      summary.textContent = I18N.t(count >= 300 ? "kwic.count.capped" : "kwic.count", { n: count });
       body.appendChild(summary);
       for (const occ of occurrences) {
         const line = document.createElement("div");
         line.className = "kwic-line";
         const text = document.createElement("div");
         text.className = "kwic-text";
-        text.innerHTML = `…${this._escapeHtml(occ.before)}<mark>${this._escapeHtml(occ.match)}</mark>${this._escapeHtml(occ.after)}…`;
+        const mark = document.createElement("mark");
+        mark.textContent = occ.match;
+        text.append(`…${occ.before}`, mark, `${occ.after}…`);
         const meta = document.createElement("div");
         meta.className = "quote-meta";
         meta.textContent = occ.filename;
-        const go = document.createElement("button");
-        go.className = "btn btn-small";
-        go.textContent = "IR AL CANVAS →";
-        go.addEventListener("click", () => {
-          dialog.close();
-          this.show("pentagrama");
-          Canvas.goToQuote({ doc_id: occ.doc_id, start: occ.start, end: occ.end });
-        });
-        line.append(text, meta, go);
+        line.append(text, meta,
+          this._goToCanvasButton(dialog, { doc_id: occ.doc_id, start: occ.start, end: occ.end }));
         body.appendChild(line);
       }
     } catch (error) {
       body.textContent = error.message;
     }
-  },
-
-  _escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
   },
 
   _exclusions: [],
@@ -696,7 +870,7 @@ const Views = {
     for (const word of this._exclusions) {
       const chip = document.createElement("button");
       chip.className = "filter-chip";
-      chip.title = `Dejar de omitir «${word}»`;
+      chip.title = I18N.t("nlp.exclusions.remove", { word });
       chip.textContent = `${word} ✕`;
       chip.addEventListener("click", async () => {
         try {
@@ -718,12 +892,13 @@ const Views = {
     for (const doc of State.project.documents) docNames[doc.id] = doc.filename;
     Charts.table(
       document.getElementById("export-table"),
-      ["ID", "Fecha", "Documento", "Dominio", "Código", "Cita", "Memo"],
+      ["exp.col.id", "exp.col.date", "exp.col.doc", "exp.col.domain", "exp.col.code",
+       "exp.col.quote", "exp.col.memo"].map(key => I18N.t(key)),
       State.project.codes.map(code => [
         code.id,
-        code.created_at.replace("T", " "),
-        code.doc_id ? (docNames[code.doc_id] || "?") : "Manual",
-        code.domain,
+        I18N.dateTime(code.created_at),
+        code.doc_id ? (docNames[code.doc_id] || "?") : I18N.t("origin.manual"),
+        I18N.domain(code.domain),
         code.name,
         code.quote,
         code.memo,
@@ -737,12 +912,12 @@ const Views = {
     const query = document.getElementById("lit-query").value.trim();
     if (!query) return;
     const results = document.getElementById("lit-results");
-    results.textContent = "Buscando en OpenAlex…";
+    results.textContent = I18N.t("lit.searching");
     try {
       const { results: works } = await API.literature(query);
       results.textContent = "";
       if (!works.length) {
-        results.textContent = "Sin resultados para esa búsqueda.";
+        results.textContent = I18N.t("lit.none");
         return;
       }
       for (const work of works) {
@@ -753,14 +928,16 @@ const Views = {
         title.textContent = work.title;
         const meta = document.createElement("div");
         meta.className = "lit-meta";
-        meta.textContent = `Año: ${work.year ?? "?"} · Citas: ${work.cited_by_count}`;
+        meta.textContent = I18N.t("lit.meta", {
+          year: work.year ?? "?", cites: (work.cited_by_count || 0).toLocaleString(I18N.locale),
+        });
         card.append(title, meta);
         if (work.doi) {
           const link = document.createElement("a");
           link.href = work.doi;
           link.target = "_blank";
           link.rel = "noopener";
-          link.textContent = "Enlace DOI →";
+          link.textContent = I18N.t("lit.doi");
           card.appendChild(link);
         }
         results.appendChild(card);
@@ -790,13 +967,38 @@ const Views = {
       const ok = document.getElementById("confirm-ok");
       const cancel = document.getElementById("confirm-cancel");
       const cleanup = (result) => {
-        ok.onclick = cancel.onclick = null;
+        ok.onclick = cancel.onclick = dialog.oncancel = null;
         dialog.close();
         resolve(result);
       };
       ok.onclick = () => cleanup(true);
       cancel.onclick = () => cleanup(false);
+      dialog.oncancel = (e) => { e.preventDefault(); cleanup(false); }; // Esc
       dialog.showModal();
+    });
+  },
+
+  /* Pregunta de texto propia (reemplaza a prompt()): traducible, con el
+     estilo de la app y sin bloquear el navegador. Devuelve el texto o null. */
+  ask(message, value = "") {
+    return new Promise(resolve => {
+      const dialog = document.getElementById("ask-dialog");
+      const form = document.getElementById("ask-form");
+      const input = document.getElementById("ask-input");
+      document.getElementById("ask-message").textContent = message;
+      input.value = value;
+      const finish = (result) => {
+        form.onsubmit = dialog.oncancel = null;
+        document.getElementById("ask-cancel").onclick = null;
+        dialog.close();
+        resolve(result);
+      };
+      form.onsubmit = (e) => { e.preventDefault(); finish(input.value.trim() || null); };
+      document.getElementById("ask-cancel").onclick = () => finish(null);
+      dialog.oncancel = (e) => { e.preventDefault(); finish(null); };
+      dialog.showModal();
+      input.focus();
+      input.select();
     });
   },
 };

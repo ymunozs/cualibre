@@ -6,18 +6,25 @@ Toda mutación persiste el proyecto de forma atómica ANTES de responder (FR-025
 
 from __future__ import annotations
 
+import asyncio
 import sys
+import threading
+import weakref
 from pathlib import Path
-from typing import Optional
+from urllib.parse import parse_qs, quote
 
-from fastapi import FastAPI, HTTPException, UploadFile
-from pydantic import BaseModel
-from fastapi.responses import FileResponse, Response
+from fastapi import FastAPI, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from starlette.responses import Response
 
-from . import storage
-from .extraction import ExtractionError, extract_text
+from . import agreement, analysis, i18n, lexicons, qdpx, storage
 from .export import project_to_csv, project_to_zip
+from .extraction import ExtractionError, extract_document
+from .i18n import tr
 from .literature import LiteratureError, search_works
 from .models import (
     DOMAINS,
@@ -35,7 +42,11 @@ from .models import (
     RelationCreate,
     utf16_len,
 )
-from .nlp import word_frequencies
+from .nlp import POS_LANGS, STOPWORDS, detect_language, word_frequencies
+
+APP_VERSION = "1.12.0"
+CORPUS_LANGS = tuple(STOPWORDS)  # es, en, pt
+POS_FILTERS = ("all", "verb", "noun", "adj")
 
 
 def _prune_relations(project: Project) -> None:
@@ -72,13 +83,138 @@ def _all_domains(project: Project) -> dict[str, str]:
     """Categorías Básicas + personalizadas del proyecto (FR-064)."""
     return {**DOMAINS, **project.custom_domains}
 
+
+def _attachment(filename: str) -> dict[str, str]:
+    """Content-Disposition seguro para cualquier nombre (tildes, ñ, ç, emojis):
+    versión ASCII de respaldo + filename* UTF-8 (RFC 6266)."""
+    ascii_name = filename.encode("ascii", "replace").decode().replace("?", "_")
+    return {
+        "Content-Disposition":
+            f"attachment; filename=\"{ascii_name}\"; filename*=UTF-8''{quote(filename)}"
+    }
+
+
+def _safe_name(name: str) -> str:
+    return "".join(c if c.isalnum() or c in "-_ " else "_" for c in name)
+
+
 # Empaquetado (PyInstaller): los assets viven junto al ejecutable congelado
 if getattr(sys, "frozen", False):
     FRONTEND_DIR = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "frontend"
 else:
     FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
-app = FastAPI(title="CUA-LIBRE STUDIO", version="1.0.0")
+app = FastAPI(title="CUA-LIBRE STUDIO", version=APP_VERSION)
+# Modo de ejecución (lo fija run.py): "window" (ventana propia), "browser"
+# (navegador, con botón SALIR) o "server" (desarrollo y tests)
+app.state.mode = "server"
+app.state.window = None
+app.state.shutdown = None
+
+# Solo páginas servidas por esta misma app pueden hablarle a la API: bloquea
+# que un sitio web cualquiera abierto en el navegador envíe peticiones a
+# 127.0.0.1 (CSRF) o use un dominio propio que apunte a 127.0.0.1 (DNS rebinding)
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "testserver"}
+
+
+# ----- Idioma de la interfaz + escrituras en fila -----
+
+_write_locks: "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Lock]" = (
+    weakref.WeakKeyDictionary()
+)
+
+
+def _write_lock() -> asyncio.Lock:
+    loop = asyncio.get_running_loop()
+    lock = _write_locks.get(loop)
+    if lock is None:
+        lock = _write_locks[loop] = asyncio.Lock()
+    return lock
+
+
+def _host_name(value: str) -> str:
+    value = value.split("//", 1)[-1].split("/", 1)[0]
+    return value[1:value.index("]")] if value.startswith("[") else value.rsplit(":", 1)[0] \
+        if value.count(":") == 1 else value
+
+
+def _local_request(headers: dict) -> bool:
+    host = headers.get(b"host", b"").decode("latin-1")
+    if host and _host_name(host) not in LOCAL_HOSTS:
+        return False
+    origin = headers.get(b"origin", b"").decode("latin-1")
+    return not origin or origin == "null" or _host_name(origin) in LOCAL_HOSTS
+
+
+class InterfaceMiddleware:
+    """Dos responsabilidades transversales, en ASGI puro (el idioma queda en
+    el mismo contexto que endpoints y validadores):
+
+    1. Idioma: cabecera X-Cua-Lang o parámetro ?ui= (descargas directas).
+    2. Escrituras en fila: cada mutación lee, modifica y guarda el proyecto
+       completo; dos mutaciones simultáneas podían pisarse y perder una. Si
+       una mutación falla a mitad de camino, se olvida el proyecto en memoria
+       para volver a leer el disco, que es la fuente de verdad."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.inner(scope, receive, send)
+            return
+        headers = dict(scope.get("headers") or [])
+        if not _local_request(headers):
+            await JSONResponse({"detail": "forbidden"}, status_code=403)(scope, receive, send)
+            return
+        lang = headers.get(b"x-cua-lang", b"").decode("latin-1")
+        if not lang:
+            lang = parse_qs(scope.get("query_string", b"").decode("latin-1")).get("ui", [""])[0]
+        token = i18n.set_lang(lang)
+        mutating = scope["method"] not in ("GET", "HEAD", "OPTIONS")
+        status = {"code": 200}
+
+        async def tracking_send(message):
+            if message["type"] == "http.response.start":
+                status["code"] = message["status"]
+            await send(message)
+
+        try:
+            if mutating:
+                async with _write_lock():
+                    await self.inner(scope, receive, tracking_send)
+            else:
+                await self.inner(scope, receive, tracking_send)
+        except Exception:
+            if mutating:
+                storage.invalidate_cache()
+            raise
+        finally:
+            i18n.reset_lang(token)
+        if mutating and status["code"] >= 400:
+            storage.invalidate_cache()
+
+
+app.add_middleware(InterfaceMiddleware)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """Errores de validación legibles y en el idioma de la interfaz."""
+    messages: list[str] = []
+    for err in exc.errors():
+        field = str((err.get("loc") or ["?"])[-1])
+        kind = err.get("type", "")
+        ctx = err.get("ctx") or {}
+        if kind == "value_error" and ctx.get("error"):
+            messages.append(str(ctx["error"]))
+        elif kind == "string_too_long":
+            messages.append(tr("field_too_long", field=field, max=ctx.get("max_length", "?")))
+        elif kind in ("missing", "string_too_short"):
+            messages.append(tr("field_required", field=field))
+        else:
+            messages.append(tr("invalid_field", field=field))
+    return JSONResponse(status_code=422, content={"detail": "; ".join(dict.fromkeys(messages))})
 
 
 # ----- Proyectos -----
@@ -100,17 +236,49 @@ def create_project(payload: ProjectCreate) -> Project:
 def rename_project(project_id: str, payload: ProjectCreate) -> dict:
     project = storage.load_project(project_id)
     if project is None:
-        raise HTTPException(404, "Proyecto no encontrado")
+        raise HTTPException(404, tr("project_not_found"))
     project.name = payload.name
     storage.save_project(project)
     return project.summary()
+
+
+@app.delete("/api/projects/{project_id}")
+def delete_project(project_id: str, confirm: bool = False) -> dict:
+    """Elimina un proyecto: se mueve a <datos>/papelera/, nunca se borra del disco."""
+    if not confirm:
+        raise HTTPException(400, tr("delete_project_needs_confirm"))
+    if not storage.delete_project(project_id):
+        raise HTTPException(404, tr("project_not_found"))
+    active = storage.get_active_project()  # otro proyecto (o uno nuevo vacío)
+    return {"deleted": project_id, "active_project_id": active.id}
+
+
+@app.post("/api/projects/import", status_code=201)
+async def import_project(file: UploadFile) -> dict:
+    """Importa un respaldo .zip (FR-070) o un proyecto .json como proyecto nuevo."""
+    data = await file.read()
+    report = None
+    try:
+        if qdpx.is_qdpx(data):  # REFI-QDA: NVivo, ATLAS.ti, MAXQDA, QualCoder… (FR-079)
+            project, report = qdpx.import_qdpx(data, fallback_name=file.filename or "QDPX")
+        else:
+            project = storage.parse_project_file(data)
+    except (ValueError, OSError, qdpx.QdpxError) as exc:
+        raise HTTPException(422, tr("import_invalid")) from exc
+    if project.corpus_lang is None and project.documents:
+        project.corpus_lang = detect_language("\n".join(d.text[:5000] for d in project.documents[:5]))
+    project = storage.import_project(project)
+    analysis.warm([d.text for d in project.documents], project.corpus_lang or "es")
+    body = project.model_dump()
+    body["import_report"] = report
+    return body
 
 
 @app.post("/api/projects/{project_id}/activate")
 def activate_project(project_id: str) -> Project:
     project = storage.load_project(project_id)
     if project is None:
-        raise HTTPException(404, "Proyecto no encontrado")
+        raise HTTPException(404, tr("project_not_found"))
     storage.set_active_project(project.id)
     return project
 
@@ -122,10 +290,12 @@ def get_active_project() -> Project:
 
 @app.post("/api/projects/example", status_code=201)
 def create_example_project() -> Project:
-    """Proyecto demo con entrevista ficticia ya codificada (FR-061)."""
+    """Proyecto demo con entrevista ficticia ya codificada (FR-061), en el
+    idioma de la interfaz."""
     from .demo import build_example_project
 
     project = build_example_project()
+    project.corpus_lang = i18n.current()  # la entrevista está en el idioma de la interfaz
     storage.save_project(project)
     storage.set_active_project(project.id)
     return project
@@ -134,7 +304,7 @@ def create_example_project() -> Project:
 @app.post("/api/project/reset")
 def reset_project(payload: ConfirmPayload) -> Project:
     if not payload.confirm:
-        raise HTTPException(400, "El reinicio requiere confirmación explícita")
+        raise HTTPException(400, tr("reset_needs_confirm"))
     project = storage.get_active_project()
     project.documents = []
     project.codes = []
@@ -155,11 +325,11 @@ def get_snapshots() -> dict:
 @app.post("/api/snapshots/{name}/restore")
 def restore_snapshot(name: str, payload: ConfirmPayload) -> Project:
     if not payload.confirm:
-        raise HTTPException(400, "Restaurar requiere confirmación explícita")
+        raise HTTPException(400, tr("restore_needs_confirm"))
     current = storage.get_active_project()
     snapshot = storage.load_snapshot(current.id, name)
     if snapshot is None:
-        raise HTTPException(404, "Respaldo no encontrado")
+        raise HTTPException(404, tr("snapshot_not_found"))
     # Red de seguridad: el estado actual se respalda antes de ser reemplazado
     storage._maybe_snapshot(current, force=True)
     snapshot.id = current.id  # el respaldo ocupa el lugar del proyecto activo
@@ -181,17 +351,24 @@ def save_project_now() -> dict:
 @app.post("/api/documents", status_code=201)
 async def upload_document(file: UploadFile) -> Document:
     data = await file.read()
-    filename = file.filename or "documento"
-    try:
-        text = extract_text(filename, data)
-    except ExtractionError as exc:
-        message = str(exc)
-        status = 415 if "no soportado" in message else 422
-        raise HTTPException(status, message) from exc
+    filename = file.filename or tr("default_document_name")
     project = storage.get_active_project()
-    document = Document(filename=filename, text=text)
+    hints = [lang for lang in (project.corpus_lang, i18n.current()) if lang]
+    try:
+        # En un hilo aparte: el OCR de un PDF escaneado puede tomar segundos
+        # por página y no debe congelar las demás peticiones
+        text, ocr_pages = await run_in_threadpool(extract_document, filename, data, hints)
+    except ExtractionError as exc:
+        raise HTTPException(415 if exc.unsupported else 422, str(exc)) from exc
+    project = storage.get_active_project()
+    document = Document(filename=filename, text=text, ocr_pages=ocr_pages)
     project.documents.append(document)
+    if project.corpus_lang is None:  # el primer documento propone el idioma del corpus
+        project.corpus_lang = detect_language(text)
     storage.save_project(project)
+    # El análisis lingüístico se adelanta en segundo plano (sentimiento y
+    # foco gramatical quedan listos antes de que el investigador los abra)
+    analysis.warm([text], project.corpus_lang)
     return document
 
 
@@ -200,13 +377,12 @@ def delete_document(doc_id: str, confirm: bool = False) -> dict:
     project = storage.get_active_project()
     document = next((d for d in project.documents if d.id == doc_id), None)
     if document is None:
-        raise HTTPException(404, "Documento no encontrado")
+        raise HTTPException(404, tr("document_not_found"))
     anchored = [c for c in project.codes if c.doc_id == doc_id]
     if anchored and not confirm:
         raise HTTPException(
             409,
-            f"El documento tiene {len(anchored)} código(s) asociado(s) que se perderán. "
-            "Repite la operación con confirmación para eliminarlos.",
+            tr("document_has_codes", n=len(anchored)),
             headers={"X-Code-Count": str(len(anchored))},
         )
     project.documents = [d for d in project.documents if d.id != doc_id]
@@ -222,14 +398,14 @@ def delete_document(doc_id: str, confirm: bool = False) -> dict:
 def create_code(payload: CodeCreate) -> Code:
     project = storage.get_active_project()
     if payload.domain not in _all_domains(project):
-        raise HTTPException(422, f"Dominio inválido: {payload.domain!r}")
+        raise HTTPException(422, tr("invalid_domain", name=payload.domain))
     if payload.doc_id is not None:
         document = next((d for d in project.documents if d.id == payload.doc_id), None)
         if document is None:
-            raise HTTPException(422, "El documento del código no existe en este proyecto")
+            raise HTTPException(422, tr("code_document_missing"))
         text_len = utf16_len(document.text)
         if payload.end > text_len:
-            raise HTTPException(422, "Offsets fuera del rango del documento")
+            raise HTTPException(422, tr("offsets_out_of_range"))
     code = Code(
         id=project.next_code_id,
         doc_id=payload.doc_id,
@@ -251,12 +427,13 @@ def update_code(code_id: int, payload: CodeUpdate) -> Code:
     project = storage.get_active_project()
     code = next((c for c in project.codes if c.id == code_id), None)
     if code is None:
-        raise HTTPException(404, "Código no encontrado")
+        raise HTTPException(404, tr("code_not_found"))
+    # Validar TODO antes de tocar nada: una edición inválida no deja cambios a medias
+    if payload.domain is not None and payload.domain not in _all_domains(project):
+        raise HTTPException(422, tr("invalid_domain", name=payload.domain))
     if payload.name is not None:
         code.name = payload.name
     if payload.domain is not None:
-        if payload.domain not in _all_domains(project):
-            raise HTTPException(422, f"Dominio inválido: {payload.domain!r}")
         code.domain = payload.domain
     if payload.memo is not None:
         code.memo = payload.memo
@@ -269,7 +446,7 @@ def update_code(code_id: int, payload: CodeUpdate) -> Code:
 def delete_code(code_id: int) -> None:
     project = storage.get_active_project()
     if not any(c.id == code_id for c in project.codes):
-        raise HTTPException(404, "Código no encontrado")
+        raise HTTPException(404, tr("code_not_found"))
     project.codes = [c for c in project.codes if c.id != code_id]
     _prune_relations(project)
     storage.save_project(project)
@@ -281,11 +458,11 @@ def merge_codes(payload: CodeMerge) -> dict:
     project = storage.get_active_project()
     sources = [c for c in project.codes if c.name == payload.from_name]
     if not sources:
-        raise HTTPException(404, f"No hay códigos llamados «{payload.from_name}»")
+        raise HTTPException(404, tr("no_codes_named", name=payload.from_name))
 
     target_domain = payload.domain
     if target_domain is not None and target_domain not in _all_domains(project):
-        raise HTTPException(422, f"Dominio inválido: {target_domain!r}")
+        raise HTTPException(422, tr("invalid_domain", name=target_domain))
     existing_target = [c for c in project.codes if c.name == payload.to_name]
     if target_domain is None and existing_target:
         # Fusión real (to_name ya existía): unifica al dominio del destino
@@ -317,10 +494,10 @@ def create_relation(payload: RelationCreate) -> Relation:
     names = {c.name for c in project.codes}
     for endpoint in (payload.source, payload.target):
         if endpoint not in names:
-            raise HTTPException(422, f"No existe un código llamado «{endpoint}»")
+            raise HTTPException(422, tr("no_code_named", name=endpoint))
     if any(r.source == payload.source and r.target == payload.target
            and r.type == payload.type for r in project.relations):
-        raise HTTPException(409, "Esa relación ya existe")
+        raise HTTPException(409, tr("relation_exists"))
     relation = Relation(
         id=project.next_relation_id,
         source=payload.source,
@@ -337,12 +514,12 @@ def create_relation(payload: RelationCreate) -> Relation:
 def delete_relation(relation_id: int) -> None:
     project = storage.get_active_project()
     if not any(r.id == relation_id for r in project.relations):
-        raise HTTPException(404, "Relación no encontrada")
+        raise HTTPException(404, tr("relation_not_found"))
     project.relations = [r for r in project.relations if r.id != relation_id]
     storage.save_project(project)
 
 
-# ----- Análisis -----
+# ----- Categorías -----
 
 @app.get("/api/domains")
 def get_domains() -> dict[str, dict[str, str]]:
@@ -354,9 +531,13 @@ def get_domains() -> dict[str, dict[str, str]]:
 @app.post("/api/domains/custom", status_code=201)
 def create_custom_domain(payload: CustomDomainCreate) -> dict[str, dict[str, str]]:
     project = storage.get_active_project()
-    existing_ci = {name.lower() for name in _all_domains(project)}
-    if payload.name.lower() in existing_ci:
-        raise HTTPException(409, f"Ya existe una categoría llamada «{payload.name}»")
+    # Tampoco puede repetir la etiqueta visible de una Básica en otro idioma
+    # («Emotional» ≡ «Emocional»): serían dos categorías indistinguibles.
+    taken = {name.lower() for name in _all_domains(project)}
+    for key in DOMAINS:
+        taken.update(i18n.domain_label(key, lang).lower() for lang in i18n.LANGS)
+    if payload.name.lower() in taken:
+        raise HTTPException(409, tr("category_exists", name=payload.name))
     project.custom_domains[payload.name] = payload.color
     storage.save_project(project)
     return {"basic": DOMAINS, "custom": project.custom_domains}
@@ -366,13 +547,12 @@ def create_custom_domain(payload: CustomDomainCreate) -> dict[str, dict[str, str
 def delete_custom_domain(name: str, confirm: bool = False) -> dict:
     project = storage.get_active_project()
     if name not in project.custom_domains:
-        raise HTTPException(404, "Categoría personalizada no encontrada")
+        raise HTTPException(404, tr("custom_category_not_found"))
     in_use = sum(1 for c in project.codes if c.domain == name)
     if in_use and not confirm:
         raise HTTPException(
             409,
-            f"{in_use} código(s) usan la categoría «{name}». Repite la operación con "
-            "confirmación: conservarán el nombre pero quedarán sin color propio.",
+            tr("custom_category_in_use", n=in_use, name=name),
             headers={"X-Code-Count": str(in_use)},
         )
     del project.custom_domains[name]
@@ -380,38 +560,59 @@ def delete_custom_domain(name: str, confirm: bool = False) -> dict:
     return {"in_use": in_use}
 
 
+# ----- Análisis -----
+
+def _pending(response: Response, done: int, total: int) -> dict:
+    """Análisis en curso (corpus grande): 202 + avance, la interfaz sondea."""
+    response.status_code = 202
+    return {"pending": True, "done": done, "total": total}
+
+
+def _check_corpus_lang(lang: str, pos: str) -> None:
+    if lang not in CORPUS_LANGS:
+        raise HTTPException(422, tr("corpus_lang_unsupported"))
+    if pos not in POS_FILTERS:
+        raise HTTPException(422, tr("pos_invalid"))
+    if pos != "all" and lang not in POS_LANGS:
+        raise HTTPException(422, tr("pos_lang_unsupported"))
+
+
 @app.get("/api/nlp")
-def nlp(lang: str = "es", min_len: int = 4, top: int = 50, pos: str = "all") -> dict:
-    if lang not in ("es", "en"):
-        raise HTTPException(422, "Idioma no soportado: usa 'es' o 'en'")
-    if pos not in ("all", "verb", "noun", "adj"):
-        raise HTTPException(422, "Filtro gramatical inválido: usa all, verb, noun o adj")
+def nlp(response: Response, lang: str = "es", min_len: int = 4, top: int = 50,
+        pos: str = "all") -> dict:
+    _check_corpus_lang(lang, pos)
     min_len = max(2, min(10, min_len))
     project = storage.get_active_project()
-    corpus = "\n".join(d.text for d in project.documents)
     exclusions = set(project.nlp_exclusions)
     if pos == "all":
+        corpus = "\n".join(d.text for d in project.documents)
         words = word_frequencies(corpus, lang=lang, min_len=min_len, top=top,
                                  exclusions=exclusions)
     else:
-        from .nlp import pos_frequencies
+        from .nlp import pos_counts
 
-        words = pos_frequencies(corpus, lang=lang, pos=pos, min_len=min_len,
-                                top=top, exclusions=exclusions)
+        texts = [d.text for d in project.documents]
+        ready, done, total = analysis.prepare(texts, lang)
+        if not ready:
+            return _pending(response, done, total)
+        words = pos_counts([analysis.get(t, lang) for t in texts], pos, lang,
+                           min_len=min_len, top=top, exclusions=exclusions)
     return {"words": words, "exclusions": project.nlp_exclusions}
 
 
 @app.get("/api/kwic")
-def kwic(q: str, lang: str = "es", pos: str = "all", window: int = 60) -> dict:
+def kwic(response: Response, q: str, lang: str = "es", pos: str = "all",
+         window: int = 60) -> dict:
     """Concordancias (KWIC): todas las ocurrencias de una palabra en contexto (FR-063)."""
     if not q.strip():
-        raise HTTPException(422, "Debes indicar una palabra para buscar concordancias")
-    if lang not in ("es", "en"):
-        raise HTTPException(422, "Idioma no soportado: usa 'es' o 'en'")
-    if pos not in ("all", "verb", "noun", "adj"):
-        raise HTTPException(422, "Filtro gramatical inválido: usa all, verb, noun o adj")
+        raise HTTPException(422, tr("kwic_empty_query"))
+    _check_corpus_lang(lang, pos)
     window = max(20, min(160, window))
     project = storage.get_active_project()
+    if pos != "all":
+        ready, done, total = analysis.prepare([d.text for d in project.documents], lang)
+        if not ready:
+            return _pending(response, done, total)
     from .nlp import kwic_occurrences
 
     occurrences = kwic_occurrences(project.documents, q, lang=lang, pos=pos, window=window)
@@ -432,16 +633,23 @@ def set_nlp_exclusions(payload: ExclusionsPayload) -> dict:
     return {"exclusions": cleaned}
 
 
+@app.get("/api/analysis/status")
+def analysis_status(lang: str = "es") -> dict:
+    """Cuántos documentos del proyecto activo ya tienen su análisis listo."""
+    if lang not in CORPUS_LANGS:
+        raise HTTPException(422, tr("corpus_lang_unsupported"))
+    texts = [d.text for d in storage.get_active_project().documents]
+    done = sum(1 for t in texts if analysis.is_ready(t, lang))
+    return {"done": done, "total": len(texts), "ready": done == len(texts)}
+
+
 @app.get("/api/export.csv")
 def export_csv() -> Response:
     project = storage.get_active_project()
-    safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in project.name)
     return Response(
         content=project_to_csv(project),
         media_type="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": f'attachment; filename="cualibre_{safe_name}.csv"'
-        },
+        headers=_attachment(f"cualibre_{_safe_name(project.name)}.csv"),
     )
 
 
@@ -449,13 +657,10 @@ def export_csv() -> Response:
 def export_zip() -> Response:
     """Respaldo completo autocontenido: JSON + CSV + textos del corpus (FR-070)."""
     project = storage.get_active_project()
-    safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in project.name)
     return Response(
         content=project_to_zip(project),
         media_type="application/zip",
-        headers={
-            "Content-Disposition": f'attachment; filename="cualibre_{safe_name}_respaldo.zip"'
-        },
+        headers=_attachment(f"cualibre_{_safe_name(project.name)}_{tr('backup_suffix')}.zip"),
     )
 
 
@@ -465,6 +670,106 @@ def literature(q: str) -> dict:
         return {"results": search_works(q)}
     except LiteratureError as exc:
         raise HTTPException(502, str(exc)) from exc
+
+
+class CorpusLangPayload(BaseModel):
+    lang: str
+
+
+@app.put("/api/project/corpus-lang")
+def set_corpus_lang(payload: CorpusLangPayload) -> dict:
+    """Idioma del corpus del proyecto (NLP, foco gramatical y sentimiento)."""
+    if payload.lang not in CORPUS_LANGS:
+        raise HTTPException(422, tr("corpus_lang_unsupported"))
+    project = storage.get_active_project()
+    project.corpus_lang = payload.lang
+    storage.save_project(project)
+    analysis.warm([d.text for d in project.documents], payload.lang)
+    return {"corpus_lang": payload.lang}
+
+
+# ----- Léxicos de sentimiento (FR-077) -----
+
+@app.get("/api/lexicons")
+def get_lexicons() -> dict:
+    return {"lexicons": lexicons.status(), "home": lexicons.NRC_HOME}
+
+
+def _after_lexicon_install(installed: dict) -> dict:
+    project = storage.get_active_project()
+    if project.corpus_lang in installed:
+        analysis.warm([d.text for d in project.documents], project.corpus_lang)
+    return {"installed": installed, "lexicons": lexicons.status()}
+
+
+@app.post("/api/lexicons/download")
+async def download_lexicons() -> dict:
+    """Descarga única del léxico oficial del NRC (inglés y portugués)."""
+    try:
+        installed = await run_in_threadpool(lexicons.download)
+    except lexicons.LexiconError as exc:
+        raise HTTPException(502, tr("lexicon_download_failed")) from exc
+    return _after_lexicon_install(installed)
+
+
+@app.post("/api/lexicons/import")
+async def import_lexicons(file: UploadFile) -> dict:
+    """Instala los léxicos desde el .zip oficial del NRC (sin internet)."""
+    data = await file.read()
+    try:
+        installed = await run_in_threadpool(lexicons.install_from_zip, data)
+    except lexicons.LexiconError as exc:
+        raise HTTPException(422, tr("lexicon_invalid")) from exc
+    return _after_lexicon_install(installed)
+
+
+# ----- Acuerdo entre codificadores (FR-078) -----
+
+def _agreement(other: str) -> dict:
+    project = storage.get_active_project()
+    other_project = storage.load_project(other)
+    if other_project is None or other_project.id == project.id:
+        raise HTTPException(404, tr("project_not_found"))
+    return agreement.compare(project, other_project)
+
+
+@app.get("/api/agreement")
+def get_agreement(other: str) -> dict:
+    return _agreement(other)
+
+
+@app.get("/api/agreement.csv")
+def export_agreement(other: str) -> Response:
+    import csv
+    import io
+
+    result = _agreement(other)
+    labels = {key: tr("agreement_col_" + key) for key in
+              ("code", "count_a", "count_b", "agreement", "kappa", "alpha", "band")}
+    labels.update({"band_" + b: tr("band_" + b) for b in
+                   ("na", "poor", "slight", "fair", "moderate", "substantial", "almost_perfect")})
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, lineterminator="\r\n")
+    writer.writerow([f"A: {result['project_a']['name']}", f"B: {result['project_b']['name']}"])
+    writer.writerows(agreement.to_csv_rows(result, labels))
+    name = f"cualibre_{tr('agreement_file')}_{_safe_name(result['project_a']['name'])}.csv"
+    return Response(content=("\ufeff" + buffer.getvalue()).encode("utf-8"),
+                    media_type="text/csv; charset=utf-8", headers=_attachment(name))
+
+
+# ----- REFI-QDA (FR-079) -----
+
+@app.get("/api/export.qdpx")
+def export_qdpx(profile: str = "standard") -> Response:
+    """Proyecto completo en el estándar REFI-QDA (NVivo, ATLAS.ti, MAXQDA…).
+    profile=nvivo usa la convención de posiciones de NVivo (ver qdpx.py)."""
+    project = storage.get_active_project()
+    suffix = "_nvivo" if profile == "nvivo" else ""
+    return Response(
+        content=qdpx.export_qdpx(project, profile="nvivo" if profile == "nvivo" else "standard"),
+        media_type="application/zip",
+        headers=_attachment(f"cualibre_{_safe_name(project.name)}{suffix}.qdpx"),
+    )
 
 
 # ----- Música de foco (FR-040) -----
@@ -486,37 +791,56 @@ def list_music() -> dict:
 def serve_music(filename: str) -> FileResponse:
     # Sin traversal: el nombre debe ser exactamente una entrada de la carpeta
     if filename != Path(filename).name:
-        raise HTTPException(404, "Pista no encontrada")
+        raise HTTPException(404)
     path = storage.music_dir() / filename
     if not path.is_file() or path.suffix.lower() not in MUSIC_EXTENSIONS:
-        raise HTTPException(404, "Pista no encontrada")
+        raise HTTPException(404)
     return FileResponse(path)
 
 
 # ----- Sentimiento (FR-059) -----
 
+def _top(counter: dict, n: int = 15) -> list[dict]:
+    return [{"word": w, "count": c} for w, c in sorted(counter.items(), key=lambda x: -x[1])[:n]]
+
+
 @app.get("/api/sentiment")
-def sentiment() -> dict:
-    """Análisis de valencia y emociones por léxico (español, auditable)."""
-    from .sentiment import analyze_texts, document_arc
+def sentiment(response: Response, lang: str = "") -> dict:
+    """Análisis de valencia y emociones por léxico (auditable), en el idioma
+    del corpus (FR-077)."""
+    from .sentiment import arc_from_records, records_between, score_records, valence
 
     project = storage.get_active_project()
+    lang = lang or project.corpus_lang or "es"
+    if lang not in CORPUS_LANGS:
+        raise HTTPException(422, tr("corpus_lang_unsupported"))
+    info = {"lang": lang, "lexicon_size": len(lexicons.get(lang) or {})}
     if not project.documents and not project.codes:
-        return {"documents": [], "domains": [], "codes": [], "words": {"positive": [], "negative": []},
-                "emotions": [], "emotion_words": {}}
+        return {"documents": [], "domains": [], "codes": [],
+                "words": {"positive": [], "negative": []},
+                "emotions": [], "emotion_words": {}, **info}
+    if lexicons.get(lang) is None:  # léxico aún no instalado en este equipo
+        return {"lexicon_missing": True, **info}
+
+    ready, done, total = analysis.prepare([d.text for d in project.documents], lang)
+    if not ready:
+        return _pending(response, done, total)
 
     # Documentos: valencia global + arco emocional
-    doc_results = analyze_texts([d.text for d in project.documents])
+    records_by_doc: dict[str, list] = {}
     documents = []
     all_pos: dict = {}
     all_neg: dict = {}
     all_emos: dict = {}
     all_emotion_words: dict[str, dict[str, int]] = {}
-    for doc, result in zip(project.documents, doc_results):
+    for doc in project.documents:
+        records = analysis.get(doc.text, lang)["sent"]
+        records_by_doc[doc.id] = records
+        result = score_records(records)
         documents.append({
             "id": doc.id, "filename": doc.filename,
             "score": result["score"], "matched": result["matched"],
-            "arc": document_arc(doc.text),
+            "arc": arc_from_records(doc.text, records),
         })
         for w, c in result["positives"].items():
             all_pos[w] = all_pos.get(w, 0) + c
@@ -529,42 +853,42 @@ def sentiment() -> dict:
             for w, c in words.items():
                 bucket[w] = bucket.get(w, 0) + c
 
-    # Tono por dominio y por código (sobre las citas ancladas)
-    anchored = [c for c in project.codes if c.doc_id and c.quote]
-    domains: list = []
-    codes: list = []
-    if anchored:
-        quote_results = analyze_texts([c.quote for c in anchored])
-        by_domain: dict = {}
-        by_code: dict = {}
-        for code, result in zip(anchored, quote_results):
-            by_domain.setdefault(code.domain, []).append(result["score"])
-            by_code.setdefault((code.name, code.domain), []).append(result["score"])
-        domains = [
-            {"domain": d, "score": round(sum(s) / len(s), 3), "n": len(s)}
-            for d, s in by_domain.items()
-        ]
-        codes = sorted(
-            ({"name": n, "domain": d, "score": round(sum(s) / len(s), 3), "n": len(s)}
-             for (n, d), s in by_code.items()),
-            key=lambda x: abs(x["score"]), reverse=True,
-        )[:12]
-
-    top = lambda counter: [
-        {"word": w, "count": c}
-        for w, c in sorted(counter.items(), key=lambda x: -x[1])[:15]
+    # Tono por dominio y por código: tokens con carga dentro de cada cita
+    offset_maps = {d.id: analysis.OffsetMap(d.text) for d in project.documents}
+    starts_by_doc = {doc_id: [r[0] for r in recs] for doc_id, recs in records_by_doc.items()}
+    by_domain: dict = {}
+    by_code: dict = {}
+    for code in project.codes:
+        if not (code.doc_id and code.quote) or code.doc_id not in offset_maps:
+            continue
+        offsets = offset_maps[code.doc_id]
+        chunk = records_between(records_by_doc[code.doc_id], offsets.to_cp(code.start),
+                                offsets.to_cp(code.end), starts_by_doc[code.doc_id])
+        score, _ = valence(chunk)
+        by_domain.setdefault(code.domain, []).append(score)
+        by_code.setdefault((code.name, code.domain), []).append(score)
+    domains = [
+        {"domain": d, "score": round(sum(s) / len(s), 3), "n": len(s)}
+        for d, s in by_domain.items()
     ]
+    codes = sorted(
+        ({"name": n, "domain": d, "score": round(sum(s) / len(s), 3), "n": len(s)}
+         for (n, d), s in by_code.items()),
+        key=lambda x: abs(x["score"]), reverse=True,
+    )[:12]
+
     return {
         "documents": documents,
         "domains": domains,
         "codes": codes,
-        "words": {"positive": top(all_pos), "negative": top(all_neg)},
+        "words": {"positive": _top(all_pos), "negative": _top(all_neg)},
         "emotions": [
             {"emotion": e, "count": c}
             for e, c in sorted(all_emos.items(), key=lambda x: -x[1])
         ],
         # Trazabilidad por emoción (FR-071): qué palabras exactas la dispararon
-        "emotion_words": {e: top(words) for e, words in all_emotion_words.items()},
+        "emotion_words": {e: _top(words) for e, words in all_emotion_words.items()},
+        **info,
     }
 
 
@@ -575,16 +899,87 @@ def get_manual() -> dict:
     from .manual import manual_html
 
     try:
-        return {"html": manual_html()}
+        return {"html": manual_html(i18n.current())}
     except FileNotFoundError:
-        raise HTTPException(404, "MANUAL.md no encontrado")
+        raise HTTPException(404, tr("manual_not_found"))
+
+
+@app.get("/api/version")
+def get_version() -> dict:
+    return {"version": APP_VERSION}
+
+
+# ----- Aplicación de escritorio (FR-081) -----
+# La ventana propia no descarga archivos como un navegador: guardar y abrir se
+# piden por HTTP al servidor, que muestra el diálogo nativo (Principio IV:
+# ningún puente JS↔Python fuera de HTTP).
+
+@app.get("/api/app-info")
+def app_info() -> dict:
+    from . import ocr
+
+    return {"version": APP_VERSION, "mode": app.state.mode, "ocr": ocr.engine_name()}
+
+
+@app.post("/api/app/save-file")
+async def save_file(file: UploadFile, filename: str = "cualibre") -> dict:
+    """Guarda un archivo generado por la interfaz (CSV, ZIP, PNG…) con el
+    diálogo «Guardar como» del sistema (solo en la ventana propia)."""
+    window = app.state.window
+    if window is None:
+        raise HTTPException(409, "window mode only")
+    data = await file.read()
+    import webview
+
+    chosen = await run_in_threadpool(
+        window.create_file_dialog, webview.FileDialog.SAVE, "", False, Path(filename).name)
+    if not chosen:
+        return {"saved": None}
+    target = Path(chosen if isinstance(chosen, str) else chosen[0])
+    await run_in_threadpool(target.write_bytes, data)
+    return {"saved": str(target)}
+
+
+class HtmlPayload(BaseModel):
+    name: str
+    html: str
+
+
+@app.post("/api/app/open-report")
+def open_report(payload: HtmlPayload) -> dict:
+    """Guarda el reporte académico en <datos>/reportes/ y lo abre en el
+    navegador del sistema, que es donde mejor se imprime a PDF."""
+    import webbrowser
+
+    folder = storage.base_dir() / "reportes"
+    folder.mkdir(parents=True, exist_ok=True)
+    stem = "".join(c if c.isalnum() or c in "-_ " else "_" for c in payload.name).strip() or "reporte"
+    target = folder / f"{stem} {datetime_stamp()}.html"
+    target.write_text(payload.html, encoding="utf-8")
+    webbrowser.open(target.resolve().as_uri())
+    return {"path": str(target)}
+
+
+def datetime_stamp() -> str:
+    from datetime import datetime
+
+    return datetime.now().strftime("%Y-%m-%d %H%M")
+
+
+@app.post("/api/app/quit")
+def quit_app(payload: ConfirmPayload) -> dict:
+    """Apaga el servidor (modo navegador: no hay ventana que cerrar)."""
+    if not payload.confirm or app.state.shutdown is None:
+        raise HTTPException(409, "not available")
+    threading.Timer(0.3, app.state.shutdown).start()  # después de responder
+    return {"quitting": True}
 
 
 # ----- SPA -----
 
 @app.get("/", include_in_schema=False)
 def index() -> FileResponse:
-    return FileResponse(FRONTEND_DIR / "index.html")
+    return FileResponse(FRONTEND_DIR / "index.html", headers={"Cache-Control": "no-cache"})
 
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")

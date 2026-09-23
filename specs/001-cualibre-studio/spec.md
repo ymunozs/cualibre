@@ -563,6 +563,52 @@ que se listan resultados con título, año, citas y DOI clicable.
   resaltado, Nube Negra, Paleta, NLP triple, Analytics, exportación, OpenAlex) están
   presentes y operativas en la versión entregada.
 
+### v1.11 — Idiomas, proyectos portables, Windows y corpus voluminosos (2026-09-23)
+
+- **FR-072**: La interfaz MUST estar disponible en español latinoamericano (es-419),
+  inglés británico (en-GB) y portugués de Brasil (pt-BR), con un selector en la cabecera
+  que cambie todo el texto en caliente (sin recargar) y recuerde la elección. Mensajes
+  de error del servidor, proyecto demo, manual, reporte académico y exportaciones MUST
+  salir en el idioma elegido. Los datos del proyecto MUST NOT cambiar con el idioma: las
+  claves de Categorías Básicas y tipos de relación se guardan en castellano y solo se
+  traduce su etiqueta visible.
+- **FR-073**: El investigador MUST poder importar un proyecto desde un respaldo .zip
+  (FR-070) o un .json, siempre como proyecto nuevo (identidad nueva, nunca sobrescribe),
+  y eliminar un proyecto con confirmación; el eliminado se mueve a `papelera/` en la
+  carpeta de datos (recuperable con la misma importación).
+- **FR-074**: La importación de corpus MUST aceptar TXT en UTF-8 con BOM y en ANSI de
+  Windows (cp1252), normalizar saltos de línea CRLF y extraer también las tablas de los
+  DOCX en su orden de aparición.
+- **FR-075**: El análisis NLP MUST ofrecer portugués como idioma del corpus (stopwords,
+  frecuencias y concordancias literales); el foco gramatical queda para español e inglés
+  y el selector lo indica.
+- **FR-076**: Con corpus voluminosos, el análisis lingüístico por documento MUST
+  calcularse una sola vez y reutilizarse entre consultas y sesiones; si falta mucho por
+  analizar, MUST correr en segundo plano mostrando el avance, sin congelar la interfaz.
+  Las concordancias MUST devolver offsets UTF-16 (correctos aunque el texto tenga
+  emojis).
+
+### v1.12 — Multilingüe, acuerdo, interoperabilidad, OCR y ventana propia (2026-09-23)
+
+- **FR-077**: Sentimiento y foco gramatical MUST funcionar en el idioma del corpus
+  (español, inglés, portugués), un ajuste por proyecto compartido por NLP y Sentimiento,
+  propuesto al importar el primer documento. Los léxicos NRC en inglés y portugués MUST
+  obtenerse desde la fuente oficial en cada equipo (descarga única o .zip oficial), nunca
+  redistribuidos. Los negadores MUST NOT contar como palabras con carga.
+- **FR-078**: El sistema MUST comparar la codificación de dos proyectos sobre sus
+  documentos compartidos (mismo texto) y reportar por código porcentaje de acuerdo, kappa
+  de Cohen y alfa de Krippendorff (unidad: carácter), más los fragmentos en desacuerdo con
+  salto al Canvas y exportación CSV. MUST NOT escribir en el banco de códigos.
+- **FR-079**: El sistema MUST exportar el proyecto a REFI-QDA 1.0 (.qdpx) válido contra el
+  esquema oficial, con perfil estándar y perfil NVivo, e importar .qdpx de otros programas
+  detectando la convención de posiciones de cada fuente e informando lo omitido.
+- **FR-080**: Las páginas escaneadas de un PDF MUST leerse con el OCR del sistema (sin
+  internet) y el documento MUST registrar y mostrar qué páginas se leyeron por OCR.
+- **FR-081**: La aplicación MUST abrirse en ventana propia (pywebview), con respaldo
+  automático en el navegador y botón SALIR en ese modo; guardar archivos y abrir el
+  reporte en la ventana propia MUST pasar por HTTP. La API MUST rechazar peticiones de
+  otros orígenes o dominios (CSRF, DNS rebinding).
+
 ## Assumptions
 
 - Un solo usuario local (el investigador) por proyecto; no se requiere autenticación ni
@@ -570,8 +616,9 @@ que se listan resultados con título, año, citas y DOI clicable.
 - Un solo proyecto activo a la vez en pantalla; se pueden mantener múltiples proyectos
   guardados y cambiar entre ellos mediante el selector.
 - Los PDF del corpus tienen capa de texto (no se requiere OCR en esta versión).
-- Idiomas del corpus limitados a español e inglés para stopwords de NLP.
+- Idiomas del corpus: español e inglés (NLP completo) y portugués (frecuencias y
+  concordancias literales, FR-075).
 - La búsqueda OpenAlex requiere conexión a internet; todo lo demás funciona sin conexión.
-- macOS es la plataforma objetivo (Mac del investigador); no se optimiza para Windows/Linux
-  en esta versión.
+- macOS y Windows son plataformas objetivo (instaladores para ambas desde v1.x; robustez
+  específica de Windows en FR-074 y en el arranque con puerto alternativo).
 - La aplicación corre localmente y se usa desde un navegador moderno (Safari/Chrome).

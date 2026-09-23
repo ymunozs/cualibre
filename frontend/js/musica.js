@@ -20,11 +20,13 @@ const Musica = {
     document.getElementById("mus-title").addEventListener("click", () => this._showFolder());
 
     const vol = document.getElementById("mus-vol");
-    vol.value = localStorage.getItem("cua-vol") || 70;
+    let saved = null;
+    try { saved = localStorage.getItem("cua-vol"); } catch (_) { /* sin almacenamiento */ }
+    vol.value = saved || 70;
     this.audio.volume = vol.value / 100;
     vol.addEventListener("input", () => {
       this.audio.volume = vol.value / 100;
-      localStorage.setItem("cua-vol", vol.value);
+      try { localStorage.setItem("cua-vol", vol.value); } catch (_) { /* no persiste */ }
     });
 
     try {
@@ -33,6 +35,7 @@ const Musica = {
       this.folder = data.folder;
     } catch (_) { /* la música nunca bloquea el análisis */ }
     this._renderTitle();
+    I18N.onChange(() => this._renderTitle());
   },
 
   toggle() {
@@ -66,7 +69,7 @@ const Musica = {
   _renderTitle() {
     const title = document.getElementById("mus-title");
     if (!this.tracks.length) {
-      title.textContent = "Sin pistas aún — clic aquí para ver dónde poner tu música";
+      title.textContent = I18N.t("mus.empty");
       return;
     }
     const name = this.tracks[this.index].replace(/\.[^.]+$/, "");
@@ -74,6 +77,6 @@ const Musica = {
   },
 
   _showFolder() {
-    if (this.folder) Views.toast(`Tu música va en: ${this.folder}`);
+    if (this.folder) Views.toast(I18N.t("mus.folder", { folder: this.folder }));
   },
 };

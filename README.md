@@ -1,20 +1,38 @@
 # CUA-LIBRE STUDIO
 
 Estudio local de análisis cualitativo de datos (QDA/CAQDAS) para investigación en
-ciencias sociales. Todo tu trabajo vive en tu Mac; no depende de la nube.
+ciencias sociales. Todo tu trabajo vive en tu computador (macOS o Windows); no depende
+de la nube.
 
-**Manual completo de comandos y atajos: [MANUAL.md](MANUAL.md)**
+**Interfaz en tres idiomas**: español latinoamericano, inglés británico y portugués de
+Brasil (selector en la cabecera; cambia al instante y no altera los datos).
+
+**Novedades de la v1.12**
+- **Ventana propia** (ya no depende del navegador; si el sistema no puede abrirla, usa el
+  navegador con un botón SALIR).
+- **Interoperabilidad REFI-QDA (.qdpx)**: exporta e importa proyectos de NVivo, ATLAS.ti,
+  MAXQDA y QualCoder. Probado con una exportación real de NVivo 12.6 (97/97 citas exactas)
+  y validado contra el esquema oficial QDA-XML 1.0.
+- **Acuerdo entre codificadores**: kappa de Cohen, alfa de Krippendorff y porcentaje de
+  acuerdo por código, con los fragmentos en desacuerdo.
+- **Sentimiento y foco gramatical en inglés y portugués** (idioma del corpus por proyecto).
+- **OCR de PDF escaneados** con el motor del propio sistema, sin internet.
+
+**Manual completo de comandos y atajos: [MANUAL.md](MANUAL.md)** · [English](MANUAL.en.md) · [Português](MANUAL.pt.md)
 
 ## Cómo iniciar
 
 Abre la Terminal en esta carpeta y ejecuta:
 
 ```bash
-./start.sh
+./start.sh        # macOS / Linux (ventana propia)
+start.bat         # Windows (desde el código fuente; requiere uv)
+./start.sh --navegador   # en el navegador, como antes
 ```
 
 La primera vez tardará un poco (descarga Python y las dependencias automáticamente con
-`uv`). Después, el navegador se abre solo en `http://127.0.0.1:8734`. Para salir,
+`uv`). Después, el navegador se abre solo en `http://127.0.0.1:8734` (si ese puerto está
+ocupado por otro programa, Cua-libre usa el siguiente libre, 8735…8743). Para salir,
 presiona `Ctrl-C` en la Terminal.
 
 ## Cómo se usa
@@ -62,8 +80,24 @@ de la barra te muestra la ruta exacta) y suenan en bucle mientras codificas.
   cambiar). Cada uno aísla su corpus, códigos y memos.
 - Todo se **guarda solo** tras cada acción; al reabrir la app encuentras tu último
   proyecto tal como lo dejaste.
-- Tus datos viven en `~/Library/Application Support/cualibre/projects/` (un archivo
-  JSON legible por proyecto). Para respaldar, copia esa carpeta.
+- **⤒ IMPORTAR** abre un proyecto desde un respaldo `.zip` (⇄ Exportar → 🗄 Respaldo
+  completo) o un `.json`, como proyecto nuevo: así se mueve el trabajo entre Mac y
+  Windows o se comparte con colegas. **🗑** elimina un proyecto moviéndolo a `papelera/`.
+- Tus datos viven en `~/Library/Application Support/cualibre/` (Mac) o
+  `%APPDATA%\cualibre\` (Windows): `projects/` (un JSON legible por proyecto),
+  `snapshots/` (historial comprimido), `papelera/` y `cache/` (análisis lingüísticos
+  reutilizables; se puede borrar sin riesgo). Para respaldar, copia esa carpeta.
+
+## Corpus voluminosos
+
+Probado con 60 entrevistas (3,7 millones de caracteres) y 3.000 códigos:
+
+- El análisis lingüístico (spaCy) de cada documento se calcula **una sola vez** y queda
+  guardado; con corpus grandes corre en segundo plano con indicador de avance.
+- Codificar una cita con todo el corpus visible: ~0,7 s (antes ~24 s); buscar en el
+  corpus: ~0,1 s (antes ~4 s); abrir Sentimiento ya analizado: ~0,3 s (antes ~95 s).
+- Un solo documento puede superar el límite de 2 millones de caracteres de spaCy: se
+  procesa por tramos.
 
 ## Los 9 dominios de codificación
 

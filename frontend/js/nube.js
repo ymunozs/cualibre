@@ -83,7 +83,7 @@ const Nube = {
 
   _selectDomain(name) {
     this.selectedDomain = name;
-    this.domainLabel.textContent = name;
+    this.domainLabel.textContent = I18N.domain(name);
     const color = State.domains[name] || "#999";
     this.domainBtn.style.setProperty("--dom-color", color);
     this._closeDomainMenu();
@@ -113,7 +113,7 @@ const Nube = {
       dot.className = "dom-chip";
       dot.style.backgroundColor = State.basicDomains[name];
       const label = document.createElement("span");
-      label.textContent = `${i + 1} · ${name}`;
+      label.textContent = `${i + 1} · ${I18N.domain(name)}`;
       item.append(dot, label);
       item.addEventListener("click", () => this._selectDomain(name));
       this.basicSubmenu.appendChild(item);
@@ -123,6 +123,8 @@ const Nube = {
     // la primera Categoría Básica por defecto.
     if (!this.selectedDomain || !State.domains[this.selectedDomain]) {
       this._selectDomain(Object.keys(State.basicDomains)[0]);
+    } else {
+      this.domainLabel.textContent = I18N.domain(this.selectedDomain); // idioma pudo cambiar
     }
   },
 
@@ -136,7 +138,7 @@ const Nube = {
       // Reload completo: refresca también el panel de la Paleta, no solo la Nube
       await State.reload();
       this._selectDomain(name);
-      Views.toast(`Categoría creada: ${name}`);
+      Views.toast(I18N.t("custom.created", { name }));
     } catch (error) {
       Views.toast(error.message, true);
     }
@@ -146,7 +148,7 @@ const Nube = {
     this.selection = selection;
     this.nameInput.value = "";
     this.nameInput.classList.remove("error");
-    this.nameInput.placeholder = "Nombre del código…";
+    this.nameInput.placeholder = I18N.t("nube.name.placeholder");
     this._closeDomainMenu();
 
     this.el.classList.remove("hidden");
@@ -200,7 +202,7 @@ const Nube = {
     const name = this.nameInput.value.trim();
     if (!name) { // FR-012: sin nombre no se guarda, y se indica
       this.nameInput.value = "";
-      this.nameInput.placeholder = "⚠ Falta el nombre del código";
+      this.nameInput.placeholder = I18N.t("nube.name.missing");
       this.nameInput.classList.add("error");
       this.nameInput.focus();
       return;
@@ -220,7 +222,7 @@ const Nube = {
       await API.createCode(payload);
       this.last = { domain: payload.domain, name: payload.name }; // para ⌘↵ (FR-046)
       await State.reload(); // resaltado + banco + analytics inmediatos (FR-010)
-      Views.toast(`Codificado: ${name}`);
+      Views.toast(I18N.t("nube.coded", { name }));
     } catch (error) {
       Views.toast(error.message, true);
     }

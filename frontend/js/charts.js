@@ -102,7 +102,7 @@ const Charts = {
         fill: d.color, stroke: "#000", "stroke-width": 2,
       });
       const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-      title.textContent = onClick ? `${d.label}: ${d.value} (clic para ver concordancias)` : `${d.label}: ${d.value}`;
+      title.textContent = onClick ? `${d.label}: ${d.value} (${I18N.t("chart.click.kwic")})` : `${d.label}: ${d.value}`;
       bar.appendChild(title);
       row.appendChild(bar);
 
@@ -173,7 +173,7 @@ const Charts = {
     if (points.length < 2) {
       const p = document.createElement("span");
       p.className = "empty-note";
-      p.textContent = "Se necesitan 2+ párrafos para trazar el arco.";
+      p.textContent = I18N.t("chart.arc.short");
       container.appendChild(p);
       return;
     }
@@ -196,7 +196,8 @@ const Charts = {
         fill: p.score >= 0 ? "#00CC66" : "#CC0000", stroke: "#000", "stroke-width": 1.5,
       });
       const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-      title.textContent = `Tramo ${i + 1}: ${p.score > 0 ? "+" : ""}${p.score} (${p.matched} palabras con carga)`;
+      title.textContent = I18N.t("chart.arc.point",
+        { i: i + 1, score: `${p.score > 0 ? "+" : ""}${p.score}`, n: p.matched });
       dot.appendChild(title);
       svg.appendChild(dot);
     });
@@ -240,11 +241,7 @@ const Charts = {
   /* ---- Exportación de organizadores gráficos (FR-049) ---- */
 
   _download(blob, filename) {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    Files.save(blob, filename); // navegador o ventana propia (FR-081)
   },
 
   downloadSvg(svgEl, filename) {

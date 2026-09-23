@@ -7,11 +7,12 @@
 const Relations = {
   types: {}, // {tipo: verbo} — cargado del backend
 
+  // Trazo por tipo; la letra de la leyenda depende del idioma (I18N.relLetter)
   STROKES: {
-    "jerarquía":     { dash: "",       width: 3, label: "J" },
-    "asociación":    { dash: "6,5",    width: 2, label: "A" },
-    "causalidad":    { dash: "",       width: 2, label: "C" },
-    "contradicción": { dash: "2,4",    width: 3, label: "T" },
+    "jerarquía":     { dash: "",       width: 3 },
+    "asociación":    { dash: "6,5",    width: 2 },
+    "causalidad":    { dash: "",       width: 2 },
+    "contradicción": { dash: "2,4",    width: 3 },
   },
 
   init() {
@@ -37,10 +38,10 @@ const Relations = {
     const typeSelect = document.getElementById("rel-type");
     const previous = typeSelect.value;
     typeSelect.textContent = "";
-    for (const [type, verb] of Object.entries(this.types)) {
+    for (const type of Object.keys(this.types)) {
       const option = document.createElement("option");
       option.value = type;
-      option.textContent = `${type} (${verb})`;
+      option.textContent = `${I18N.relType(type)} (${I18N.relVerb(type)})`;
       typeSelect.appendChild(option);
     }
     if (previous) typeSelect.value = previous;
@@ -68,13 +69,13 @@ const Relations = {
     const target = document.getElementById("rel-target").value;
     const type = document.getElementById("rel-type").value;
     if (source === target) {
-      Views.toast("Elige dos códigos distintos", true);
+      Views.toast(I18N.t("rel.same"), true);
       return;
     }
     try {
       await API.createRelation({ source, target, type });
       await State.reload();
-      Views.toast(`Relación creada: ${source} ${this.types[type]} ${target}`);
+      Views.toast(I18N.t("rel.created", { source, verb: I18N.relVerb(type), target }));
     } catch (error) {
       Views.toast(error.message, true);
     }
@@ -87,7 +88,7 @@ const Relations = {
     if (!relations.length) {
       const p = document.createElement("p");
       p.className = "empty-note";
-      p.textContent = "Sin relaciones aún.";
+      p.textContent = I18N.t("rel.none");
       list.appendChild(p);
       return;
     }
@@ -96,16 +97,16 @@ const Relations = {
     for (const relation of relations) {
       const li = document.createElement("li");
       const text = document.createElement("span");
-      text.textContent = `${relation.source} —${this.types[relation.type] || relation.type}→ ${relation.target}`;
+      text.textContent = `${relation.source} —${I18N.relVerb(relation.type)}→ ${relation.target}`;
       const del = document.createElement("button");
       del.className = "icon-btn";
-      del.title = "Eliminar relación";
+      del.title = I18N.t("rel.delete.title");
       del.textContent = "🗑";
       del.addEventListener("click", async () => {
         try {
           await API.deleteRelation(relation.id);
           await State.reload();
-          Views.toast("Relación eliminada");
+          Views.toast(I18N.t("rel.deleted"));
         } catch (error) {
           Views.toast(error.message, true);
         }
@@ -126,7 +127,7 @@ const Relations = {
     if (!relations.length) {
       const p = document.createElement("p");
       p.className = "empty-note";
-      p.textContent = "Crea relaciones para ver el organizador.";
+      p.textContent = I18N.t("rel.graph.empty");
       container.appendChild(p);
       return;
     }
@@ -178,7 +179,7 @@ const Relations = {
       });
       if (style.dash) line.setAttribute("stroke-dasharray", style.dash);
       const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-      title.textContent = `${relation.source} ${this.types[relation.type]} ${relation.target}`;
+      title.textContent = `${relation.source} ${I18N.relVerb(relation.type)} ${relation.target}`;
       line.appendChild(title);
       svg.appendChild(line);
 
@@ -190,7 +191,7 @@ const Relations = {
         "font-size": 10, "font-weight": 700,
         "font-family": "IBM Plex Mono, monospace", fill: "#000",
       });
-      tag.textContent = style.label;
+      tag.textContent = I18N.relLetter(relation.type);
       svg.appendChild(tag);
     }
 
@@ -213,11 +214,11 @@ const Relations = {
     container.appendChild(svg);
 
     // Leyenda de tipos (letra + trazo + nombre)
-    for (const [type, style] of Object.entries(this.STROKES)) {
+    for (const type of Object.keys(this.STROKES)) {
       if (!this.types[type]) continue;
       const row = document.createElement("span");
       row.style.cssText = "display:inline-flex;align-items:center;gap:6px;font-size:11px;margin:6px 14px 0 0;font-weight:700;";
-      row.textContent = `(${style.label}) ${type} — ${this.types[type]}`;
+      row.textContent = `(${I18N.relLetter(type)}) ${I18N.relType(type)}: ${I18N.relVerb(type)}`;
       legend.appendChild(row);
     }
   },
@@ -230,7 +231,7 @@ const Relations = {
     if (!edges.length) {
       const p = document.createElement("p");
       p.className = "empty-note";
-      p.textContent = "Crea relaciones de jerarquía («contiene a») para armar el árbol.";
+      p.textContent = I18N.t("rel.tree.empty");
       container.appendChild(p);
       return;
     }

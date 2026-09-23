@@ -3,7 +3,9 @@
 
 const API = {
   async _fetch(url, options = {}) {
-    const response = await fetch(url, options);
+    // Idioma de la interfaz: mensajes de error, demo, manual y exportaciones
+    const headers = { ...(options.headers || {}), "X-Cua-Lang": I18N.lang };
+    const response = await fetch(url, { ...options, headers });
     if (!response.ok) {
       let detail = `Error ${response.status}`;
       try {
@@ -20,7 +22,20 @@ const API = {
       throw error;
     }
     if (response.status === 204) return null;
-    return response.json();
+    const body = await response.json();
+    if (response.status === 202 && body && body.pending) body.__pending = true;
+    return body;
+  },
+
+  /* Análisis de corpus grandes (202 + avance): sondea hasta que esté listo,
+     informando el progreso con onProgress({done, total}). */
+  async _poll(url, onProgress) {
+    for (;;) {
+      const body = await API._fetch(url);
+      if (!body || !body.__pending) return body;
+      if (onProgress) onProgress(body);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
   },
 
   _json(method, url, body) {
@@ -37,6 +52,28 @@ const API = {
   createProject: (name) => API._json("POST", "/api/projects", { name }),
   renameProject: (id, name) => API._json("PATCH", `/api/projects/${id}`, { name }),
   activateProject: (id) => API._json("POST", `/api/projects/${id}/activate`, {}),
+  deleteProject: (id) => API._fetch(`/api/projects/${id}?confirm=true`, { method: "DELETE" }),
+  importProject(file) {
+    const form = new FormData();
+    form.append("file", file);
+    return API._fetch("/api/projects/import", { method: "POST", body: form });
+  },
+  createExample: () => API._fetch("/api/projects/example", { method: "POST" }),
+  setCorpusLang: (lang) => API._json("PUT", "/api/project/corpus-lang", { lang }),
+
+  // Aplicación de escritorio (FR-081)
+  appInfo: () => API._fetch("/api/app-info"),
+  openReport: (name, html) => API._json("POST", "/api/app/open-report", { name, html }),
+  quit: () => API._json("POST", "/api/app/quit", { confirm: true }),
+
+  // Léxicos de sentimiento (FR-077) y acuerdo entre codificadores (FR-078)
+  downloadLexicons: () => API._fetch("/api/lexicons/download", { method: "POST" }),
+  importLexicons(file) {
+    const form = new FormData();
+    form.append("file", file);
+    return API._fetch("/api/lexicons/import", { method: "POST", body: form });
+  },
+  agreement: (other) => API._fetch(`/api/agreement?other=${encodeURIComponent(other)}`),
   resetProject: () => API._json("POST", "/api/project/reset", { confirm: true }),
   saveProject: () => API._json("POST", "/api/project/save", {}),
 
@@ -75,11 +112,11 @@ const API = {
   music: () => API._fetch("/api/music"),
 
   // Análisis
-  sentiment: () => API._fetch("/api/sentiment"),
-  nlp: (lang, minLen, pos = "all") =>
-    API._fetch(`/api/nlp?lang=${lang}&min_len=${minLen}&top=60&pos=${pos}`),
-  kwic: (q, lang = "es", pos = "all") =>
-    API._fetch(`/api/kwic?q=${encodeURIComponent(q)}&lang=${lang}&pos=${pos}`),
+  sentiment: (lang, onProgress) => API._poll(`/api/sentiment?lang=${lang}`, onProgress),
+  nlp: (lang, minLen, pos = "all", onProgress) =>
+    API._poll(`/api/nlp?lang=${lang}&min_len=${minLen}&top=60&pos=${pos}`, onProgress),
+  kwic: (q, lang = "es", pos = "all", onProgress) =>
+    API._poll(`/api/kwic?q=${encodeURIComponent(q)}&lang=${lang}&pos=${pos}`, onProgress),
   setNlpExclusions: (words) => API._json("PUT", "/api/nlp/exclusions", { words }),
   literature: (q) => API._fetch(`/api/literature?q=${encodeURIComponent(q)}`),
 };

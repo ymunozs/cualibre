@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-419">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,179 +9,211 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.10.0</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.12.0</small></h1>
   <div id="project-bar">
-    <label for="project-select" class="mini-label">PROYECTO</label>
+    <label for="project-select" class="mini-label" data-i18n="proj.label">PROYECTO</label>
     <select id="project-select"></select>
-    <button id="btn-new-project" class="btn btn-small" title="Crear proyecto nuevo">+ NUEVO</button>
-    <button id="btn-rename-project" class="btn btn-small" title="Renombrar proyecto">✎ RENOMBRAR</button>
-    <button id="btn-example" class="btn btn-small" title="Crear un proyecto de ejemplo con entrevista ficticia codificada">🎓 DEMO</button>
-    <button id="btn-save-project" class="btn btn-small btn-save" title="Guardar proyecto ahora">💾 GUARDAR</button>
-    <span id="save-dot" title="Se enciende con cada guardado automático"></span>
-    <button id="btn-about" class="btn btn-small" title="Acerca de Cua-libre">ℹ ACERCA DE</button>
-    <button id="btn-history" class="btn btn-small" title="Historial de respaldos del proyecto">🕐 HISTORIAL</button>
-    <button id="btn-manual" class="btn btn-small" title="Manual de uso y atajos">❓ MANUAL</button>
-    <button id="btn-dark" class="btn btn-small" title="Modo oscuro / claro">◐</button>
+    <button id="btn-new-project" class="btn btn-small" data-i18n="proj.new" data-i18n-title="proj.new.title">+ NUEVO</button>
+    <button id="btn-rename-project" class="btn btn-small" data-i18n="proj.rename" data-i18n-title="proj.rename.title">✎ RENOMBRAR</button>
+    <button id="btn-import-project" class="btn btn-small" data-i18n="proj.import" data-i18n-title="proj.import.title">⤒ IMPORTAR</button>
+    <input type="file" id="project-file" accept=".zip,.json,.gz,.qdpx" hidden>
+    <button id="btn-delete-project" class="btn btn-small" data-i18n-title="proj.delete.title">🗑</button>
+    <button id="btn-example" class="btn btn-small" data-i18n="proj.demo" data-i18n-title="proj.demo.title">🎓 DEMO</button>
+    <button id="btn-save-project" class="btn btn-small btn-save" data-i18n="proj.save" data-i18n-title="proj.save.title">💾 GUARDAR</button>
+    <span id="save-dot" data-i18n-title="proj.savedot.title"></span>
+  </div>
+  <div id="app-bar">
+    <button id="btn-history" class="btn btn-small" data-i18n="app.history" data-i18n-title="app.history.title">🕐 HISTORIAL</button>
+    <button id="btn-about" class="btn btn-small" data-i18n="app.about" data-i18n-title="app.about.title">ℹ ACERCA DE</button>
+    <button id="btn-manual" class="btn btn-small" data-i18n="app.manual" data-i18n-title="app.manual.title">❓ MANUAL</button>
+    <button id="btn-dark" class="btn btn-small" data-i18n-title="app.dark.title">◐</button>
+    <select id="lang-select" class="lang-select" data-i18n-title="lang.label" data-i18n-aria="lang.label"></select>
+    <button id="btn-quit" class="btn btn-small hidden" data-i18n="app.quit" data-i18n-title="app.quit.title">⏻ SALIR</button>
   </div>
 </header>
 
 <section id="importador">
-  <label for="file-input" class="import-label">📥 IMPORTAR CORPUS — PDF, DOCX o TXT</label>
-  <input type="file" id="file-input" accept=".pdf,.docx,.txt" multiple>
+  <!-- Botón propio: el control nativo muestra su texto en el idioma del navegador,
+       no en el de la app («Elegir archivos», «Choose files»…) -->
+  <label for="file-input" class="import-label btn" data-i18n="import.label">📥 IMPORTAR CORPUS: PDF, DOCX o TXT</label>
+  <input type="file" id="file-input" class="visually-hidden" accept=".pdf,.docx,.txt" multiple>
+  <span class="mini-label import-hint"><span data-i18n="import.hint"></span><span id="import-ocr-hint"></span></span>
   <span id="import-status" class="mini-label"></span>
 </section>
 
 <nav id="tabs">
-  <button class="tab active" data-view="pentagrama">◰ PENTAGRAMA</button>
-  <button class="tab" data-view="nlp">⚡ NLP</button>
-  <button class="tab" data-view="analytics">◫ ANALYTICS</button>
-  <button class="tab" data-view="sentimiento">◑ SENTIMIENTO</button>
-  <button class="tab" data-view="codigos">▤ CÓDIGOS</button>
-  <button class="tab" data-view="relaciones">◈ RELACIONES</button>
-  <button class="tab" data-view="exportar">⇄ EXPORTAR</button>
-  <button class="tab" data-view="literatura">📚 LITERATURA</button>
+  <button class="tab active" data-view="pentagrama" data-i18n="tab.pentagrama">◰ PENTAGRAMA</button>
+  <button class="tab" data-view="nlp" data-i18n="tab.nlp">⚡ NLP</button>
+  <button class="tab" data-view="analytics" data-i18n="tab.analytics">◫ ANALYTICS</button>
+  <button class="tab" data-view="sentimiento" data-i18n="tab.sentimiento">◑ SENTIMIENTO</button>
+  <button class="tab" data-view="codigos" data-i18n="tab.codigos">▤ CÓDIGOS</button>
+  <button class="tab" data-view="relaciones" data-i18n="tab.relaciones">◈ RELACIONES</button>
+  <button class="tab" data-view="acuerdo" data-i18n="tab.acuerdo">⚖ ACUERDO</button>
+  <button class="tab" data-view="exportar" data-i18n="tab.exportar">⇄ EXPORTAR</button>
+  <button class="tab" data-view="literatura" data-i18n="tab.literatura">📚 LITERATURA</button>
 </nav>
 
 <main>
   <!-- PENTAGRAMA: Canvas (lectura pura) + Paleta -->
   <section id="view-pentagrama" class="view">
     <div id="canvas-col">
-      <div class="section-title">CANVAS DE ANÁLISIS
-        <button id="btn-immersion" title="Modo inmersión (Esc para salir)">⛶</button>
-        <button id="btn-font" title="Tipografía del corpus: serif / máquina de escribir">Aa</button>
-        <button id="btn-linenum" title="Numeración de líneas">№</button>
+      <div class="section-title"><span data-i18n="canvas.title">CANVAS DE ANÁLISIS</span>
+        <button id="btn-immersion" data-i18n-title="canvas.immersion.title">⛶</button>
+        <button id="btn-font" data-i18n-title="canvas.font.title">Aa</button>
+        <button id="btn-linenum" data-i18n-title="canvas.linenum.title">№</button>
       </div>
       <div id="doc-tabs" class="hidden"></div>
       <div id="canvas"></div>
     </div>
     <aside id="paleta-col">
-      <div class="section-title">BUSCAR EN EL CORPUS</div>
+      <div class="section-title" data-i18n="search.title">BUSCAR EN EL CORPUS</div>
       <div class="panel" id="search-panel">
-        <input type="text" id="search-input" placeholder="⌘F · texto a buscar…">
+        <input type="text" id="search-input" data-i18n-placeholder="search.placeholder">
         <div id="search-nav">
-          <button id="search-prev" class="btn btn-small" title="Anterior">‹</button>
+          <button id="search-prev" class="btn btn-small" data-i18n-title="search.prev">‹</button>
           <span id="search-count" class="mini-label">—</span>
-          <button id="search-next" class="btn btn-small" title="Siguiente">›</button>
-          <button id="search-clear" class="btn btn-small" title="Limpiar búsqueda">✕</button>
+          <button id="search-next" class="btn btn-small" data-i18n-title="search.next">›</button>
+          <button id="search-clear" class="btn btn-small" data-i18n-title="search.clear">✕</button>
         </div>
       </div>
-      <div class="section-title">FILTRO DE RESALTADOS</div>
+      <div class="section-title" data-i18n="filter.title">FILTRO DE RESALTADOS</div>
       <div class="panel">
         <div id="domain-filter"></div>
         <button id="btn-clean-read" class="btn btn-small" style="margin-top:8px">◻ LECTURA LIMPIA</button>
       </div>
-      <div class="section-title">PALETA DE CONTROL</div>
+      <div class="section-title" data-i18n="palette.title">PALETA DE CONTROL</div>
       <div class="panel" id="paleta-manual">
-        <div class="mini-label">CÓDIGO MANUAL</div>
+        <div class="mini-label" data-i18n="manual.code">CÓDIGO MANUAL</div>
         <select id="manual-domain"></select>
-        <input type="text" id="manual-name" placeholder="Etiqueta / código…" maxlength="200">
-        <textarea id="manual-memo" rows="3" placeholder="Memo de investigación…"></textarea>
-        <button id="btn-manual-save" class="btn btn-accent">◉ GUARDAR</button>
+        <input type="text" id="manual-name" data-i18n-placeholder="manual.name.placeholder" maxlength="200">
+        <textarea id="manual-memo" rows="3" data-i18n-placeholder="manual.memo.placeholder"></textarea>
+        <button id="btn-manual-save" class="btn btn-accent" data-i18n="manual.save">◉ GUARDAR</button>
       </div>
-      <div class="section-title">CATEGORÍAS PERSONALIZADAS</div>
+      <div class="section-title" data-i18n="custom.title">CATEGORÍAS PERSONALIZADAS</div>
       <div class="panel">
         <div id="custom-domains-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
-      <div class="section-title">DOCUMENTOS DEL CORPUS</div>
+      <div class="section-title" data-i18n="docs.title">DOCUMENTOS DEL CORPUS</div>
       <div class="panel">
         <ul id="doc-list" class="plain-list"></ul>
       </div>
-      <div class="section-title">BANCO DE CÓDIGOS</div>
-      <p class="empty-note" style="padding:0 0 4px">Arrastra una selección aquí para re-aplicar un código. Buscador y fusión: pestaña ▤ CÓDIGOS.</p>
+      <div class="section-title" data-i18n="bank.title">BANCO DE CÓDIGOS</div>
+      <p class="empty-note" style="padding:0 0 4px" data-i18n="bank.drag.hint"></p>
       <div class="panel" id="code-bank-mini"></div>
-      <button id="btn-reset" class="btn btn-danger">⌦ REINICIAR PROYECTO</button>
+      <button id="btn-reset" class="btn btn-danger" data-i18n="reset.button">⌦ REINICIAR PROYECTO</button>
     </aside>
   </section>
 
   <!-- NLP -->
   <section id="view-nlp" class="view hidden">
-    <div class="section-title">ANÁLISIS DE CORPUS</div>
+    <div class="section-title" data-i18n="nlp.title">ANÁLISIS DE CORPUS</div>
     <div class="controls-row">
-      <label class="mini-label">IDIOMA
-        <select id="nlp-lang">
-          <option value="es" selected>Español</option>
-          <option value="en">Inglés</option>
+      <label class="mini-label"><span data-i18n="nlp.lang">IDIOMA DEL CORPUS</span>
+        <select id="nlp-lang" class="corpus-lang">
+          <option value="es" selected data-i18n="nlp.lang.es">Español</option>
+          <option value="en" data-i18n="nlp.lang.en">Inglés</option>
+          <option value="pt" data-i18n="nlp.lang.pt">Portugués</option>
         </select>
       </label>
-      <label class="mini-label">LONGITUD MÍNIMA <span id="nlp-minlen-value">4</span>
+      <label class="mini-label"><span data-i18n="nlp.minlen">LONGITUD MÍNIMA</span> <span id="nlp-minlen-value">4</span>
         <input type="range" id="nlp-minlen" min="2" max="10" value="4">
       </label>
-      <label class="mini-label">FOCO GRAMATICAL
-        <select id="nlp-pos" title="Filtra por categoría gramatical; agrupa conjugaciones bajo su lema (cantó → cantar)">
-          <option value="all" selected>Todas las palabras</option>
-          <option value="verb">Solo verbos</option>
-          <option value="noun">Solo sustantivos</option>
-          <option value="adj">Solo adjetivos</option>
+      <label class="mini-label"><span data-i18n="nlp.pos">FOCO GRAMATICAL</span>
+        <select id="nlp-pos" data-i18n-title="nlp.pos.title">
+          <option value="all" selected data-i18n="nlp.pos.all">Todas las palabras</option>
+          <option value="verb" data-i18n="nlp.pos.verb">Solo verbos</option>
+          <option value="noun" data-i18n="nlp.pos.noun">Solo sustantivos</option>
+          <option value="adj" data-i18n="nlp.pos.adj">Solo adjetivos</option>
         </select>
       </label>
     </div>
     <div class="controls-row">
-      <input type="text" id="nlp-exclusions" placeholder="Palabras a omitir del conteo, separadas por coma (ej: Entrevistado, Entrevistadora, E1)">
-      <button id="btn-nlp-exclusions" class="btn btn-small">＋ OMITIR</button>
+      <input type="text" id="nlp-exclusions" data-i18n-placeholder="nlp.exclusions.placeholder">
+      <button id="btn-nlp-exclusions" class="btn btn-small" data-i18n="nlp.exclusions.add">＋ OMITIR</button>
     </div>
     <div id="nlp-exclusion-chips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px"></div>
-    <div class="section-title">NUBE DE CONCEPTOS
-      <button id="btn-export-cloud" class="btn-export-mini" title="Descargar la nube como imagen PNG">⬇ PNG</button>
+    <p id="nlp-progress" class="progress-note hidden"></p>
+    <div class="section-title"><span data-i18n="nlp.cloud">NUBE DE CONCEPTOS</span>
+      <button id="btn-export-cloud" class="btn-export-mini" data-i18n-title="nlp.cloud.export">⬇ PNG</button>
     </div>
-    <p class="empty-note" style="padding:0 0 6px">Clic en una palabra (aquí, en las barras o en la tabla) → concordancias en contexto.</p>
+    <p class="empty-note" style="padding:0 0 6px" data-i18n="nlp.click.hint"></p>
     <canvas id="wordcloud" height="340"></canvas>
     <div id="nlp-bottom">
       <div>
-        <div class="section-title">FRECUENCIAS TOP</div>
+        <div class="section-title" data-i18n="nlp.top">FRECUENCIAS TOP</div>
         <div id="nlp-bars"></div>
       </div>
       <div>
-        <div class="section-title">LISTADO Y CONTEO</div>
+        <div class="section-title" data-i18n="nlp.table">LISTADO Y CONTEO</div>
         <div id="nlp-table" class="table-scroll"></div>
       </div>
     </div>
-    <p id="nlp-empty" class="empty-note hidden">Importa documentos al corpus para analizar sus frecuencias.</p>
+    <p id="nlp-empty" class="empty-note hidden" data-i18n="nlp.empty"></p>
   </section>
 
   <!-- ANALYTICS -->
   <section id="view-analytics" class="view hidden">
-    <div class="section-title">ESTADÍSTICAS DE CODIFICACIÓN</div>
-    <p id="analytics-empty" class="empty-note hidden">Codifica fragmentos en el Pentagrama para generar estadísticas.</p>
+    <div class="section-title" data-i18n="an.title">ESTADÍSTICAS DE CODIFICACIÓN</div>
+    <p id="analytics-empty" class="empty-note hidden" data-i18n="an.empty"></p>
     <div id="analytics-charts">
       <div>
-        <div class="section-title">DISTRIBUCIÓN POR DOMINIOS</div>
+        <div class="section-title" data-i18n="an.pie">DISTRIBUCIÓN POR DOMINIOS</div>
         <div id="chart-pie"></div>
       </div>
       <div>
-        <div class="section-title">DENSIDAD DE CÓDIGOS</div>
+        <div class="section-title" data-i18n="an.bars">DENSIDAD DE CÓDIGOS</div>
         <div id="chart-bars"></div>
       </div>
     </div>
     <div id="cooc-section" class="hidden">
-      <div class="section-title">CO-OCURRENCIA DE CÓDIGOS (CITAS QUE SE SOLAPAN)</div>
+      <div class="section-title" data-i18n="an.cooc">CO-OCURRENCIA DE CÓDIGOS</div>
       <div id="chart-cooc" class="table-scroll"></div>
-      <div class="section-title">CÓDIGOS POR DOCUMENTO</div>
+      <div class="section-title" data-i18n="an.doccode">CÓDIGOS POR DOCUMENTO</div>
       <div id="chart-doccode" class="table-scroll"></div>
     </div>
   </section>
 
   <!-- SENTIMIENTO (FR-059): léxico NRC-es, auditable -->
   <section id="view-sentimiento" class="view hidden">
-    <div class="section-title">ANÁLISIS DE SENTIMIENTO — LÉXICO ABIERTO (NRC-ES)</div>
-    <p class="empty-note" style="padding-top:0">Valencia de −1 (negativo) a +1 (positivo), calculada desde 5.094 palabras en castellano
-      con inversión por negación. Todo puntaje es auditable: abajo se listan las palabras que lo produjeron.</p>
-    <p id="sent-empty" class="empty-note hidden">Importa documentos para analizar su tono.</p>
+    <div class="section-title" id="sent-title">ANÁLISIS DE SENTIMIENTO</div>
+    <div class="controls-row">
+      <label class="mini-label"><span data-i18n="nlp.lang">IDIOMA DEL CORPUS</span>
+        <select id="sent-lang" class="corpus-lang">
+          <option value="es" data-i18n="nlp.lang.es">Español</option>
+          <option value="en" data-i18n="nlp.lang.en">Inglés</option>
+          <option value="pt" data-i18n="nlp.lang.pt">Portugués</option>
+        </select>
+      </label>
+    </div>
+    <p class="empty-note" style="padding-top:0" id="sent-intro"></p>
+    <p class="empty-note hidden" style="padding-top:0" id="sent-mt"></p>
+    <div id="lexicon-panel" class="panel lexicon-panel hidden">
+      <div class="section-title" id="lexicon-title"></div>
+      <p class="dialog-note" data-i18n="lex.missing.text"></p>
+      <div class="export-actions">
+        <button id="btn-lex-download" class="btn btn-accent" data-i18n="lex.download">⬇ DESCARGAR</button>
+        <label for="lexicon-file" class="btn" data-i18n="lex.choose">ELEGIR .ZIP</label>
+        <input type="file" id="lexicon-file" class="visually-hidden" accept=".zip">
+      </div>
+    </div>
+    <p id="sent-empty" class="empty-note hidden" data-i18n="sent.empty"></p>
+    <p id="sent-progress" class="progress-note hidden"></p>
     <div id="sent-body">
-      <div class="section-title">TONO Y ARCO EMOCIONAL POR DOCUMENTO</div>
+      <div class="section-title" data-i18n="sent.docs">TONO Y ARCO EMOCIONAL POR DOCUMENTO</div>
       <div id="sent-docs"></div>
       <div id="sent-grid">
         <div>
-          <div class="section-title">TONO POR DOMINIO</div>
+          <div class="section-title" data-i18n="sent.domains">TONO POR DOMINIO</div>
           <div id="sent-domains"></div>
-          <div class="section-title">TONO POR CÓDIGO (MAYOR CARGA)</div>
+          <div class="section-title" data-i18n="sent.codes">TONO POR CÓDIGO (MAYOR CARGA)</div>
           <div id="sent-codes"></div>
         </div>
         <div>
-          <div class="section-title">EMOCIONES DETECTADAS</div>
-          <p class="empty-note" style="padding:0 0 4px">Clic en una emoción → qué palabras la dispararon.</p>
+          <div class="section-title" data-i18n="sent.emotions">EMOCIONES DETECTADAS</div>
+          <p class="empty-note" style="padding:0 0 4px" data-i18n="sent.emotions.hint"></p>
           <div id="sent-emotions"></div>
-          <div class="section-title">PALABRAS CON CARGA</div>
-          <p class="empty-note" style="padding:0 0 4px">Clic en una palabra → sus menciones en contexto.</p>
+          <div class="section-title" data-i18n="sent.words">PALABRAS CON CARGA</div>
+          <p class="empty-note" style="padding:0 0 4px" data-i18n="sent.words.hint"></p>
           <div id="sent-words" class="table-scroll"></div>
         </div>
       </div>
@@ -190,18 +222,18 @@
 
   <!-- CÓDIGOS: banco completo + fusión en bloque (FR-068/069) -->
   <section id="view-codigos" class="view hidden">
-    <div class="section-title">BANCO DE CÓDIGOS</div>
-    <input type="text" id="code-bank-search" placeholder="Buscar en el banco (nombre, categoría o cita)…" style="max-width:420px;margin-bottom:10px">
+    <div class="section-title" data-i18n="bank.title">BANCO DE CÓDIGOS</div>
+    <input type="text" id="code-bank-search" data-i18n-placeholder="bank.search.placeholder">
     <div id="codigos-grid">
       <div class="panel" id="code-bank"></div>
       <div>
-        <div class="section-title">FUSIONAR CÓDIGOS (CODIFICACIÓN AXIAL)</div>
+        <div class="section-title" data-i18n="codes.merge.title">FUSIONAR CÓDIGOS (CODIFICACIÓN AXIAL)</div>
         <div class="panel" id="merge-panel">
           <select id="merge-from"></select>
-          <div class="mini-label" style="text-align:center;margin:4px 0">↓ se renombra a ↓</div>
-          <input type="text" id="merge-to" list="merge-to-list" placeholder="Nombre nuevo o uno existente…">
+          <div class="mini-label" style="text-align:center;margin:4px 0" data-i18n="codes.merge.arrow">↓ se renombra a ↓</div>
+          <input type="text" id="merge-to" list="merge-to-list" data-i18n-placeholder="codes.merge.to.placeholder">
           <datalist id="merge-to-list"></datalist>
-          <button id="btn-merge-codes" class="btn btn-small" style="margin-top:6px;width:100%">⇄ FUSIONAR</button>
+          <button id="btn-merge-codes" class="btn btn-small" style="margin-top:6px;width:100%" data-i18n="codes.merge.button">⇄ FUSIONAR</button>
         </div>
       </div>
     </div>
@@ -209,199 +241,225 @@
 
   <!-- RELACIONES (FR-038/039) -->
   <section id="view-relaciones" class="view hidden">
-    <div class="section-title">RELACIONES ENTRE CÓDIGOS</div>
-    <p id="rel-empty" class="empty-note hidden">Necesitas al menos dos códigos con nombres distintos para crear relaciones.</p>
+    <div class="section-title" data-i18n="rel.title">RELACIONES ENTRE CÓDIGOS</div>
+    <p id="rel-empty" class="empty-note hidden" data-i18n="rel.empty"></p>
     <div id="rel-builder" class="controls-row">
       <select id="rel-source"></select>
       <select id="rel-type"></select>
       <select id="rel-target"></select>
-      <button id="btn-rel-create" class="btn btn-accent" style="width:auto">◉ CREAR RELACIÓN</button>
+      <button id="btn-rel-create" class="btn btn-accent" style="width:auto" data-i18n="rel.create">◉ CREAR RELACIÓN</button>
     </div>
     <div id="rel-body">
       <div>
-        <div class="section-title">ORGANIZADOR (GRAFO)
-          <button id="btn-export-graph-png" class="btn-export-mini" title="Descargar como imagen PNG">⬇ PNG</button>
-          <button id="btn-export-graph-svg" class="btn-export-mini" title="Descargar como SVG editable">⬇ SVG</button>
+        <div class="section-title"><span data-i18n="rel.graph">ORGANIZADOR (GRAFO)</span>
+          <button id="btn-export-graph-png" class="btn-export-mini" data-i18n-title="rel.export.png">⬇ PNG</button>
+          <button id="btn-export-graph-svg" class="btn-export-mini" data-i18n-title="rel.export.svg">⬇ SVG</button>
         </div>
         <div id="rel-graph"></div>
         <div id="rel-legend"></div>
       </div>
       <div>
-        <div class="section-title">ÁRBOL DE JERARQUÍA</div>
+        <div class="section-title" data-i18n="rel.tree">ÁRBOL DE JERARQUÍA</div>
         <div id="rel-tree" class="panel"></div>
-        <div class="section-title">LISTADO</div>
+        <div class="section-title" data-i18n="rel.list">LISTADO</div>
         <div id="rel-list" class="panel"></div>
       </div>
     </div>
   </section>
 
+  <!-- ACUERDO ENTRE CODIFICADORES (FR-078) -->
+  <section id="view-acuerdo" class="view hidden">
+    <div class="section-title" data-i18n="agr.title">ACUERDO ENTRE CODIFICADORES</div>
+    <p class="empty-note" style="padding-top:0" data-i18n="agr.intro"></p>
+    <div class="controls-row">
+      <label class="mini-label"><span data-i18n="agr.other">PROYECTO A COMPARAR (B)</span>
+        <select id="agr-other"></select>
+      </label>
+      <button id="btn-agr-run" class="btn btn-accent" style="width:auto" data-i18n="agr.run">⚖ CALCULAR ACUERDO</button>
+      <a id="btn-agr-csv" class="btn btn-small hidden" data-download="/api/agreement.csv" download>⬇ CSV</a>
+    </div>
+    <p id="agr-empty" class="empty-note hidden" data-i18n="agr.none"></p>
+    <div id="agr-result" class="hidden">
+      <p id="agr-shared" class="dialog-note"></p>
+      <div id="agr-kpis" class="agr-kpis"></div>
+      <p class="empty-note" style="padding:0 0 6px"><span data-i18n="agr.click"></span> <span data-i18n="agr.bands"></span></p>
+      <div id="agr-table" class="table-scroll"></div>
+    </div>
+  </section>
+
   <!-- EXPORTAR -->
   <section id="view-exportar" class="view hidden">
-    <div class="section-title">GESTIÓN DE DATOS</div>
-    <a id="btn-export" class="btn btn-accent" href="/api/export.csv" download>⇄ DESCARGAR CSV (UTF-8 · EXCEL)</a>
-    <button id="btn-report" class="btn" style="width:auto;margin-left:10px">📄 REPORTE ACADÉMICO (HTML → PDF)</button>
-    <a id="btn-export-zip" class="btn" style="width:auto;margin-left:10px" href="/api/export.zip" download>🗄 RESPALDO COMPLETO (.ZIP)</a>
-    <p class="empty-note">El respaldo .zip incluye el proyecto completo (JSON, fidelidad total), el
-      banco de códigos en CSV y el texto de cada documento — útil para depositar como
-      evidencia de reproducibilidad al publicar, o como copia portable.</p>
+    <div class="section-title" data-i18n="exp.title">GESTIÓN DE DATOS</div>
+    <div class="export-actions">
+      <a id="btn-export" class="btn btn-accent" data-download="/api/export.csv" href="/api/export.csv" download data-i18n="exp.csv">⇄ DESCARGAR CSV</a>
+      <button id="btn-report" class="btn" data-i18n="exp.report">📄 REPORTE ACADÉMICO</button>
+      <a id="btn-export-zip" class="btn" data-download="/api/export.zip" href="/api/export.zip" download data-i18n="exp.zip">🗄 RESPALDO COMPLETO (.ZIP)</a>
+      <span class="qdpx-group">
+        <a id="btn-export-qdpx" class="btn" data-download="/api/export.qdpx?profile=standard" href="/api/export.qdpx" download data-i18n="exp.qdpx" data-i18n-title="exp.qdpx.title">⇆ REFI-QDA (.QDPX)</a>
+        <select id="qdpx-profile" data-i18n-title="exp.qdpx.profile">
+          <option value="standard" data-i18n="exp.qdpx.standard">Estándar</option>
+          <option value="nvivo" data-i18n="exp.qdpx.nvivo">NVivo</option>
+        </select>
+      </span>
+    </div>
+    <p class="empty-note" data-i18n="exp.note"></p>
     <div id="export-table" class="table-scroll"></div>
   </section>
 
   <!-- LITERATURA -->
   <section id="view-literatura" class="view hidden">
-    <div class="section-title">BÚSQUEDA OPENALEX</div>
+    <div class="section-title" data-i18n="lit.title">BÚSQUEDA OPENALEX</div>
     <div class="controls-row">
-      <input type="text" id="lit-query" placeholder="Ej: Vygotsky emotions education">
-      <button id="btn-lit-search" class="btn btn-accent">BUSCAR</button>
+      <input type="text" id="lit-query" data-i18n-placeholder="lit.placeholder">
+      <button id="btn-lit-search" class="btn btn-accent" style="width:auto" data-i18n="lit.search">BUSCAR</button>
     </div>
     <div id="lit-results"></div>
   </section>
 </main>
 
 <!-- NUBE NEGRA: único elemento efímero permitido sobre el texto (Principio II) -->
-<div id="nube" class="hidden" role="dialog" aria-label="Codificar selección">
-  <div class="nube-title">CODIFICAR SELECCIÓN</div>
+<div id="nube" class="hidden" role="dialog" data-i18n-aria="nube.aria">
+  <div class="nube-title" data-i18n="nube.title">CODIFICAR SELECCIÓN</div>
   <div id="nube-domain-picker" class="domain-picker">
-    <button type="button" id="nube-domain-btn" class="domain-picker-btn" title="Categoría (teclas 1–9 para las Básicas)">
-      <span id="nube-domain-label">Elegir categoría</span> ▾
+    <button type="button" id="nube-domain-btn" class="domain-picker-btn" data-i18n-title="nube.domain.title">
+      <span id="nube-domain-label" data-i18n="nube.domain.choose">Elegir categoría</span> ▾
     </button>
     <div id="nube-domain-menu" class="domain-menu hidden">
       <div id="nube-custom-domains"></div>
       <div class="domain-menu-item has-submenu">
-        <span id="nube-basic-toggle">Categorías Básicas ▸</span>
+        <span id="nube-basic-toggle" data-i18n="nube.basic">Categorías Básicas ▸</span>
         <div id="nube-basic-submenu" class="domain-submenu"></div>
       </div>
-      <div class="domain-menu-item domain-menu-new" id="nube-new-domain">✚ Nueva categoría…</div>
+      <div class="domain-menu-item domain-menu-new" id="nube-new-domain" data-i18n="nube.new">✚ Nueva categoría…</div>
       <div id="nube-new-domain-form" class="domain-new-form hidden">
         <div class="dnf-row">
-          <span class="dnf-label">NOMBRE</span>
-          <input type="text" id="nube-new-domain-name" placeholder="Nombre de la categoría…" maxlength="40" autocomplete="off">
+          <span class="dnf-label" data-i18n="nube.new.name">NOMBRE</span>
+          <input type="text" id="nube-new-domain-name" data-i18n-placeholder="nube.new.name.placeholder" maxlength="40" autocomplete="off">
         </div>
         <div class="dnf-row">
-          <span class="dnf-label">COLOR</span>
-          <input type="color" id="nube-new-domain-color" value="#8855CC" title="Color de la categoría">
+          <span class="dnf-label" data-i18n="nube.new.color">COLOR</span>
+          <input type="color" id="nube-new-domain-color" value="#8855CC" data-i18n-title="nube.new.color.title">
         </div>
-        <button type="button" id="nube-new-domain-confirm" title="Crear categoría">✓ CREAR CATEGORÍA</button>
+        <button type="button" id="nube-new-domain-confirm" data-i18n="nube.new.create" data-i18n-title="nube.new.create.title">✓ CREAR CATEGORÍA</button>
       </div>
     </div>
   </div>
-  <input type="text" id="nube-name" placeholder="Nombre del código…" maxlength="200" autocomplete="off">
-  <div class="nube-hint">↵ guarda · ⌘↵ repite último código · ESC · 1–9 categoría básica</div>
+  <input type="text" id="nube-name" data-i18n-placeholder="nube.name.placeholder" maxlength="200" autocomplete="off">
+  <div class="nube-hint" data-i18n="nube.hint"></div>
 </div>
 
 <!-- Barra de música de foco (FR-040): pistas locales del investigador -->
 <div id="music-bar">
-  <button id="mus-toggle" class="mus-btn" title="Reproducir / Pausa">▶</button>
-  <button id="mus-next" class="mus-btn" title="Siguiente pista">⏭</button>
-  <span id="mus-title" title="Clic: ver carpeta de música">—</span>
-  <input type="range" id="mus-vol" min="0" max="100" value="70" title="Volumen">
-  <span id="session-indicator" title="Clic: definir meta de sesión">◷ sesión</span>
-  <span class="mus-brand">♫ MÚSICA DE FOCO</span>
+  <button id="mus-toggle" class="mus-btn" data-i18n-title="mus.toggle">▶</button>
+  <button id="mus-next" class="mus-btn" data-i18n-title="mus.next">⏭</button>
+  <span id="mus-title" data-i18n-title="mus.folder.title">—</span>
+  <input type="range" id="mus-vol" min="0" max="100" value="70" data-i18n-title="mus.volume">
+  <span id="session-indicator" data-i18n-title="ses.indicator.title" data-i18n="ses.indicator">◷ sesión</span>
+  <span class="mus-brand" data-i18n="mus.brand">♫ MÚSICA DE FOCO</span>
 </div>
 <audio id="mus-audio"></audio>
 
-<div id="toast" class="hidden"></div>
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
 
 <dialog id="session-dialog">
-  <div class="nube-title" style="color:var(--accent)">META DE ESTA SESIÓN</div>
-  <p style="font-size:12px;color:#666;margin:6px 0 10px">¿Qué quieres lograr hoy? (opcional)</p>
-  <input type="text" id="session-goal" placeholder="Ej: codificar la entrevista 3" maxlength="80" style="width:100%;font-family:inherit;border:2px solid #000;padding:8px">
-  <p style="font-size:12px;color:#666;margin:12px 0 6px">Duración del bloque de foco:</p>
-  <select id="session-minutes" style="width:100%;font-family:inherit;border:2px solid #000;padding:8px">
-    <option value="15">15 minutos</option>
-    <option value="25" selected>25 minutos (pomodoro)</option>
-    <option value="50">50 minutos</option>
-    <option value="90">90 minutos</option>
+  <div class="nube-title" style="color:var(--accent)" data-i18n="ses.title">META DE ESTA SESIÓN</div>
+  <p class="dialog-note" data-i18n="ses.goal.question"></p>
+  <input type="text" id="session-goal" class="dialog-input" data-i18n-placeholder="ses.goal.placeholder" maxlength="80">
+  <p class="dialog-note" data-i18n="ses.duration"></p>
+  <select id="session-minutes" class="dialog-input">
+    <option value="15" data-i18n="ses.min15">15 minutos</option>
+    <option value="25" selected data-i18n="ses.min25">25 minutos (pomodoro)</option>
+    <option value="50" data-i18n="ses.min50">50 minutos</option>
+    <option value="90" data-i18n="ses.min90">90 minutos</option>
   </select>
   <div class="dialog-buttons">
-    <button id="btn-session-skip" class="btn">OMITIR</button>
-    <button id="btn-session-start" class="btn btn-danger">◷ EMPEZAR</button>
+    <button id="btn-session-skip" class="btn" data-i18n="ses.skip">OMITIR</button>
+    <button id="btn-session-start" class="btn btn-danger" data-i18n="ses.start">◷ EMPEZAR</button>
   </div>
 </dialog>
 
 <dialog id="kwic-dialog">
-  <div id="kwic-head">
-    <span class="nube-title" id="kwic-title" style="color:var(--accent)">CONCORDANCIAS</span>
+  <div id="kwic-head" class="dialog-head">
+    <span class="nube-title" id="kwic-title" style="color:var(--accent)" data-i18n="kwic.title">CONCORDANCIAS</span>
     <button id="kwic-close" class="btn btn-small">✕</button>
   </div>
   <div id="kwic-body"></div>
 </dialog>
 
 <dialog id="emotion-words-dialog">
-  <div id="emotion-words-head">
-    <span class="nube-title" id="emotion-words-title" style="color:var(--accent)">PALABRAS</span>
+  <div id="emotion-words-head" class="dialog-head">
+    <span class="nube-title" id="emotion-words-title" style="color:var(--accent)" data-i18n="words.title">PALABRAS</span>
     <button id="emotion-words-close" class="btn btn-small">✕</button>
   </div>
   <div id="emotion-words-body"></div>
 </dialog>
 
 <dialog id="quotes-dialog">
-  <div id="quotes-head">
-    <span class="nube-title" id="quotes-title" style="color:var(--accent)">CITAS</span>
+  <div id="quotes-head" class="dialog-head">
+    <span class="nube-title" id="quotes-title" style="color:var(--accent)" data-i18n="quotes.title">CITAS</span>
     <button id="quotes-close" class="btn btn-small">✕</button>
   </div>
   <div id="quotes-body"></div>
 </dialog>
 
 <dialog id="about-dialog">
-  <div id="about-head">
-    <span class="nube-title" style="color:var(--accent)">ACERCA DE CUA-LIBRE</span>
-    <button id="about-close" class="btn btn-small">✕ CERRAR</button>
+  <div id="about-head" class="dialog-head">
+    <span class="nube-title" style="color:var(--accent)" data-i18n="about.title">ACERCA DE CUA-LIBRE</span>
+    <button id="about-close" class="btn btn-small" data-i18n="dlg.close">✕ CERRAR</button>
   </div>
   <div id="about-body">
-    <p>Cua-libre está pensando para que las limitaciones monetarias nunca más sean un
-      obstáculo a la hora de introducirse al bello y fino arte de la escucha y la
-      interpretación cualitativa. Puedes compartir, distribuir y socializar este
-      software con quien quieras y cuantas veces desees.</p>
-    <p>El código base de la aplicación está en el
-      <a href="https://github.com/ymunozs/cualibre" target="_blank" rel="noopener">github del proyecto</a>,
-      por lo que si tienes una idea de mejora, comentario o una propuesta de expansión,
-      no dudes en comunicarme a
-      <a href="mailto:ymunozsalinas@gmail.com">ymunozsalinas@gmail.com</a>.</p>
-    <p>Si este proyecto te gustó, te invito a realizar una donación en mi perfil de
-      <a href="https://ko-fi.com/ymunoz" target="_blank" rel="noopener">Ko-fi</a>. Todo
-      el dinero recaudado será puesto a disposición de fundaciones que apoyen los
-      procesos vitales de personas trans en Chile.</p>
-    <p>Cua-libre está diseñado para que todas las decisiones mantengan autonomía y
-      agencia humana.</p>
-    <p class="about-dedication"><em>Con amor para Alexandra &lt;3</em></p>
+    <div data-i18n-html="about.body"></div>
+    <div data-i18n-html="about.credits"></div>
   </div>
 </dialog>
 
 <dialog id="history-dialog">
-  <div id="history-head">
-    <span class="nube-title" style="color:var(--accent)">HISTORIAL DE RESPALDOS</span>
-    <button id="history-close" class="btn btn-small">✕ CERRAR</button>
+  <div id="history-head" class="dialog-head">
+    <span class="nube-title" style="color:var(--accent)" data-i18n="hist.title">HISTORIAL DE RESPALDOS</span>
+    <button id="history-close" class="btn btn-small" data-i18n="dlg.close">✕ CERRAR</button>
   </div>
-  <p class="empty-note" style="padding-top:0">Cua-libre guarda una copia de tu proyecto como máximo cada 10 minutos de
-    trabajo, más una copia extra cada vez que presionas 💾 GUARDAR. Restaurar reemplaza el proyecto
-    actual (se respalda antes, por seguridad).</p>
-  <div id="history-body">Cargando…</div>
+  <p class="empty-note" style="padding-top:0" data-i18n="hist.note"></p>
+  <div id="history-body"></div>
 </dialog>
 
 <dialog id="manual-dialog">
   <div id="manual-head">
-    <span class="nube-title" style="color:var(--accent)">MANUAL DE CUA-LIBRE</span>
-    <button id="manual-close" class="btn btn-small">✕ CERRAR</button>
+    <span class="nube-title" style="color:var(--accent)" data-i18n="man.title">MANUAL DE CUA-LIBRE</span>
+    <button id="manual-close" class="btn btn-small" data-i18n="dlg.close">✕ CERRAR</button>
   </div>
-  <div id="manual-body">Cargando…</div>
+  <div id="manual-body"></div>
 </dialog>
 
 <dialog id="confirm-dialog">
   <p id="confirm-message"></p>
   <div class="dialog-buttons">
-    <button id="confirm-cancel" class="btn">CANCELAR</button>
-    <button id="confirm-ok" class="btn btn-danger">CONFIRMAR</button>
+    <button id="confirm-cancel" class="btn" data-i18n="dlg.cancel">CANCELAR</button>
+    <button id="confirm-ok" class="btn btn-danger" data-i18n="dlg.confirm">CONFIRMAR</button>
   </div>
 </dialog>
 
+<!-- Pregunta de texto propia: reemplaza a prompt(), que no se puede traducir ni estilizar -->
+<dialog id="ask-dialog">
+  <form method="dialog" id="ask-form">
+    <p id="ask-message" class="dialog-note"></p>
+    <input type="text" id="ask-input" class="dialog-input" maxlength="120" autocomplete="off">
+    <div class="dialog-buttons">
+      <button type="button" id="ask-cancel" class="btn" data-i18n="dlg.cancel">CANCELAR</button>
+      <button type="submit" id="ask-ok" class="btn btn-danger" data-i18n="dlg.accept">ACEPTAR</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/js/i18n.js"></script>
 <script src="/static/js/api.js"></script>
+<script src="/static/js/files.js"></script>
 <script src="/static/js/charts.js"></script>
 <script src="/static/js/wordcloud.js"></script>
 <script src="/static/js/canvas.js"></script>
 <script src="/static/js/nube.js"></script>
 <script src="/static/js/paleta.js"></script>
 <script src="/static/js/relations.js"></script>
+<script src="/static/js/acuerdo.js"></script>
 <script src="/static/js/musica.js"></script>
 <script src="/static/js/sesion.js"></script>
 <script src="/static/js/reporte.js"></script>
