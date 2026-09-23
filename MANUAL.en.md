@@ -150,15 +150,16 @@ Everything updates by itself with every coding.
 Analyses the **emotional tone** of the corpus with the open NRC EmoLex lexicon in the
 corpus language (research use, citing Mohammad & Turney 2013).
 
-- **Spanish**: the lexicon is included (5,094 words).
-- **English and Portuguese**: the NRC's terms of use do not allow redistributing the
+- **One-off lexicon installation**: the NRC's terms of use do not allow redistributing the
   lexicon inside Cua-libre, so each computer obtains it **once** from the official
-  website: **⬇ DOWNLOAD FROM THE NRC** (≈ 25 MB; installs both languages). Without
-  internet, **CHOOSE OFFICIAL .ZIP** accepts the NRC-Emotion-Lexicon.zip file downloaded
-  on another computer.
+  website: **⬇ DOWNLOAD FROM THE NRC** (≈ 25 MB; installs Spanish, English and
+  Portuguese). Without internet, **CHOOSE OFFICIAL .ZIP** accepts the
+  NRC-Emotion-Lexicon.zip file downloaded on another computer. After that it always
+  works offline.
 - The Spanish and Portuguese versions are **machine translations** from English made by
-  the lexicon's authors: check charged words in context. Everything is
-**auditable**: each score comes with the words that produced it.
+  the lexicon's authors: check charged words in context.
+
+Everything is **auditable**: each score comes with the words that produced it.
 
 - **Tone and emotional arc by document**: overall valence (−1 to +1) and its trajectory
   paragraph by paragraph, showing where the account darkens or brightens.
@@ -224,8 +225,9 @@ replacement.
 **Sources.** The lexicon is the **NRC Word–Emotion Association Lexicon (EmoLex)** by Saif
 Mohammad and Peter Turney (National Research Council Canada): ~14,000 words annotated by
 crowdsourcing with polarity and 8 emotions (joy, sadness, fear, anger, trust,
-anticipation, surprise, disgust), of which Cua-libre includes the 5,094 Spanish entries
-of the official distribution. Free for research use; **cite**: Mohammad, S. & Turney,
+anticipation, surprise, disgust), with machine translations into more than a hundred
+languages. Cua-libre uses the single-word entries in Spanish, English and Portuguese,
+converted on your computer from the official file. Free for research use; **cite**: Mohammad, S. & Turney,
 P. (2013). *Crowdsourcing a Word–Emotion Association Lexicon*. Computational
 Intelligence, 29(3), 436–465.
 
@@ -305,7 +307,7 @@ copy independent of the app.
 
 ## 14. 📚 Literature
 
-Concept search in **OpenAlex** (title, year, citations, DOI link). The only feature that needs the internet; without a connection, the rest of the app works as usual.
+Concept search in **OpenAlex** (title, year, citations, DOI link). Together with the one-off download of the sentiment lexicon, the only thing that needs the internet; without a connection, the rest of the app works as usual.
 
 ## 15. ◷ Focus session
 

@@ -56,10 +56,11 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
   fondo #FAFAFA, canvas #FDFDF7, acento #FF3300, bordes negros 3px, sombras duras.
   Paleta de dominios en `models.py` y `brutal.css` (mantener sincronizadas).
 
-- Licencia NRC: prohíbe redistribuir el léxico. El castellano viene incluido desde v1.6
-  (decisión previa, pendiente de revisar con el investigador); inglés y portugués se
-  descargan en cada equipo desde el sitio oficial (`lexicons.py`). NO incluirlos en el repo
-  ni en los instaladores. Los tests usan un .zip sintético con el mismo formato.
+- Licencia NRC: prohíbe redistribuir el léxico («Do not redistribute the data»). Desde
+  v1.12.1 NINGÚN idioma viene incluido (el castellano se incluía de v1.6 a v1.12.0; el
+  investigador eligió retirarlo el 2026-09-23): una descarga única desde el sitio oficial
+  instala castellano, inglés y portugués (`lexicons.py`). NUNCA volver a incluir datos del
+  NRC en el repo ni en los instaladores. Los tests usan el .zip sintético de conftest.py.
 - REFI-QDA: posiciones en puntos de código según el estándar, PERO NVivo para Windows usa
   UTF-16 + saltos de línea como 2 (verificado con un .qdpx real). La importación detecta
   la convención por fuente; la exportación tiene perfil `standard` y `nvivo`.

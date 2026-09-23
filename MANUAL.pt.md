@@ -152,15 +152,15 @@ Tudo se atualiza sozinho a cada codificação.
 Analisa o **tom emocional** do corpus com o léxico aberto NRC EmoLex no idioma do corpus
 (uso em pesquisa citando Mohammad & Turney 2013).
 
-- **Espanhol**: o léxico vem incluído (5.094 palavras).
-- **Inglês e português**: os termos de uso do NRC não permitem redistribuir o léxico
-  dentro do Cua-libre; por isso cada computador o obtém **uma única vez** do site
-  oficial: botão **⬇ BAIXAR DO NRC** (≈ 25 MB; instala os dois idiomas). Sem internet,
-  **ESCOLHER .ZIP OFICIAL** aceita o arquivo NRC-Emotion-Lexicon.zip baixado em outro
-  computador.
+- **Instalação única do léxico**: os termos de uso do NRC não permitem redistribuir o
+  léxico dentro do Cua-libre; por isso cada computador o obtém **uma única vez** do site
+  oficial: botão **⬇ BAIXAR DO NRC** (≈ 25 MB; instala espanhol, inglês e português).
+  Sem internet, **ESCOLHER .ZIP OFICIAL** aceita o arquivo NRC-Emotion-Lexicon.zip
+  baixado em outro computador. Depois funciona sempre sem conexão.
 - As versões em espanhol e português são **traduções automáticas** do inglês feitas
-  pelos autores do léxico: revise em contexto as palavras com carga. Tudo é **auditável**: cada
-valor vem acompanhado das palavras que o produziram.
+  pelos autores do léxico: revise em contexto as palavras com carga.
+
+Tudo é **auditável**: cada valor vem acompanhado das palavras que o produziram.
 
 - **Tom e arco emocional por documento**: valência global (−1 a +1) e sua trajetória
   parágrafo a parágrafo, mostrando onde o relato escurece ou se ilumina.
@@ -225,8 +225,9 @@ substituto.
 **Fontes.** O léxico é o **NRC Word–Emotion Association Lexicon (EmoLex)** de Saif
 Mohammad e Peter Turney (National Research Council Canada): ~14.000 palavras anotadas por
 crowdsourcing com polaridade e 8 emoções (alegria, tristeza, medo, raiva, confiança,
-antecipação, surpresa, nojo), do qual o Cua-libre inclui as 5.094 entradas em espanhol
-da distribuição oficial. Uso livre para pesquisa; **cite**: Mohammad, S. & Turney, P.
+antecipação, surpresa, nojo), com traduções automáticas para mais de cem idiomas. O
+Cua-libre usa as entradas de uma só palavra em espanhol, inglês e português,
+convertidas no seu computador a partir do arquivo oficial. Uso livre para pesquisa; **cite**: Mohammad, S. & Turney, P.
 (2013). *Crowdsourcing a Word–Emotion Association Lexicon*. Computational Intelligence,
 29(3), 436–465.
 
@@ -304,7 +305,7 @@ cópia portátil independente do aplicativo.
 
 ## 14. 📚 Literatura
 
-Busca por conceitos no **OpenAlex** (título, ano, citações, link DOI). Única função que exige internet; sem conexão, o resto do aplicativo segue igual.
+Busca por conceitos no **OpenAlex** (título, ano, citações, link DOI). Junto com o download único do léxico de sentimento, é o único que exige internet; sem conexão, o resto do aplicativo segue igual.
 
 ## 15. ◷ Sessão de foco
 

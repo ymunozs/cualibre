@@ -16,7 +16,6 @@ python -m PyInstaller --noconfirm --clean --windowed ^
   --add-data "MANUAL.md;." ^
   --add-data "MANUAL.en.md;." ^
   --add-data "MANUAL.pt.md;." ^
-  --add-data "backend\data_nrc_es.json;." ^
   --collect-all es_core_news_sm ^
   --collect-all en_core_web_sm ^
   --collect-all pt_core_news_sm ^
@@ -25,11 +24,11 @@ python -m PyInstaller --noconfirm --clean --windowed ^
   run.py || goto :error
 
 echo === Inno Setup ===
-set CUALIBRE_VERSION=1.12.0
+set CUALIBRE_VERSION=1.12.1
 "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" packaging\windows\cualibre.iss || goto :error
 
 echo.
-echo OK: dist\CUA-LIBRE-Studio-1.12.0-windows-setup.exe
+echo OK: dist\CUA-LIBRE-Studio-1.12.1-windows-setup.exe
 goto :eof
 
 :error

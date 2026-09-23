@@ -16,34 +16,9 @@ from backend.nlp import detect_language
 XSD = Path(__file__).parent / "data" / "REFI-QDA-Project-1.0.xsd"
 
 
-# ----- Léxicos: se genera un .zip mínimo con el formato del NRC (no se redistribuye el real) -----
+# ----- Léxicos: .zip sintético con el formato del NRC (conftest.py) -----
 
-HEADER = ["English Word", "anger", "anticipation", "disgust", "fear", "joy", "negative",
-          "positive", "sadness", "surprise", "trust", "Portuguese Word"]
-
-
-def fake_nrc_zip(extra_rows: int = 1200) -> bytes:
-    rows = [HEADER,
-            ["joy", "0", "1", "0", "0", "1", "0", "1", "0", "0", "1", "alegria"],
-            ["fear", "0", "0", "0", "1", "0", "1", "0", "0", "0", "0", "medo"],
-            ["sadness", "0", "0", "0", "0", "0", "1", "0", "1", "0", "0", "tristeza"],
-            ["love", "0", "0", "0", "0", "1", "0", "1", "0", "0", "0", "amor"],
-            ["hope", "0", "1", "0", "0", "1", "0", "1", "0", "1", "1", "esperança"],
-            ["cry", "0", "0", "0", "0", "0", "1", "0", "1", "0", "0", "chorar"]]
-    rows += [[f"word{i}", "0", "0", "0", "0", "0", "0", "1", "0", "0", "0", f"palavra{i}"]
-             for i in range(extra_rows)]
-    text = "\n".join("\t".join(r) for r in rows)
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as zf:
-        zf.writestr("NRC-Emotion-Lexicon/OneFilePerLanguage/Portuguese-NRC-EmoLex.txt", text)
-    return buffer.getvalue()
-
-
-@pytest.fixture(autouse=True)
-def fresh_lexicons():
-    lexicons._cache.clear()
-    yield
-    lexicons._cache.clear()
+from backend.tests.conftest import fake_nrc_zip  # noqa: E402
 
 
 @pytest.fixture
@@ -58,10 +33,24 @@ def upload(client, text, name="e.txt"):
     return client.post("/api/documents", files={"file": (name, text.encode("utf-8"), "text/plain")})
 
 
-def test_spanish_lexicon_is_bundled_and_others_are_not(client):
+def test_no_lexicon_is_bundled(client):
+    # v1.12.1: los términos del NRC prohíben redistribuirlo; ni el castellano viene incluido
     status = client.get("/api/lexicons").json()["lexicons"]
-    assert status["es"]["available"] and status["es"]["bundled"]
-    assert not status["en"]["available"] and not status["pt"]["available"]
+    assert not any(info["available"] for info in status.values())
+    from pathlib import Path
+
+    assert not (Path(__file__).parents[1] / "data_nrc_es.json").exists()
+
+
+def test_spanish_sentiment_asks_for_the_lexicon(client):
+    upload(client, "Sentí una alegría inmensa.")
+    data = client.get("/api/sentiment").json()
+    assert data["lexicon_missing"] is True and data["lang"] == "es"
+
+
+def test_one_official_zip_installs_the_three_languages(client, lexicons_installed):
+    assert set(lexicons_installed["installed"]) == {"es", "en", "pt"}
+    assert lexicons.get("es")["miedo"] == [-1, ["miedo"]]
 
 
 def test_sentiment_reports_missing_lexicon(client):
@@ -83,6 +72,7 @@ def test_conversion_keeps_canonical_emotion_keys():
     pt = lexicons.convert([line.split("\t") for line in raw.splitlines()], "Portuguese Word")
     assert pt["medo"] == [-1, ["miedo"]]
     assert pt["esperança"] == [1, ["alegría", "anticipación", "confianza", "sorpresa"]]
+    assert "não" in pt  # el NRC lo marca negativo: por eso los negadores se excluyen al puntuar
 
 
 def test_english_sentiment_arc_emotions_and_negation(client, lexicons_installed):
@@ -342,7 +332,7 @@ def test_qdpx_import_endpoint(client):
     assert client.get("/api/export.qdpx").status_code == 200
 
 
-def test_negators_never_count_as_charged_words():
+def test_negators_never_count_as_charged_words(nrc_lexicons):
     from backend.sentiment import analyze_texts
 
     # «nada» es negativa en la traducción del NRC, pero aquí solo niega

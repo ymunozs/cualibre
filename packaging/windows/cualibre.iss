@@ -2,7 +2,7 @@
 ; Compilar tras PyInstaller: ISCC.exe packaging\windows\cualibre.iss
 
 #define AppName "CUA-LIBRE Studio"
-#define AppVersion GetEnv("CUALIBRE_VERSION") == "" ? "1.11.0" : GetEnv("CUALIBRE_VERSION")
+#define AppVersion GetEnv("CUALIBRE_VERSION") == "" ? "1.12.1" : GetEnv("CUALIBRE_VERSION")
 #define AppExe "CUA-LIBRE Studio.exe"
 
 [Setup]

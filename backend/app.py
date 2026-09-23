@@ -44,7 +44,7 @@ from .models import (
 )
 from .nlp import POS_LANGS, STOPWORDS, detect_language, word_frequencies
 
-APP_VERSION = "1.12.0"
+APP_VERSION = "1.12.1"
 CORPUS_LANGS = tuple(STOPWORDS)  # es, en, pt
 POS_FILTERS = ("all", "verb", "noun", "adj")
 

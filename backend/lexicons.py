@@ -1,12 +1,14 @@
 """Léxicos de sentimiento NRC EmoLex por idioma del corpus (FR-077).
 
-- Español: viene incluido desde la v1.6 (data_nrc_es.json).
-- Inglés y portugués: NO se incluyen en los instaladores. Los términos de uso
-  del NRC permiten usar el léxico en aplicaciones sin fines comerciales (con
-  crédito), pero prohíben redistribuir los datos. Por eso cada instalación lo
-  obtiene directamente de la fuente oficial (descarga única de ~25 MB) o del
-  .zip oficial que el investigador ya tenga, y lo convierte localmente a
-  <datos>/lexicons/nrc_<idioma>.json.
+Ningún idioma viene incluido en la app ni en el repositorio. Los términos de
+uso del NRC permiten usar el léxico en aplicaciones sin fines comerciales (con
+crédito), pero prohíben redistribuir los datos («Do not redistribute the
+data»). Por eso cada instalación lo obtiene directamente de la fuente oficial
+(una descarga única de ~25 MB instala castellano, inglés y portugués) o del
+.zip oficial que el investigador ya tenga, y lo convierte localmente a
+<datos>/lexicons/nrc_<idioma>.json. Hasta la v1.12.0 el castellano venía
+incluido; desde la v1.12.1 sigue el mismo camino (decisión del investigador,
+2026-09-23).
 
 Formato de cada entrada (igual que el español): palabra → [polaridad, emociones],
 con las ocho emociones SIEMPRE con su clave castellana (la interfaz las traduce).
@@ -18,7 +20,6 @@ from __future__ import annotations
 
 import io
 import json
-import sys
 import threading
 import zipfile
 from pathlib import Path
@@ -29,7 +30,14 @@ LANGS = ("es", "en", "pt")
 NRC_URL = "https://saifmohammad.com/WebDocs/Lexicons/NRC-Emotion-Lexicon.zip"
 NRC_HOME = "https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm"
 DOWNLOADED_ID = "nrc-emolex-v0.92-2022"
-BUNDLED_ES_ID = "nrc-emolex-es-bundled"
+
+# Archivo del .zip oficial y columna de la que sale cada idioma. El inglés es la
+# columna original, presente en cualquiera de los archivos por idioma.
+SOURCES = {
+    "es": ("OneFilePerLanguage/Spanish-NRC-EmoLex.txt", "Spanish Word"),
+    "en": ("OneFilePerLanguage/Portuguese-NRC-EmoLex.txt", "English Word"),
+    "pt": ("OneFilePerLanguage/Portuguese-NRC-EmoLex.txt", "Portuguese Word"),
+}
 
 # Emociones del NRC (inglés) → clave canónica castellana usada en toda la app
 EMOTIONS = {
@@ -45,12 +53,6 @@ class LexiconError(Exception):
     """Archivo que no es el léxico oficial, o descarga fallida."""
 
 
-def _bundled_es_path() -> Path:
-    if getattr(sys, "frozen", False):
-        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "data_nrc_es.json"
-    return Path(__file__).resolve().parent / "data_nrc_es.json"
-
-
 def lexicons_dir() -> Path:
     d = storage.base_dir() / "lexicons"
     d.mkdir(parents=True, exist_ok=True)
@@ -58,7 +60,7 @@ def lexicons_dir() -> Path:
 
 
 def _path(lang: str) -> Path:
-    return _bundled_es_path() if lang == "es" else lexicons_dir() / f"nrc_{lang}.json"
+    return lexicons_dir() / f"nrc_{lang}.json"
 
 
 def get(lang: str) -> dict | None:
@@ -76,28 +78,24 @@ def get(lang: str) -> dict | None:
 
 def lexicon_id(lang: str) -> str | None:
     """Identifica la versión del léxico con que se calculó un análisis."""
-    if get(lang) is None:
-        return None
-    return BUNDLED_ES_ID if lang == "es" else DOWNLOADED_ID
+    return DOWNLOADED_ID if get(lang) is not None else None
 
 
 def status() -> dict:
     return {
-        lang: {"available": get(lang) is not None, "bundled": lang == "es",
-               "size": len(get(lang) or {})}
+        lang: {"available": get(lang) is not None, "size": len(get(lang) or {})}
         for lang in LANGS
     }
 
 
-def _rows_from_zip(data: bytes) -> list[list[str]]:
-    """Filas del archivo por idioma (formato ancho, incluye la columna inglesa)."""
+def _rows_from_zip(data: bytes, member: str) -> list[list[str]]:
+    """Filas de un archivo por idioma del .zip oficial (formato ancho)."""
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
             name = next((n for n in zf.namelist()
-                         if n.endswith("OneFilePerLanguage/Portuguese-NRC-EmoLex.txt")
-                         and "__MACOSX" not in n), None)
+                         if n.endswith(member) and "__MACOSX" not in n), None)
             if name is None:
-                raise LexiconError("zip sin OneFilePerLanguage/Portuguese-NRC-EmoLex.txt")
+                raise LexiconError(f"zip sin {member}")
             text = zf.read(name).decode("utf-8")
     except zipfile.BadZipFile as exc:
         raise LexiconError("zip dañado") from exc
@@ -131,15 +129,17 @@ def convert(rows: list[list[str]], column: str) -> dict:
     return lexicon
 
 
-def install_from_zip(data: bytes, langs=("en", "pt")) -> dict:
+def install_from_zip(data: bytes, langs=LANGS) -> dict:
     """Convierte el .zip oficial del NRC e instala los léxicos pedidos."""
-    rows = _rows_from_zip(data)
-    columns = {"en": "English Word", "pt": "Portuguese Word"}
+    rows_by_member: dict[str, list[list[str]]] = {}
     installed = {}
     for lang in langs:
-        if lang not in columns:
+        if lang not in SOURCES:
             continue
-        lexicon = convert(rows, columns[lang])
+        member, column = SOURCES[lang]
+        if member not in rows_by_member:
+            rows_by_member[member] = _rows_from_zip(data, member)
+        lexicon = convert(rows_by_member[member], column)
         if len(lexicon) < 1000:
             raise LexiconError(f"léxico {lang} incompleto ({len(lexicon)} entradas)")
         storage._atomic_write(_path(lang), json.dumps(lexicon, ensure_ascii=False, separators=(",", ":")))
@@ -150,7 +150,7 @@ def install_from_zip(data: bytes, langs=("en", "pt")) -> dict:
     return installed
 
 
-def download(langs=("en", "pt")) -> dict:
+def download(langs=LANGS) -> dict:
     """Descarga única desde el sitio oficial del NRC (requiere internet)."""
     import httpx
 

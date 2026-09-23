@@ -157,9 +157,9 @@ interpretación a un modelo destruye la validez del método y la autoría del an
 - Formatos de corpus soportados: PDF, DOCX, TXT (UTF-8).
 - Idiomas del corpus: español, inglés y portugués (stopwords, foco gramatical y
   sentimiento). Idiomas de la interfaz: es-419, en-GB, pt-BR.
-- Recursos de terceros se usan según sus licencias: el léxico NRC no se redistribuye
-  fuera de lo ya decidido para el castellano; inglés y portugués se obtienen de la fuente
-  oficial en cada equipo.
+- Recursos de terceros se usan según sus licencias: el léxico NRC no se redistribuye en
+  ningún idioma (ni en el repositorio ni en los instaladores); cada equipo lo obtiene una
+  vez desde la fuente oficial (decisión del investigador, 2026-09-23).
 - Inventario de funcionalidades protegidas por el Principio I: importación de corpus,
   Canvas con resaltado por dominio y pestañas de documentos, Nube Negra, Paleta con
   códigos manuales y memos, edición/eliminación de códigos, arrastre de selección a
@@ -222,7 +222,9 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.13.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-09-23
+**Version**: 1.13.1 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-09-23
+<!-- 1.13.1: aclaración de la restricción de licencias: el léxico NRC en castellano
+deja de incluirse (cumplimiento de la cláusula de no redistribución del NRC). -->
 <!-- 1.13.0: inventario ampliado por pedido del investigador (2026-09-23): sentimiento
 y foco gramatical multilingües (FR-077), acuerdo entre codificadores (FR-078), REFI-QDA
 (FR-079), OCR (FR-080) y ventana propia (FR-081). El acuerdo es análisis de solo

@@ -153,15 +153,16 @@ Todo se actualiza solo con cada codificación.
 Analiza el **tono emocional** del corpus con el léxico abierto NRC EmoLex en el idioma del
 corpus (uso investigativo con cita a Mohammad & Turney 2013).
 
-- **Castellano**: el léxico viene incluido (5.094 palabras).
-- **Inglés y portugués**: los términos de uso del NRC no permiten redistribuir el léxico
-  dentro de Cua-libre, así que cada equipo lo obtiene **una sola vez** desde el sitio
-  oficial: botón **⬇ DESCARGAR DESDE EL NRC** (≈ 25 MB; instala ambos idiomas). Sin
-  internet, **ELEGIR .ZIP OFICIAL** acepta el archivo NRC-Emotion-Lexicon.zip descargado
-  en otro equipo.
+- **Instalación única del léxico**: los términos de uso del NRC no permiten redistribuir
+  el léxico dentro de Cua-libre, así que cada equipo lo obtiene **una sola vez** desde el
+  sitio oficial: botón **⬇ DESCARGAR DESDE EL NRC** (≈ 25 MB; instala castellano, inglés
+  y portugués). Sin internet, **ELEGIR .ZIP OFICIAL** acepta el archivo
+  NRC-Emotion-Lexicon.zip descargado en otro equipo. Después funciona siempre sin
+  conexión.
 - Las versiones en castellano y portugués son **traducciones automáticas** del inglés
-  hechas por los autores del léxico: revisa en contexto las palabras con carga. Todo es **auditable**:
-cada puntaje viene acompañado de las palabras que lo produjeron.
+  hechas por los autores del léxico: revisa en contexto las palabras con carga.
+
+Todo es **auditable**: cada puntaje viene acompañado de las palabras que lo produjeron.
 
 - **Tono y arco emocional por documento**: valencia global (−1 a +1) y su trayectoria
   párrafo a párrafo — dónde el relato se oscurece o se ilumina.
@@ -225,8 +226,9 @@ sentidos. Por eso los puntajes son **insumo para tu interpretación**, nunca su 
 **Fuentes.** El léxico es el **NRC Word–Emotion Association Lexicon (EmoLex)** de Saif
 Mohammad y Peter Turney (National Research Council Canada): ~14.000 palabras anotadas por
 crowdsourcing con polaridad y 8 emociones (alegría, tristeza, miedo, rabia, confianza,
-anticipación, sorpresa, asco), del cual Cua-libre incluye las 5.094 entradas en castellano
-de la distribución oficial. Uso libre para investigación; **cita**: Mohammad, S. & Turney,
+anticipación, sorpresa, asco), con traducciones automáticas a más de cien idiomas.
+Cua-libre usa las entradas de una sola palabra en castellano, inglés y portugués,
+convertidas en tu equipo a partir del archivo oficial. Uso libre para investigación; **cita**: Mohammad, S. & Turney,
 P. (2013). *Crowdsourcing a Word–Emotion Association Lexicon*. Computational
 Intelligence, 29(3), 436–465.
 
@@ -305,7 +307,7 @@ publicar, o como copia portable independiente de la app.
 
 ## 14. 📚 Literatura
 
-Búsqueda por conceptos en **OpenAlex** (título, año, citas, enlace DOI). Única función que requiere internet; si no hay conexión, el resto de la app sigue igual.
+Búsqueda por conceptos en **OpenAlex** (título, año, citas, enlace DOI). Junto con la descarga única del léxico de sentimiento, es lo único que requiere internet; si no hay conexión, el resto de la app sigue igual.
 
 ## 15. ◷ Sesión de foco
 

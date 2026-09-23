@@ -1,6 +1,11 @@
 """Sentimiento por léxico: polaridad, negación, arco, endpoint (FR-059)."""
 
+import pytest
+
 from backend.sentiment import analyze_texts, document_arc
+
+# Desde la v1.12.1 ningún léxico viene incluido: se instala uno sintético
+pytestmark = pytest.mark.usefixtures("nrc_lexicons")
 
 
 def test_positive_and_negative_valence():

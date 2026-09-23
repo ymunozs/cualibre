@@ -253,7 +253,7 @@ def test_analysis_is_cached_on_disk_and_reused(client, monkeypatch):
     assert analysis.get(text, "es") == first
 
 
-def test_large_corpus_is_analysed_in_background(client, monkeypatch):
+def test_large_corpus_is_analysed_in_background(client, monkeypatch, nrc_lexicons):
     monkeypatch.setattr(analysis, "SYNC_LIMIT_CHARS", 10)
     upload(client, text="Primer documento con alegría y esperanza compartida.")
     analysis._mem.clear()

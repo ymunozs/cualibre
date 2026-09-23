@@ -592,9 +592,10 @@ que se listan resultados con título, año, citas y DOI clicable.
 
 - **FR-077**: Sentimiento y foco gramatical MUST funcionar en el idioma del corpus
   (español, inglés, portugués), un ajuste por proyecto compartido por NLP y Sentimiento,
-  propuesto al importar el primer documento. Los léxicos NRC en inglés y portugués MUST
-  obtenerse desde la fuente oficial en cada equipo (descarga única o .zip oficial), nunca
-  redistribuidos. Los negadores MUST NOT contar como palabras con carga.
+  propuesto al importar el primer documento. Los léxicos NRC (castellano, inglés y
+  portugués) MUST obtenerse desde la fuente oficial en cada equipo (descarga única o .zip
+  oficial), nunca redistribuidos: ni el repositorio ni los instaladores los incluyen
+  (v1.12.1). Los negadores MUST NOT contar como palabras con carga.
 - **FR-078**: El sistema MUST comparar la codificación de dos proyectos sobre sus
   documentos compartidos (mismo texto) y reportar por código porcentaje de acuerdo, kappa
   de Cohen y alfa de Krippendorff (unidad: carácter), más los fragmentos en desacuerdo con
