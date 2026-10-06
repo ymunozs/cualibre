@@ -610,6 +610,22 @@ que se listan resultados con título, año, citas y DOI clicable.
   reporte en la ventana propia MUST pasar por HTTP. La API MUST rechazar peticiones de
   otros orígenes o dominios (CSRF, DNS rebinding).
 
+### v1.13 — Word 97-2003 e instalación sin conocimientos técnicos (2026-10-06)
+
+- **FR-082**: El sistema MUST importar documentos de Word 97-2003 (.doc) sin depender de
+  Word ni de programas externos, con el mismo resultado que un .docx: párrafos, tablas
+  como «celda | celda» y, al final, notas (al pie y finales) y cuadros de texto. El
+  formato MUST decidirse por el contenido y no por la extensión (hay .doc que son RTF o
+  .docx). Los documentos con contraseña o anteriores a Word 97 MUST rechazarse con un
+  mensaje que diga qué hacer, sin tocar el corpus.
+- **FR-083**: Una persona sin conocimientos de programación MUST poder instalar la
+  aplicación desde el README: enlace directo de descarga por sistema, instalador de
+  Windows sin permisos de administrador ni preguntas sobre carpetas. Cada instalador de
+  Windows MUST probarse instalado (arranque, importación, actualización y
+  desinstalación, también en rutas con espacios y tildes) antes de publicarse. En
+  Windows sin WebView2 la aplicación MUST abrirse en el navegador, nunca en una ventana
+  en blanco.
+
 ## Assumptions
 
 - Un solo usuario local (el investigador) por proyecto; no se requiere autenticación ni

@@ -6,6 +6,8 @@ Sirve también como punto de entrada de los instaladores (PyInstaller):
   Windows). Si el sistema no puede crearla (p. ej., un Windows sin el runtime
   WebView2), usa el navegador de siempre, con un botón SALIR en la cabecera;
 - `--navegador` (o CUALIBRE_BROWSER=1) fuerza el modo navegador;
+- `--servidor` levanta solo el servidor, sin ventana ni navegador, y
+  CUALIBRE_PORT fija el puerto: así se prueban los instaladores (packaging/);
 - si ya hay una instancia corriendo, la reutiliza en vez de levantar otra;
 - si el puerto 8734 está tomado por OTRO programa (o reservado: en Windows,
   Hyper-V/WSL reservan rangos de puertos y el bind falla con WinError 10013),
@@ -79,12 +81,25 @@ def wait_until_ready(port: int, seconds: float = 30) -> bool:
     return False
 
 
+def window_engine_ok() -> bool:
+    """En Windows, si falta el componente WebView2, pywebview recurre sin
+    avisar al motor de Internet Explorer, donde la interfaz no funciona (queda
+    una ventana en blanco). En ese caso es mejor el navegador."""
+    if sys.platform != "win32":
+        return True
+    from webview.platforms import winforms
+
+    return getattr(winforms, "renderer", "") == "edgechromium"
+
+
 def open_window(url: str) -> bool:
     """Ventana propia; devuelve False si el sistema no pudo crearla."""
     try:
         import webview
         from backend import storage
 
+        if not window_engine_ok():
+            raise RuntimeError("falta el componente WebView2 de Windows")
         webview.settings["OPEN_EXTERNAL_LINKS_IN_BROWSER"] = True  # GitHub, Ko-fi, DOI
         window = webview.create_window(
             TITLE, url, width=1440, height=920, min_size=(900, 600),
@@ -108,22 +123,29 @@ def open_window(url: str) -> bool:
 def main() -> None:
     use_browser = "--navegador" in sys.argv or "--browser" in sys.argv \
         or os.environ.get("CUALIBRE_BROWSER") == "1"
+    server_only = "--servidor" in sys.argv or "--server" in sys.argv
+    fixed_port = os.environ.get("CUALIBRE_PORT")
+    ports = [int(fixed_port)] if fixed_port else PORTS
 
-    for port in PORTS:
-        if is_cualibre(port):
+    for port in ports:
+        if is_cualibre(port) and not server_only:
             # Ya hay una instancia (con su ventana): se reutiliza en el navegador,
             # sin levantar un segundo servidor que compita por el mismo proyecto
             webbrowser.open(url_for(port))
             sys.exit(0)
 
-    port = next((p for p in PORTS if is_free(p)), None)
+    port = next((p for p in ports if is_free(p)), None)
     if port is None:
-        print("✖ CUA-LIBRE STUDIO: no hay puertos libres entre 8734 y 8743.")
+        print(f"✖ CUA-LIBRE STUDIO: no hay puertos libres entre {ports[0]} y {ports[-1]}.")
         sys.exit(1)
 
     server = uvicorn.Server(uvicorn.Config(app, host=HOST, port=port, log_level="warning"))
     app.state.shutdown = lambda: setattr(server, "should_exit", True)
     print(f"◰ {TITLE} · {url_for(port)}  (Ctrl-C para salir)")
+
+    if server_only:
+        server.run()
+        return
 
     if not use_browser:
         thread = threading.Thread(target=server.run, daemon=True)

@@ -7,7 +7,114 @@ de la nube.
 **Interfaz en tres idiomas**: español latinoamericano, inglés británico y portugués de
 Brasil (selector en la cabecera; cambia al instante y no altera los datos).
 
-**Novedades de la v1.12**
+## Descargar e instalar
+
+No necesitas saber programar ni usar la Terminal: descarga el instalador que corresponde
+a tu computador, ábrelo y listo. Es gratis y funciona sin internet.
+
+| Tu computador | Descarga directa |
+|---|---|
+| **Windows 10 u 11** | [⬇ CUA-LIBRE-Studio-windows-setup.exe](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-windows-setup.exe) |
+| **Mac con chip Apple** (M1, M2, M3, M4 o posterior) | [⬇ CUA-LIBRE-Studio-mac-applesilicon.dmg](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-mac-applesilicon.dmg) |
+| **Mac con procesador Intel** | [⬇ CUA-LIBRE-Studio-mac-intel.dmg](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-mac-intel.dmg) |
+
+¿Qué Mac tengo? Menú  → *Acerca de esta Mac*: si dice «Chip Apple M…», usa la primera
+descarga de Mac; si dice «Procesador Intel», la segunda. Todas las versiones están en la
+página de [Releases](https://github.com/ymunozs/cualibre/releases).
+
+### En Windows, paso a paso
+
+1. Haz clic en la descarga de Windows. El archivo queda en tu carpeta **Descargas**.
+2. Ábrelo con doble clic.
+3. Aparecerá un aviso azul que dice **«Windows protegió su PC»**. Es normal: sale con
+   cualquier programa cuyo autor no ha pagado un certificado comercial. Haz clic en
+   **Más información** y luego en **Ejecutar de todas formas**.
+4. Haz clic en **Instalar** y espera un momento. No pide contraseña de administrador ni
+   pregunta por carpetas.
+5. Deja marcada la casilla «Abrir CUA-LIBRE Studio ahora» y haz clic en **Finalizar**.
+
+Desde entonces la abres con el ícono **CUA-LIBRE Studio** del Escritorio o del menú
+Inicio. Para actualizar, descarga el instalador nuevo y ábrelo: tus proyectos se
+conservan. Para quitarla: *Configuración → Aplicaciones → CUA-LIBRE Studio →
+Desinstalar* (tus proyectos tampoco se borran).
+
+### En Mac, paso a paso
+
+1. Haz clic en la descarga que corresponde a tu Mac y abre el archivo `.dmg`.
+2. Arrastra **CUA-LIBRE Studio** a la carpeta **Aplicaciones** y ábrela desde ahí.
+3. La primera vez, macOS avisará que no puede verificar al desarrollador (la app no
+   tiene el certificado pagado de Apple). Para autorizarla:
+   - **macOS 15 (Sequoia) o posterior**: cierra el aviso, abre *Configuración del
+     Sistema → Privacidad y seguridad*, baja hasta el mensaje sobre CUA-LIBRE Studio y
+     haz clic en **Abrir de todos modos**.
+   - **macOS 14 o anterior**: en Aplicaciones, haz clic derecho (o Control + clic) sobre
+     la app, elige **Abrir** y confirma con **Abrir**.
+
+Solo hay que hacerlo una vez. Requiere macOS 10.15 (Catalina) o posterior.
+
+### Si algo no funciona
+
+- **El navegador dice que el archivo «no se descarga habitualmente»**: elige *Conservar*.
+  Basta con haberlo bajado desde esta página.
+- **En Windows se abre en el navegador y no en una ventana**: a ese equipo le falta un
+  componente de Windows llamado WebView2. La app funciona igual; para cerrarla usa el
+  botón **⏻ SALIR** de la cabecera.
+- **El computador es de tu universidad o trabajo y bloquea la instalación**: algunas
+  instituciones no permiten instalar programas. Pide a soporte informático que autorice
+  el instalador.
+- **Otra cosa**: escribe en [Issues](https://github.com/ymunozs/cualibre/issues) o al
+  correo que aparece en el botón **ℹ ACERCA DE** de la app, contando qué sistema usas y
+  qué mensaje apareció.
+
+<details>
+<summary><b>English: download and install</b></summary>
+
+No programming or Terminal needed. Download the installer for your computer and open it.
+
+- **Windows 10 or 11**: [CUA-LIBRE-Studio-windows-setup.exe](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-windows-setup.exe).
+  Double-click it. On the blue “Windows protected your PC” notice, click **More info →
+  Run anyway** (it appears because the app has no paid certificate). Click **Install**.
+  It does not ask for an administrator password.
+- **Mac with Apple chip (M1 or later)**: [CUA-LIBRE-Studio-mac-applesilicon.dmg](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-mac-applesilicon.dmg).
+  **Mac with Intel processor**: [CUA-LIBRE-Studio-mac-intel.dmg](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-mac-intel.dmg).
+  Open the `.dmg`, drag the app to **Applications** and open it. The first time, on
+  macOS 15 or later go to *System Settings → Privacy & Security → Open Anyway*; on
+  macOS 14 or earlier, right-click the app → **Open**.
+
+The interface language is chosen in the header. Manual: [MANUAL.en.md](MANUAL.en.md).
+</details>
+
+<details>
+<summary><b>Português: baixar e instalar</b></summary>
+
+Não é preciso saber programar nem usar o Terminal. Baixe o instalador do seu computador e
+abra-o.
+
+- **Windows 10 ou 11**: [CUA-LIBRE-Studio-windows-setup.exe](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-windows-setup.exe).
+  Dê dois cliques. No aviso azul “O Windows protegeu o computador”, clique em **Mais
+  informações → Executar assim mesmo** (ele aparece porque o aplicativo não tem
+  certificado pago). Clique em **Instalar**. Não pede senha de administrador.
+- **Mac com chip Apple (M1 ou posterior)**: [CUA-LIBRE-Studio-mac-applesilicon.dmg](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-mac-applesilicon.dmg).
+  **Mac com processador Intel**: [CUA-LIBRE-Studio-mac-intel.dmg](https://github.com/ymunozs/cualibre/releases/latest/download/CUA-LIBRE-Studio-mac-intel.dmg).
+  Abra o `.dmg`, arraste o aplicativo para **Aplicativos** e abra-o. Na primeira vez, no
+  macOS 15 ou posterior vá em *Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo
+  Assim*; no macOS 14 ou anterior, clique com o botão direito no aplicativo → **Abrir**.
+
+O idioma da interface é escolhido no cabeçalho. Manual: [MANUAL.pt.md](MANUAL.pt.md).
+</details>
+
+## Novedades
+
+**v1.13**
+- **Documentos de Word antiguos (.doc)**: se importan directamente, igual que los
+  `.docx`, sin tener Word instalado ni convertir nada a mano.
+- **Notas al pie, notas finales y cuadros de texto** de los documentos de Word ahora se
+  importan (quedan al final del documento).
+- **Instalación más simple en Windows**: sin preguntas sobre carpetas ni permisos de
+  administrador. En equipos sin WebView2 la app se abre en el navegador (antes podía
+  quedar una ventana en blanco).
+
+**v1.12**
 - **Ventana propia** (ya no depende del navegador; si el sistema no puede abrirla, usa el
   navegador con un botón SALIR).
 - **Interoperabilidad REFI-QDA (.qdpx)**: exporta e importa proyectos de NVivo, ATLAS.ti,
@@ -20,24 +127,9 @@ Brasil (selector en la cabecera; cambia al instante y no altera los datos).
 
 **Manual completo de comandos y atajos: [MANUAL.md](MANUAL.md)** · [English](MANUAL.en.md) · [Português](MANUAL.pt.md)
 
-## Cómo iniciar
-
-Abre la Terminal en esta carpeta y ejecuta:
-
-```bash
-./start.sh        # macOS / Linux (ventana propia)
-start.bat         # Windows (desde el código fuente; requiere uv)
-./start.sh --navegador   # en el navegador, como antes
-```
-
-La primera vez tardará un poco (descarga Python y las dependencias automáticamente con
-`uv`). Después, el navegador se abre solo en `http://127.0.0.1:8734` (si ese puerto está
-ocupado por otro programa, Cua-libre usa el siguiente libre, 8735…8743). Para salir,
-presiona `Ctrl-C` en la Terminal.
-
 ## Cómo se usa
 
-1. **Importa tu corpus** (PDF, DOCX o TXT) desde la franja superior. Los documentos se
+1. **Importa tu corpus** (PDF, DOCX, DOC o TXT) desde la franja superior. Los documentos se
    acumulan y el Canvas identifica de cuál proviene cada sección.
 2. **Codifica**: selecciona un fragmento en el Canvas → aparece la **Nube Negra** →
    elige el dominio (teclas 1–9 o el selector) → escribe el nombre del código →
@@ -104,52 +196,57 @@ Probado con 60 entrevistas (3,7 millones de caracteres) y 3.000 códigos:
 Emocional · Descriptivo · In Vivo · Tensión/CHAT · Proceso · Teórico · Relacional ·
 Crítico · Método — cada uno con su color fijo en toda la aplicación.
 
-## Instaladores
+## Para quienes desarrollan
 
-No necesitas Terminal si usas la app instalada:
+Esta sección es para trabajar con el código. Para usar la app basta con
+[descargar e instalar](#descargar-e-instalar).
 
-- **macOS**: `packaging/build_mac.sh` genera `dist/CUA-LIBRE-Studio-<v>-mac.dmg`.
-  Abre el DMG, arrastra la app a Aplicaciones. Como no está firmada con certificado de
-  Apple, **la primera vez ábrela con clic derecho → Abrir**. Para salir: clic derecho en
-  el ícono del Dock → Salir.
-- **Windows**: se construye en una máquina Windows con `packaging/windows/build_windows.bat`
-  (requiere Python 3.12+ e Inno Setup 6), **o automáticamente en GitHub**: sube este
-  repositorio a GitHub y ejecuta el workflow *Installers* (pestaña Actions), que produce
-  el `.dmg` de Mac y el `CUA-LIBRE-Studio-…-windows-setup.exe` de Windows como artefactos;
-  si además publicas un tag `v1.0`, quedan adjuntos a un Release. La app de Windows
-  muestra una ventana de consola mientras corre: ciérrala para apagar el servidor.
+### Ejecutar desde el código fuente
 
-En ambos casos la app instalada abre el navegador sola y usa la misma carpeta de datos,
-así que tus proyectos se comparten con la versión de desarrollo.
+Requiere [uv](https://docs.astral.sh/uv/), que aprovisiona Python 3.12 y las dependencias:
 
-### Compatibilidad de macOS: hay DOS instaladores
+```bash
+./start.sh               # macOS / Linux (ventana propia)
+start.bat                # Windows
+./start.sh --navegador   # en el navegador
+```
 
-Cada Mac necesita el DMG de **su propia arquitectura** — un binario compilado para
-Apple Silicon no corre en Intel, ni viceversa (a diferencia de Rosetta 2, que solo
-traduce en un sentido: Intel→Apple Silicon, nunca al revés). Por eso el Release
-publica **dos** archivos:
-
-- **`CUA-LIBRE-Studio-<v>-mac-intel.dmg`** — Macs con procesador **Intel** (todo Mac
-  vendido hasta 2020, y algunos modelos de 2020).
-- **`CUA-LIBRE-Studio-<v>-mac-applesilicon.dmg`** — Macs con chip **M1/M2/M3/M4**
-  (vendidos desde fines de 2020 en adelante).
-
-¿Cuál tienes? Menú  → *Acerca de esta Mac*: si dice "Chip Apple M1/M2/M3/M4", descarga
-la versión Apple Silicon; si dice "Procesador Intel Core...", descarga la versión Intel.
-
-- **Sistema mínimo (ambas): macOS 10.15 Catalina o superior** — incluye Big Sur,
-  Monterey, Ventura, Sonoma, Sequoia y Tahoe. (Verificado con `otool -l` sobre los
-  binarios empaquetados: numpy, thinc, blis, PyMuPDF y Python mismo.)
-- Nota técnica: `numpy>=2` exige macOS 14 (Sonoma) como mínimo — por eso el proyecto
-  fija `numpy==1.26.4` en `pyproject.toml` y en los scripts de empaquetado; no lo subas
-  de versión sin volver a verificar el piso de compatibilidad con `otool -l`.
-- `packaging/build_mac.sh` detecta la arquitectura real del binario (`lipo -archs`) y
-  nombra el DMG en consecuencia — nunca hay que asumirla a mano. El workflow de CI
-  construye ambas en paralelo: `macos-13` (Intel, el último runner hosted de GitHub en
-  esa arquitectura) y `macos-14` (Apple Silicon).
-
-## Para desarrollo
+La primera vez tarda un poco (descarga Python y las dependencias). Usa el puerto 8734 o
+el siguiente libre hasta 8743. La app instalada y la de desarrollo comparten la carpeta
+de datos.
 
 - Tests: `uv run -m pytest backend/tests/ -v`
 - Documentación de diseño: `specs/001-cualibre-studio/` (spec, plan, research, tasks)
 - Reglas del proyecto: `.specify/memory/constitution.md`
+
+### Construir los instaladores
+
+El workflow *Installers* (`.github/workflows/installers.yml`) corre al subir un tag `v*`:
+ejecuta los tests en Windows y macOS, construye el instalador de Windows y el DMG de
+Apple Silicon, los **prueba ya instalados** y los deja en un Release en borrador. El DMG
+de Intel se construye en una Mac Intel y se agrega con `gh release upload`; con los tres
+archivos arriba, el Release se publica.
+
+- **Windows**: `packaging/windows/build_windows.bat` (Python 3.12 e Inno Setup 6.3 o
+  superior) genera `dist/CUA-LIBRE-Studio-windows-setup.exe`.
+  `packaging/windows/smoke_test.ps1` lo instala sin administrador, abre la app, importa
+  un `.doc`, actualiza encima y desinstala, también en carpetas con espacios y tildes.
+- **macOS**: `packaging/build_mac.sh` genera `dist/CUA-LIBRE-Studio-mac-<chip>.dmg` y
+  antes prueba la app empaquetada con `packaging/smoke_test.sh`.
+- Los archivos no llevan la versión en el nombre para que los enlaces de descarga de
+  este README (`releases/latest/download/…`) sirvan siempre. La versión se toma de
+  `pyproject.toml`.
+
+### Compatibilidad de macOS: hay dos instaladores
+
+Cada Mac necesita el DMG de **su propia arquitectura**: un binario compilado para Apple
+Silicon no corre en Intel, ni viceversa (Rosetta 2 solo traduce de Intel a Apple Silicon).
+
+- **Sistema mínimo (ambas): macOS 10.15 Catalina**. Verificado con `otool -l` sobre los
+  binarios empaquetados: numpy, thinc, blis, PyMuPDF y Python mismo.
+- `numpy>=2` exige macOS 14 (Sonoma) como mínimo; por eso el proyecto fija
+  `numpy==1.26.4` en `pyproject.toml` y en los scripts de empaquetado. No lo subas de
+  versión sin volver a verificar el piso de compatibilidad con `otool -l`.
+- `packaging/build_mac.sh` detecta la arquitectura real del binario (`lipo -archs`) y
+  nombra el DMG en consecuencia. El workflow construye Apple Silicon en `macos-14`; el
+  runner Intel de GitHub (`macos-13`) no tiene capacidad estable.

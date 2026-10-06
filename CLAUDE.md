@@ -7,7 +7,7 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 
 `.specify/memory/constitution.md` gobierna todo. En particular:
 - **Nunca eliminar funcionalidades al iterar** (Principio I). Inventario protegido:
-  importación PDF/DOCX/TXT, Canvas con resaltado por dominio y pestañas de documentos,
+  importación PDF/DOCX/DOC/TXT, Canvas con resaltado por dominio y pestañas de documentos,
   Nube Negra, Paleta con códigos manuales/memos/edición/eliminación, arrastre de
   selección a códigos existentes, NLP triple (word cloud + barras + tabla), Analytics,
   relaciones entre códigos (jerarquía/asociación/causalidad/contradicción con
@@ -25,7 +25,7 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 - `backend/` — FastAPI: `app.py` (rutas + middleware de idioma y escrituras en fila),
   `models.py` (Pydantic + 9 dominios), `storage.py` (JSON atómico por proyecto, caché en
   memoria, papelera, importación), `analysis.py` (análisis spaCy por documento, una vez,
-  con caché en disco y trabajo de fondo), `i18n.py`, `extraction.py` (+ `ocr.py`: Vision /
+  con caché en disco y trabajo de fondo), `i18n.py`, `extraction.py` (+ `legacy_doc.py`: Word 97-2003 y RTF en Python puro; `ocr.py`: Vision /
   Windows.Media.Ocr), `nlp.py`, `sentiment.py` (+ `lexicons.py`: NRC por idioma),
   `agreement.py` (kappa/alfa), `qdpx.py` (REFI-QDA), `export.py`, `literature.py`,
   `tests/` (pytest; `tests/data/` trae el XSD oficial REFI-QDA para validar).
@@ -65,9 +65,28 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
   UTF-16 + saltos de línea como 2 (verificado con un .qdpx real). La importación detecta
   la convención por fuente; la exportación tiene perfil `standard` y `nvivo`.
 
+- Word antiguo (.doc, v1.13): `legacy_doc.py` lee el binario de Word 97-2003 siguiendo la
+  tabla de piezas de [MS-DOC] y también RTF; decide por el contenido, no por la extensión.
+  En Windows no hay conversor del sistema (como textutil en Mac), por eso es Python puro
+  (única dependencia: `olefile`). Validado contra textutil con documentos reales; las
+  diferencias aceptadas son encabezados/pies (no se importan) e instrucciones de campo
+  (se muestra solo el resultado visible, como Word).
+- Instaladores (v1.13): nombres SIN versión (`CUA-LIBRE-Studio-windows-setup.exe`,
+  `…-mac-applesilicon.dmg`, `…-mac-intel.dmg`) porque el README enlaza a
+  `releases/latest/download/<nombre>`; cambiar un nombre rompe esos enlaces. La versión
+  sale de `pyproject.toml` (más `APP_VERSION` en `app.py` y el `<small id="version">` de
+  `index.html`; un test exige que coincidan). El instalador de Windows no muestra página
+  de carpeta ni pide administrador. `packaging/windows/smoke_test.ps1` (CI) lo instala,
+  abre la app, importa un .doc, actualiza y desinstala, también en rutas con tildes;
+  `packaging/smoke_test.sh` hace lo equivalente con la .app de Mac. `cualibre.iss` y
+  `smoke_test.ps1` llevan BOM UTF-8: no quitarlo.
+- Windows sin WebView2: pywebview NO lanza error, recurre al motor de Internet Explorer
+  y deja la ventana en blanco. `run.py` lo detecta (`window_engine_ok`) y usa el navegador.
+
 ## Comandos
 
-- Ejecutar: `./start.sh` (usa uv: aprovisiona Python 3.12+ y deps, abre navegador)
+- Ejecutar: `./start.sh` (usa uv: aprovisiona Python 3.12+ y deps, abre la ventana)
+- Solo servidor, sin ventana ni navegador: `CUALIBRE_PORT=8760 uv run run.py --servidor`
 - Tests: `uv run -m pytest backend/tests/ -v`
 
 ## Idioma

@@ -154,7 +154,7 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   línea).
 - Python como lenguaje del backend de procesamiento (extracción PDF/DOCX, NLP, datos);
   las bibliotecas ya validadas (PyMuPDF, python-docx, pandas) se prefieren.
-- Formatos de corpus soportados: PDF, DOCX, TXT (UTF-8).
+- Formatos de corpus soportados: PDF, DOCX, DOC (Word 97-2003), TXT (UTF-8).
 - Idiomas del corpus: español, inglés y portugués (stopwords, foco gramatical y
   sentimiento). Idiomas de la interfaz: es-419, en-GB, pt-BR.
 - Recursos de terceros se usan según sus licencias: el léxico NRC no se redistribuye en
@@ -222,7 +222,11 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.13.1 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-09-23
+**Version**: 1.14.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-10-06
+<!-- 1.14.0: inventario ampliado por pedido del investigador (2026-10-06): importación
+de Word 97-2003 (.doc), con notas y cuadros de texto también en .docx (FR-082), e
+instalación apta para quien no programa, con el instalador de Windows probado ya
+instalado antes de publicarse (FR-083). -->
 <!-- 1.13.1: aclaración de la restricción de licencias: el léxico NRC en castellano
 deja de incluirse (cumplimiento de la cláusula de no redistribución del NRC). -->
 <!-- 1.13.0: inventario ampliado por pedido del investigador (2026-09-23): sentimiento

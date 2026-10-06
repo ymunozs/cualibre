@@ -104,9 +104,33 @@ MESSAGES: dict[str, dict[str, str]] = {
               "Repita a operação com confirmação para excluí-los.",
     },
     "unsupported_file": {
-        "es": "Tipo de archivo no soportado: .{ext}. Usa PDF, DOCX o TXT",
-        "en": "Unsupported file type: .{ext}. Use PDF, DOCX or TXT",
-        "pt": "Tipo de arquivo não suportado: .{ext}. Use PDF, DOCX ou TXT",
+        "es": "Tipo de archivo no soportado: .{ext}. Usa PDF, DOCX, DOC o TXT",
+        "en": "Unsupported file type: .{ext}. Use PDF, DOCX, DOC or TXT",
+        "pt": "Tipo de arquivo não suportado: .{ext}. Use PDF, DOCX, DOC ou TXT",
+    },
+    "doc_unrecognised": {
+        "es": "«{filename}» no tiene un formato de Word reconocible. "
+              "Ábrelo en Word y guárdalo como .docx",
+        "en": "“{filename}” is not in a recognisable Word format. "
+              "Open it in Word and save it as .docx",
+        "pt": "“{filename}” não está em um formato do Word reconhecível. "
+              "Abra-o no Word e salve-o como .docx",
+    },
+    "doc_encrypted": {
+        "es": "«{filename}» está protegido con contraseña. "
+              "Quita la contraseña en Word y vuelve a importarlo",
+        "en": "“{filename}” is password-protected. "
+              "Remove the password in Word and import it again",
+        "pt": "“{filename}” está protegido por senha. "
+              "Remova a senha no Word e importe-o de novo",
+    },
+    "doc_too_old": {
+        "es": "«{filename}» usa un formato de Word anterior a 1997. "
+              "Ábrelo en Word y guárdalo como .docx",
+        "en": "“{filename}” uses a Word format from before 1997. "
+              "Open it in Word and save it as .docx",
+        "pt": "“{filename}” usa um formato do Word anterior a 1997. "
+              "Abra-o no Word e salve-o como .docx",
     },
     "unreadable_file": {
         "es": "No se pudo leer «{filename}»: archivo dañado o ilegible",

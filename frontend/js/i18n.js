@@ -47,7 +47,7 @@ const I18N = {
       "app.dark.title": "Modo oscuro / claro",
 
       // Importador y pestañas
-      "import.label": "📥 IMPORTAR CORPUS: PDF, DOCX o TXT",
+      "import.label": "📥 IMPORTAR CORPUS: PDF, DOCX, DOC o TXT",
       "import.hint": "Puedes elegir varios archivos a la vez. Todo queda en tu equipo.",
       "import.progress": "Importando {name} ({i} de {n})…",
       "import.done": "Importado: {name}",
@@ -66,7 +66,7 @@ const I18N = {
       "canvas.immersion.title": "Modo inmersión (Esc para salir)",
       "canvas.font.title": "Tipografía del corpus: serif / máquina de escribir",
       "canvas.linenum.title": "Numeración de líneas",
-      "canvas.empty": "El corpus está vacío. Importa un PDF, DOCX o TXT desde la zona superior.",
+      "canvas.empty": "El corpus está vacío. Importa un PDF, DOCX, DOC o TXT desde la zona superior.",
       "canvas.all": "TODOS",
       "search.title": "BUSCAR EN EL CORPUS",
       "search.placeholder": "{mod}F · texto a buscar…",
@@ -414,7 +414,7 @@ const I18N = {
       "app.manual.title": "User manual and shortcuts",
       "app.dark.title": "Dark / light mode",
 
-      "import.label": "📥 IMPORT CORPUS: PDF, DOCX or TXT",
+      "import.label": "📥 IMPORT CORPUS: PDF, DOCX, DOC or TXT",
       "import.hint": "You can choose several files at once. Everything stays on your computer.",
       "import.progress": "Importing {name} ({i} of {n})…",
       "import.done": "Imported: {name}",
@@ -432,7 +432,7 @@ const I18N = {
       "canvas.immersion.title": "Immersion mode (Esc to exit)",
       "canvas.font.title": "Corpus typeface: serif / typewriter",
       "canvas.linenum.title": "Line numbers",
-      "canvas.empty": "The corpus is empty. Import a PDF, DOCX or TXT from the top area.",
+      "canvas.empty": "The corpus is empty. Import a PDF, DOCX, DOC or TXT from the top area.",
       "canvas.all": "ALL",
       "search.title": "SEARCH THE CORPUS",
       "search.placeholder": "{mod}F · text to find…",
@@ -769,7 +769,7 @@ const I18N = {
       "app.manual.title": "Manual de uso e atalhos",
       "app.dark.title": "Modo escuro / claro",
 
-      "import.label": "📥 IMPORTAR CORPUS: PDF, DOCX ou TXT",
+      "import.label": "📥 IMPORTAR CORPUS: PDF, DOCX, DOC ou TXT",
       "import.hint": "Você pode escolher vários arquivos de uma vez. Tudo fica no seu computador.",
       "import.progress": "Importando {name} ({i} de {n})…",
       "import.done": "Importado: {name}",
@@ -787,7 +787,7 @@ const I18N = {
       "canvas.immersion.title": "Modo imersão (Esc para sair)",
       "canvas.font.title": "Tipografia do corpus: serifada / máquina de escrever",
       "canvas.linenum.title": "Numeração de linhas",
-      "canvas.empty": "O corpus está vazio. Importe um PDF, DOCX ou TXT pela área superior.",
+      "canvas.empty": "O corpus está vazio. Importe um PDF, DOCX, DOC ou TXT pela área superior.",
       "canvas.all": "TODOS",
       "search.title": "BUSCAR NO CORPUS",
       "search.placeholder": "{mod}F · texto a buscar…",

@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — User manual (v1.12)
+# CUA-LIBRE STUDIO — User manual (v1.13)
 
 A complete guide to the commands and workflows for qualitative analysis.
 
@@ -43,10 +43,17 @@ If the app is already running and you open it again, it simply reuses that insta
 
 ## 3. Importing the corpus (top strip)
 
-Choose **PDF, DOCX or TXT** files (you can select several). Each document is added to the corpus with its name as a heading. Errors (a damaged file, a scanned PDF without text) are reported without touching what has already been imported.
+Choose **PDF, DOCX, DOC or TXT** files (you can select several). Each document is added to the corpus with its name as a heading. Errors (a damaged file, a scanned PDF without text) are reported without touching what has already been imported.
 
-- **DOCX**: paragraphs are read, and so are **tables** (many transcripts come as
-  speaker | turn tables), in the order in which they appear.
+- **Word (DOCX and DOC)**: paragraphs are read, and so are **tables** (many transcripts
+  come as speaker | turn tables), in the order in which they appear. **Notes** (footnotes
+  and endnotes) and **text boxes** are placed at the end of the document. Headers, footers
+  and comments are not imported.
+- **DOC** is the Word 97-2003 format: it is read directly, without Word installed and
+  without converting anything by hand. A `.doc` that is really RTF inside is accepted too.
+  If the file has pending **tracked changes**, accept or reject them in Word before
+  importing: in a `.doc`, deleted text still appears. Password-protected documents and
+  those older than Word 97 must first be saved as `.docx`.
 - **TXT**: UTF-8 (with or without BOM) and Windows Notepad's "ANSI" format are accepted;
   Windows line breaks are normalised automatically.
 - **Scanned PDFs (OCR)**: if a page is only an image, Cua-libre recognises its text with the
@@ -334,7 +341,7 @@ Put your audio files (mp3, m4a, ogg, wav, flac) in the `musica/` folder next to 
 
 ## 18. Troubleshooting
 
-- **The Mac says the app cannot be opened**: the first time, right-click → Open (the app is not signed with an Apple certificate).
+- **The Mac says the app cannot be opened**: this happens only the first time, because the app is not signed with an Apple certificate. On macOS 15 (Sequoia) or later: *System Settings → Privacy & Security → Open Anyway*. On macOS 14 or earlier: right-click the app → Open.
 - **It does not open on another Mac / nothing happens**: most likely it is the **wrong DMG for its chip**. There are two installers: one for **Intel** Macs and one for **Apple Silicon (M1/M2/M3/M4)** Macs, and they are not interchangeable (unlike Rosetta, which only translates Intel → Apple Silicon, never the reverse). On that Mac, go to the  menu → *About This Mac* to see which chip it has, and download the matching DMG. **macOS 10.15 (Catalina) or later** is also required.
 - **Windows SmartScreen shows a warning**: "More info → Run anyway".
 - **The browser does not open by itself**: go to `http://127.0.0.1:8734` manually.

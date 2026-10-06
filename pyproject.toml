@@ -1,6 +1,6 @@
 [project]
 name = "cualibre"
-version = "1.12.1"
+version = "1.13.0"
 description = "CUA-LIBRE STUDIO — Estudio de análisis cualitativo (QDA/CAQDAS) local"
 requires-python = ">=3.12,<3.13"
 dependencies = [
@@ -26,6 +26,7 @@ dependencies = [
     "winrt-Windows.Globalization>=2.2; sys_platform == 'win32'",
     "winrt-Windows.Foundation>=2.2; sys_platform == 'win32'",
     "winrt-Windows.Foundation.Collections>=2.2; sys_platform == 'win32'",
+    "olefile>=0.47",
 ]
 
 [dependency-groups]

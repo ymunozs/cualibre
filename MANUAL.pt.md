@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v1.12)
+# CUA-LIBRE STUDIO — Manual de uso (v1.13)
 
 Guia completo de comandos e fluxos para a análise qualitativa.
 
@@ -44,10 +44,17 @@ Se o aplicativo já estava rodando e você o abre de novo, ele simplesmente reut
 
 ## 3. Importar o corpus (faixa superior)
 
-Escolha arquivos **PDF, DOCX ou TXT** (você pode selecionar vários). Cada documento é somado ao corpus com seu nome como título. Erros (arquivo danificado, PDF digitalizado sem texto) são avisados sem mexer no que já foi importado.
+Escolha arquivos **PDF, DOCX, DOC ou TXT** (você pode selecionar vários). Cada documento é somado ao corpus com seu nome como título. Erros (arquivo danificado, PDF digitalizado sem texto) são avisados sem mexer no que já foi importado.
 
-- **DOCX**: são lidos os parágrafos e também as **tabelas** (muitas transcrições vêm em
-  tabelas falante | fala), na ordem em que aparecem.
+- **Word (DOCX e DOC)**: são lidos os parágrafos e também as **tabelas** (muitas
+  transcrições vêm em tabelas falante | fala), na ordem em que aparecem. As **notas** (de
+  rodapé e de fim) e as **caixas de texto** ficam no final do documento. Cabeçalhos,
+  rodapés e comentários não são importados.
+- **DOC** é o formato do Word 97-2003: é lido diretamente, sem ter o Word instalado e sem
+  converter nada à mão. Também são aceitos os `.doc` que por dentro são RTF. Se o arquivo
+  tiver **controle de alterações** pendente, aceite ou rejeite as alterações no Word antes
+  de importar: em um `.doc`, o texto excluído ainda aparece. Documentos com senha e
+  anteriores ao Word 97 precisam ser salvos antes como `.docx`.
 - **TXT**: são aceitos UTF-8 (com ou sem BOM) e o formato "ANSI" do Bloco de Notas do
   Windows; as quebras de linha do Windows são normalizadas automaticamente.
 - **PDFs digitalizados (OCR)**: se uma página é só imagem, o Cua-libre reconhece o texto
@@ -332,7 +339,7 @@ Coloque seus arquivos de áudio (mp3, m4a, ogg, wav, flac) na pasta `musica/` ju
 
 ## 18. Solução de problemas
 
-- **O Mac diz que o aplicativo não pode ser aberto**: na primeira vez, clique com o botão direito → Abrir (o aplicativo não está assinado com certificado da Apple).
+- **O Mac diz que o aplicativo não pode ser aberto**: acontece só na primeira vez, porque o aplicativo não está assinado com certificado da Apple. No macOS 15 (Sequoia) ou posterior: *Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim*. No macOS 14 ou anterior: clique com o botão direito no aplicativo → Abrir.
 - **Não abre em outro Mac / não acontece nada**: o mais provável é o **DMG errado para o chip**. Há dois instaladores: um para Mac **Intel** e outro para Mac **Apple Silicon (M1/M2/M3/M4)**, e eles não são intercambiáveis (ao contrário do Rosetta, que só traduz Intel → Apple Silicon, nunca o inverso). Nesse Mac, vá ao menu  → *Sobre Este Mac* para ver qual é o chip, e baixe o DMG correspondente. Também é preciso **macOS 10.15 (Catalina) ou superior**.
 - **O Windows SmartScreen mostra um aviso**: "Mais informações → Executar assim mesmo".
 - **O navegador não abre sozinho**: acesse manualmente `http://127.0.0.1:8734`.

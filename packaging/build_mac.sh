@@ -4,7 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="${1:-1.0}"
+# La versión sale de pyproject.toml: un solo lugar que actualizar
+VERSION="${1:-$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)}"
 APP_NAME="CUA-LIBRE Studio"
 
 # Piso real de compatibilidad, verificado con otool -l sobre los binarios
@@ -28,8 +29,10 @@ MACOSX_DEPLOYMENT_TARGET="$MACOS_MIN" uv run pyinstaller --noconfirm --clean --w
   --osx-bundle-identifier cl.cualibre.studio \
   run.py
 
-echo "▶ Declarando compatibilidad mínima (macOS $MACOS_MIN) en Info.plist…"
+echo "▶ Declarando versión $VERSION y compatibilidad mínima (macOS $MACOS_MIN) en Info.plist…"
 plutil -replace LSMinimumSystemVersion -string "$MACOS_MIN" "dist/$APP_NAME.app/Contents/Info.plist"
+plutil -replace CFBundleShortVersionString -string "$VERSION" "dist/$APP_NAME.app/Contents/Info.plist"
+plutil -replace CFBundleVersion -string "$VERSION" "dist/$APP_NAME.app/Contents/Info.plist"
 
 # CRÍTICO: PyInstaller ya firmó el bundle (ad-hoc) al construirlo. Tocar el
 # Info.plist DESPUÉS invalida esa firma ("invalid Info.plist (plist or
@@ -42,6 +45,9 @@ codesign --force --deep --sign - "dist/$APP_NAME.app"
 codesign --verify --deep --strict "dist/$APP_NAME.app"
 echo "  ✔ Firma ad-hoc válida"
 
+echo "▶ Probando la app empaquetada (arranca, importa un .doc, guarda)…"
+./packaging/smoke_test.sh "dist/$APP_NAME.app"
+
 # El binario resultante SOLO corre en la arquitectura donde se compiló
 # (PyInstaller empaqueta las wheels nativas ya instaladas, de un solo arco).
 # Cada DMG debe nombrarse según su arquitectura real — verificado con lipo,
@@ -53,13 +59,15 @@ case "$ARCH" in
   *) echo "⚠ Arquitectura inesperada: $ARCH — abortando para no publicar un DMG mal etiquetado"; exit 1 ;;
 esac
 
-echo "▶ DMG ($ARCH → $TAG)…"
+# Nombre fijo, sin versión: así los enlaces de descarga del README
+# (releases/latest/download/…) sirven para todas las versiones.
+DMG="dist/CUA-LIBRE-Studio-$TAG.dmg"
+echo "▶ DMG ($ARCH → $TAG, versión $VERSION)…"
 STAGING="$(mktemp -d)"
 cp -R "dist/$APP_NAME.app" "$STAGING/"
 ln -s /Applications "$STAGING/Applications"
-hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING" -ov -format UDZO \
-  "dist/CUA-LIBRE-Studio-$VERSION-$TAG.dmg"
+hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING" -ov -format UDZO "$DMG"
 rm -rf "$STAGING"
 
-echo "✔ Listo: dist/CUA-LIBRE-Studio-$VERSION-$TAG.dmg"
-echo "  (App sin firmar: la primera vez, clic derecho → Abrir)"
+echo "✔ Listo: $DMG (versión $VERSION)"
+echo "  (App sin firma de Apple: la primera vez hay que autorizarla, ver README)"
