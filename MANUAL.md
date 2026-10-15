@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v1.13)
+# CUA-LIBRE STUDIO — Manual de uso (v2.0)
 
 Guía completa de comandos y flujos para el análisis cualitativo.
 
@@ -193,6 +193,30 @@ Todo es **auditable**: cada puntaje viene acompañado de las palabras que lo pro
   ("Analizando el corpus: 12 de 60 documentos…"). El resultado queda guardado: las
   siguientes consultas, incluso en otra sesión, son inmediatas.
 
+### Ajustar el léxico a tu corpus
+
+El léxico es general y traducido: en un corpus concreto algunas palabras no significan lo
+que el léxico supone (en una escuela, *maestro* no es necesariamente «confianza») y otras
+que sí cargan emoción no están. Por eso puedes ajustarlo, palabra por palabra.
+
+- En **AJUSTAR EL LÉXICO** aparecen las ocho emociones y las dos polaridades (positivas y
+  negativas), cada una con su número de menciones. Un clic abre la lista completa de sus
+  palabras en tu corpus (también un clic en una barra de **EMOCIONES DETECTADAS**).
+- **✕ DESCARTAR** quita esa palabra de la emoción o polaridad en todo el análisis. Queda
+  en la lista **DESCARTADAS**, con **↺ RESTAURAR** para devolverla.
+- **＋ SUMAR** agrega una palabra que falta. Se busca en el corpus por su forma y por su
+  lema (sumar *pelear* encuentra también *peleaban*), con la misma regla de negación del
+  léxico. Un participio usado como adjetivo (*agobiado*) se suma tal cual: su lema es
+  él mismo. Si no aparece, Cua-libre te avisa y el ajuste queda guardado igual.
+- Cada ajuste recalcula todo al instante: valencias, arcos, tono por categoría y por
+  código, emociones, palabras con carga y el tono que muestra el organizador de
+  Relaciones.
+- **TUS AJUSTES AL LÉXICO** resume todo lo cambiado y permite deshacer cada ajuste o
+  volver al léxico original. Los ajustes se guardan por proyecto y por idioma del corpus.
+- Transparencia: el reporte académico declara los ajustes en la nota metodológica y los
+  detalla en la sección de sentimiento. Descartar y sumar son decisiones analíticas
+  tuyas: conviene registrarlas también en tus memos.
+
 ### Cómo se produce el análisis (racionalidad y método)
 
 Cua-libre está diseñado para **promover decisiones 100% humanas**: el análisis de
@@ -259,15 +283,87 @@ El banco de códigos completo, con buscador y fusión (antes vivía dentro de la
 - Con miles de códigos, el banco se dibuja por tandas: **Mostrar más** al final de la
   lista carga la siguiente.
 
-## 11. ◈ Relaciones
+## 11. ▥ Libro de códigos
 
-1. Elige código origen → **tipo** → código destino → **◉ CREAR RELACIÓN**.
+El lugar para dar contenido a cada código y a cada categoría: lo que en investigación
+cualitativa se llama libro de códigos (*codebook*).
+
+- A la izquierda, el **índice**: cada categoría con sus códigos, la cantidad de citas y
+  una marca ● (ya descrito) u ○ (sin describir). Arriba, el buscador y el avance
+  («3 de 11 códigos descritos»).
+- A la derecha, la **ficha** del código elegido, con cuatro apartados: **definición**,
+  **cuándo usarlo** (criterios de inclusión), **cuándo no usarlo** (criterios de
+  exclusión y diferencias con códigos cercanos) y **ejemplo**. El ejemplo puede tomarse
+  directamente de una de sus citas con el selector de abajo.
+- Las categorías (Básicas y propias) tienen su propia ficha: definición, cuándo usarla y
+  cuándo no.
+- Se guarda solo mientras escribes y al salir del campo (verás «✓ Guardado»). No hay que
+  apretar nada.
+- La ficha reúne además lo que ya existe sobre el código: los memos de sus citas, sus
+  relaciones y sus primeras citas, con **VER LAS CITAS** para leerlas todas.
+- **◀ ANTERIOR / SIGUIENTE ▶** recorren el libro ficha por ficha, como un libro.
+- Si un código se queda sin citas (lo borraste o deshiciste la codificación), su
+  descripción **no se pierde**: pasa a **DESCRIPCIONES SIN CÓDIGO** y vuelve sola si
+  codificas otra vez con ese nombre. Al **fusionar** códigos, las dos descripciones se
+  suman en la del destino.
+- **⬇ CSV** descarga el libro completo como tabla. El libro también va en el respaldo
+  .zip, en el intercambio REFI-QDA (como descripción de cada código) y en el reporte
+  académico.
+
+## 12. ◈ Relaciones
+
+1. Elige el origen → **tipo** → el destino → **◉ CREAR RELACIÓN**. Origen y destino
+   pueden ser **códigos** o **categorías** (los selectores muestran ambos grupos):
+   puedes relacionar un código con una categoría o dos categorías entre sí.
 2. Tipos: **jerarquía** (contiene a), **asociación**, **causalidad** (influye en), **contradicción** (tensiona con).
-3. **Organizador (grafo)**: nodos coloreados por dominio, aristas con estilo y letra por tipo (J/A/C/T). Exportable con **⬇ PNG** (para insertar en documentos) o **⬇ SVG** (editable en Illustrator/Inkscape).
-4. **Árbol de jerarquía**: se arma solo desde las relaciones "contiene a".
-5. Si un código desaparece del proyecto, sus relaciones se limpian automáticamente.
+3. **Organizador (grafo)**: los códigos son círculos y las categorías, cuadrados; las
+   aristas llevan estilo y letra por tipo (J/A/C/T). Exportable con **⬇ PNG** (para
+   insertar en documentos) o **⬇ SVG** (editable en Illustrator/Inkscape).
+4. **Manipular el esquema**: arrastra cualquier nodo para ordenarlo; las posiciones se
+   guardan. Para mover varios a la vez, elígelos con **Shift + clic** o arrastrando un
+   rectángulo sobre el fondo vacío, y arrastra cualquiera de ellos: el grupo se mueve
+   junto. **↶ DESHACER MOVIMIENTO** devuelve los nodos a donde estaban (no toca colores
+   ni formas). **↺ REORDENAR** vuelve a la disposición en círculo. En Relaciones, ⌘Z
+   no deshace codificaciones: usa el botón.
+   - **Simbología**: Cua-libre propone una simbología nativa (● código, ■ CATEGORÍA con
+     borde grueso y nombre en mayúsculas). En el panel de un nodo, **FORMA** permite
+     elegir círculo, cuadrado, rombo, hexágono o **caja con el nombre adentro**, para uno
+     o para todos los seleccionados; **Nativa** la restaura. Las categorías conservan su
+     borde grueso con cualquier forma, y la leyenda muestra las formas en uso.
+   - **Bloquear**: **🔒 BLOQUEAR** en el panel fija los nodos elegidos (un candado lo
+     indica); no se arrastran y REORDENAR los respeta. **🔒 BLOQUEAR CUADRO** fija el
+     cuadro entero, útil antes de exportar o presentar: se pueden seguir cambiando
+     colores y formas, pero nada se mueve.
+   - **⛶ AMPLIAR** lleva el organizador casi a pantalla completa, con el creador de
+     relaciones incluido; **Esc** o **✕ SALIR DE AMPLIADO** vuelve.
+   - **Tipos de línea**: la jerarquía es una línea gruesa con un rombo en el origen (A
+     contiene a B: ordena categorías y subcódigos), la asociación es de guiones (vínculo
+     sin afirmar causa), la causalidad es seguida con flecha (A produce o condiciona B) y
+     la contradicción es de puntos con una marca de choque (oposiciones y tensiones). Al
+     elegir el tipo aparece una guía de cuándo usarlo, y la leyenda los dibuja.
+5. **Cambiar colores y sentido**: clic en un nodo o en una relación (su letra o su línea) abre un
+   panel bajo el organizador con el selector de **COLOR**. **↺ COLOR DE SU CATEGORÍA** y
+   **↺ NEGRO** deshacen el cambio. En una relación, **⇄ INVERTIR SENTIDO** cambia A → B
+   por B → A sin perder su color. El color es solo del cuadro: no cambia el color de la
+   categoría en el resto de la app. El tipo de relación sigue distinguiéndose por el
+   trazo y la letra, nunca solo por el color.
+6. **Varios cuadros por proyecto**: **CUADRO** elige cuál ver. El **general** muestra
+   siempre todas las relaciones. **+ NUEVO** crea un cuadro propio, que empieza vacío y
+   muestra solo lo que pongas en él: **＋ AÑADIR** suma un código o una categoría, y cada
+   relación que crees con ese cuadro abierto agrega sus dos extremos. Útil para armar un
+   esquema por pregunta de investigación o por capítulo. Las relaciones son del
+   proyecto: **＋ TRAER RELACIÓN** suma al cuadro una que ya existe, y crear con el
+   cuadro abierto una relación que ya existía también la trae (no se duplica). ✎ renombra y 🗑 elimina el
+   cuadro (las relaciones se conservan en el proyecto).
+7. **◑ TONO**: muestra sobre cada nodo la valencia media de sus citas (de −1 a +1) y
+   cuántas son, con tus ajustes del léxico (ver ◑ Sentimiento). Requiere el léxico
+   instalado.
+8. **Árbol de jerarquía**: se arma solo desde las relaciones "contiene a".
+9. Si un código o una categoría propia desaparece del proyecto, sus relaciones y sus
+   nodos en los cuadros se limpian automáticamente; al fusionar códigos, migran al
+   nombre nuevo.
 
-## 12. ⚖ Acuerdo entre codificadores
+## 13. ⚖ Acuerdo entre codificadores
 
 Compara la codificación de dos personas sobre el mismo corpus, como apoyo a la discusión
 metodológica del equipo.
@@ -285,14 +381,15 @@ orientativos. Clic en un código muestra los **fragmentos en desacuerdo** (quié
 codificó y dónde), con salto al Canvas para discutirlos. **⬇ CSV** exporta la tabla.
 Nada de esto modifica el banco de códigos: las decisiones siguen siendo del equipo.
 
-## 13. ⇄ Exportar
+## 14. ⇄ Exportar
 
 Tabla completa del banco y **descarga CSV** en UTF-8 con BOM: abre en Excel con tildes y ñ intactas. Columnas: id, fecha, documento, dominio, código, cita, memo.
 
 **📄 Reporte académico**: genera un documento HTML autocontenido con TODO el proyecto —
 nota metodológica con citas formales (y la declaración de análisis 100% humano), libro de
-códigos, citas agrupadas por dominio y código con sus memos, gráficos, matrices de
-co-ocurrencia, organizador de relaciones y análisis de sentimiento. Se abre en una pestaña
+códigos con sus definiciones, citas agrupadas por dominio y código con sus memos,
+gráficos, matrices de co-ocurrencia, todos los cuadros organizadores y análisis de
+sentimiento con tus ajustes del léxico. Se abre en una pestaña
 nueva: **⌘P** para guardarlo como PDF (anexo listo para tesis o paper) o **⌘S** para
 guardar el HTML.
 
@@ -308,26 +405,26 @@ informa si hubo fuentes que no son texto (imagen, audio, video) y quedaron fuera
 
 **🗄 Respaldo completo (.zip)**: un archivo autocontenido con el proyecto entero —
 `proyecto.json` (fidelidad total: corpus, códigos, relaciones, memos, categorías propias;
-se reabre con **⤒ IMPORTAR**), `codigos.csv` y el texto de cada
+se reabre con **⤒ IMPORTAR**), `codigos.csv`, `libro_de_codigos.csv` y el texto de cada
 documento en `.txt`. Pensado para depositar como evidencia de reproducibilidad al
 publicar, o como copia portable independiente de la app.
 
-## 14. 📚 Literatura
+## 15. 📚 Literatura
 
 Búsqueda por conceptos en **OpenAlex** (título, año, citas, enlace DOI). Junto con la descarga única del léxico de sentimiento, es lo único que requiere internet; si no hay conexión, el resto de la app sigue igual.
 
-## 15. ◷ Sesión de foco
+## 16. ◷ Sesión de foco
 
 Al abrir la app (o con clic en **◷ sesión** en la barra inferior) puedes fijar una **meta**
 ("codificar la entrevista 3") y un bloque de **15/25/50/90 minutos** — u **OMITIR**. El
 indicador muestra el tiempo restante y cuántos códigos llevas en la sesión; al terminar,
 un aviso suave sugiere la pausa (sin alarmas).
 
-## 16. ♫ Música de foco (barra inferior)
+## 17. ♫ Música de foco (barra inferior)
 
 Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` junto a tus datos — **clic en el título de la barra** te muestra la ruta exacta. `▶` reproduce en bucle, `⏭` salta de pista, y el volumen se recuerda.
 
-## 17. Tabla rápida de atajos
+## 18. Tabla rápida de atajos
 
 | Atajo | Acción |
 |-------|--------|
@@ -339,7 +436,7 @@ Deja tus archivos de audio (mp3, m4a, ogg, wav, flac) en la carpeta `musica/` ju
 | `⌘Z` / `Ctrl+Z` | Deshacer última codificación |
 | Arrastrar selección → código del banco | Re-aplicar ese código |
 
-## 18. Solución de problemas
+## 19. Solución de problemas
 
 - **Mac dice que la app no se puede abrir**: pasa solo la primera vez, porque la app no está firmada con certificado de Apple. En macOS 15 (Sequoia) o posterior: *Configuración del Sistema → Privacidad y seguridad → Abrir de todos modos*. En macOS 14 o anterior: clic derecho sobre la app → Abrir.
 - **En otra Mac no abre / no dice nada**: lo más probable es que sea el **DMG equivocado para su chip**. Hay dos instaladores: uno para Mac **Intel** y otro para Mac **Apple Silicon (M1/M2/M3/M4)** — no son intercambiables (a diferencia de Rosetta, que solo traduce Intel→Apple Silicon, nunca al revés). En esa Mac, ve a menú  → *Acerca de esta Mac* para ver qué chip tiene, y descarga el DMG correspondiente. Además, se necesita **macOS 10.15 (Catalina) o superior**.

@@ -22,10 +22,20 @@ const Reporte = {
       s4: "4. Distribución y densidad",
       s5: "5. Co-ocurrencia de códigos", coocNeed: "Se requieren 2+ códigos anclados.",
       byDoc: "Códigos por documento",
-      s6: "6. Relaciones entre códigos", noRels: "Sin relaciones registradas.",
+      s6: "6. Relaciones entre códigos y categorías", noRels: "Sin relaciones registradas.",
       tree: "Árbol de jerarquía",
       s7: "7. Análisis de sentimiento (léxico NRC, {language})", noDocs: "Sin documentos.",
       toneDomain: "Tono por categoría", emotions: "Emociones detectadas",
+      book: "Cada código y categoría se describe con la estructura habitual de un libro de códigos (MacQueen et al., 1998, <em>CAM Journal</em>, 10(2), 31–36, https://doi.org/10.1177/1525822X980100020301): definición, cuándo usarlo, cuándo no y un ejemplo. Las descripciones son del investigador.",
+      bookNone: "Sin descripción registrada.",
+      bookOrphans: "Descripciones de códigos que ya no tienen citas",
+      fDefinition: "Definición", fInclusion: "Cuándo usarlo", fExclusion: "Cuándo no usarlo", fExample: "Ejemplo",
+      quotesN: "{n} cita(s)",
+      boards: "Cuadros organizadores", boardsNote: "Cada cuadro es una vista del mismo conjunto de relaciones; los círculos son códigos y los cuadrados, categorías. Las posiciones y los colores son decisiones gráficas del investigador.",
+      toneNote: "Sobre cada nodo: valencia media de sus citas (−1 a +1) y número de citas, con el léxico ajustado.",
+      adjusted: "Para este corpus el investigador ajustó el léxico: {removed} palabra(s) descartada(s) y {added} sumada(s) en alguna emoción o polaridad (detalle en la sección 7). Las palabras sumadas se buscan por forma y por lema, con la misma regla de negación.",
+      adjustments: "Ajustes del investigador al léxico", colCategory: "Emoción o polaridad", colRemoved: "Descartadas", colAdded: "Sumadas",
+      positive: "positivas", negative: "negativas",
       footer: "Generado con CUA-LIBRE STUDIO · análisis 100% humano · {date}",
     },
     en: {
@@ -44,10 +54,20 @@ const Reporte = {
       s4: "4. Distribution and density",
       s5: "5. Code co-occurrence", coocNeed: "At least 2 anchored codes are needed.",
       byDoc: "Codes by document",
-      s6: "6. Relationships between codes", noRels: "No relationships recorded.",
+      s6: "6. Relationships between codes and categories", noRels: "No relationships recorded.",
       tree: "Hierarchy tree",
       s7: "7. Sentiment analysis (NRC lexicon, {language})", noDocs: "No documents.",
       toneDomain: "Tone by category", emotions: "Emotions detected",
+      book: "Each code and category is described with the usual codebook structure (MacQueen et al., 1998, <em>CAM Journal</em>, 10(2), 31–36, https://doi.org/10.1177/1525822X980100020301): definition, when to use it, when not to and an example. The descriptions are the researcher’s.",
+      bookNone: "No description recorded.",
+      bookOrphans: "Descriptions of codes that no longer have quotes",
+      fDefinition: "Definition", fInclusion: "When to use it", fExclusion: "When not to use it", fExample: "Example",
+      quotesN: "{n} quote(s)",
+      boards: "Boards", boardsNote: "Each board is a view of the same set of relationships; circles are codes and squares are categories. Positions and colours are the researcher’s graphic choices.",
+      toneNote: "On each node: mean valence of its quotes (−1 to +1) and number of quotes, with the adjusted lexicon.",
+      adjusted: "For this corpus the researcher adjusted the lexicon: {removed} word(s) discarded and {added} added in some emotion or polarity (details in section 7). Added words are matched by form and by lemma, with the same negation rule.",
+      adjustments: "Researcher’s adjustments to the lexicon", colCategory: "Emotion or polarity", colRemoved: "Discarded", colAdded: "Added",
+      positive: "positive", negative: "negative",
       footer: "Generated with CUA-LIBRE STUDIO · 100% human analysis · {date}",
     },
     pt: {
@@ -66,10 +86,20 @@ const Reporte = {
       s4: "4. Distribuição e densidade",
       s5: "5. Coocorrência de códigos", coocNeed: "São necessários 2 ou mais códigos ancorados.",
       byDoc: "Códigos por documento",
-      s6: "6. Relações entre códigos", noRels: "Nenhuma relação registrada.",
+      s6: "6. Relações entre códigos e categorias", noRels: "Nenhuma relação registrada.",
       tree: "Árvore de hierarquia",
       s7: "7. Análise de sentimento (léxico NRC, {language})", noDocs: "Sem documentos.",
       toneDomain: "Tom por categoria", emotions: "Emoções detectadas",
+      book: "Cada código e categoria é descrito com a estrutura habitual de um livro de códigos (MacQueen et al., 1998, <em>CAM Journal</em>, 10(2), 31–36, https://doi.org/10.1177/1525822X980100020301): definição, quando usar, quando não usar e um exemplo. As descrições são do pesquisador.",
+      bookNone: "Sem descrição registrada.",
+      bookOrphans: "Descrições de códigos que já não têm citações",
+      fDefinition: "Definição", fInclusion: "Quando usar", fExclusion: "Quando não usar", fExample: "Exemplo",
+      quotesN: "{n} citação(ões)",
+      boards: "Quadros organizadores", boardsNote: "Cada quadro é uma vista do mesmo conjunto de relações; os círculos são códigos e os quadrados, categorias. Posições e cores são escolhas gráficas do pesquisador.",
+      toneNote: "Sobre cada nó: valência média das suas citações (−1 a +1) e número de citações, com o léxico ajustado.",
+      adjusted: "Para este corpus o pesquisador ajustou o léxico: {removed} palavra(s) descartada(s) e {added} somada(s) em alguma emoção ou polaridade (detalhe na seção 7). As palavras somadas são buscadas por forma e por lema, com a mesma regra de negação.",
+      adjustments: "Ajustes do pesquisador ao léxico", colCategory: "Emoção ou polaridade", colRemoved: "Descartadas", colAdded: "Somadas",
+      positive: "positivas", negative: "negativas",
       footer: "Gerado com o CUA-LIBRE STUDIO · análise 100% humana · {date}",
     },
   },
@@ -111,6 +141,7 @@ const Reporte = {
       // Sin léxico instalado para el idioma del corpus, la sección queda vacía
       const sentiment = raw.lexicon_missing
         ? { documents: [], domains: [], emotions: [], lexicon_size: 0 } : raw;
+      const overrides = (raw && raw.overrides) || { removed: {}, added: {} };
       const lexiconParams = { language: I18N.t(`langname.${lexiconLang}`),
         n: (sentiment.lexicon_size || 0).toLocaleString(I18N.locale) };
       const r = (key, params) => this.r(key, params);
@@ -129,7 +160,7 @@ const Reporte = {
       const domainsHtml = detached(box => Charts.diverging(box, Views.sentimentDomains(sentiment)));
       const emotionsHtml = detached(box => Charts.hbar(box, Views.sentimentEmotions(sentiment)));
 
-      // Libro de códigos y citas agrupadas por dominio → código
+      // Libro de códigos (FR-084) y citas agrupadas por dominio → código
       const byDomain = new Map();
       for (const code of project.codes) {
         if (!byDomain.has(code.domain)) byDomain.set(code.domain, new Map());
@@ -137,18 +168,35 @@ const Reporte = {
         if (!byName.has(code.name)) byName.set(code.name, []);
         byName.get(code.name).push(code);
       }
+      const codebook = project.codebook || {};
+      const notes = project.category_notes || {};
+      const entryHtml = (entry, fields) => {
+        if (!entry) return "";
+        const rows = fields.filter(f => (entry[f] || "").trim()).map(f =>
+          `<dt>${r("f" + f[0].toUpperCase() + f.slice(1))}</dt><dd>${this.esc(entry[f].trim()).replace(/\n/g, "<br>")}</dd>`);
+        return rows.length ? `<dl class="libro">${rows.join("")}</dl>` : "";
+      };
+      const allFields = ["definition", "inclusion", "exclusion", "example"];
       let libro = "", citas = "";
-      for (const domain of Object.keys(State.domains)) {
+      const written = new Set(); // un código en dos categorías: su descripción una sola vez
+      const domainKeys = [...Object.keys(State.domains), ...[...byDomain.keys()].filter(k => !(k in State.domains))];
+      for (const domain of domainKeys) {
         const byName = byDomain.get(domain);
-        if (!byName) continue;
-        const chip = `<span class="chip" style="background:${State.domains[domain]}"></span>`;
+        if (!byName && !notes[domain]) continue;
+        const chip = `<span class="chip" style="background:${State.domains[domain] || "#999"}"></span>`;
         const label = this.esc(I18N.domain(domain));
-        libro += `<h3>${chip} ${label}</h3><table><tr><th>${r("colCode")}</th><th>${r("colQuotes")}</th><th>${r("colMemos")}</th></tr>`;
+        libro += `<h3>${chip} ${label}</h3>${entryHtml(notes[domain], ["definition", "inclusion", "exclusion"])}`;
+        if (!byName) continue;
         citas += `<h3>${chip} ${label}</h3>`;
         for (const [name, instances] of byName) {
           const memos = instances.map(c => c.memo).filter(Boolean);
-          libro += `<tr><td><strong>${this.esc(name)}</strong></td><td>${instances.filter(c => c.quote).length}</td><td>${memos.map(m => this.esc(m)).join("<br>") || "—"}</td></tr>`;
           const quoted = instances.filter(c => c.quote);
+          const description = written.has(name) ? "" : entryHtml(codebook[name], allFields);
+          written.add(name);
+          libro += `<div class="codigo"><h4>${this.esc(name)} <span class="meta">· ${r("quotesN", { n: quoted.length })}</span></h4>`
+            + (description || `<p class="meta">${r("bookNone")}</p>`)
+            + (memos.length ? `<p class="memos"><strong>${r("colMemos")}:</strong> ${memos.map(m => this.esc(m)).join(" · ")}</p>` : "")
+            + "</div>";
           if (quoted.length) {
             citas += `<h4>${this.esc(name)} (${quoted.length})</h4>`;
             for (const c of quoted) {
@@ -156,12 +204,43 @@ const Reporte = {
             }
           }
         }
-        libro += "</table>";
       }
+      const codeNames = new Set(project.codes.map(c => c.name));
+      const orphans = Object.keys(codebook).filter(n => !codeNames.has(n));
+      if (orphans.length) {
+        libro += `<h3>${r("bookOrphans")}</h3>` + orphans.map(n =>
+          `<div class="codigo"><h4>${this.esc(n)}</h4>${entryHtml(codebook[n], allFields)}</div>`).join("");
+      }
+
+      // Cuadros organizadores (FR-085): cada uno dibujado aparte, con su tono si lo muestra
+      let tones = null;
+      if (Relations.boards().some(b => b.show_tone)) {
+        try { tones = await Relations.fetchTones(); } catch (_) { tones = null; }
+      }
+      const boardsHtml = Relations.boards()
+        .filter(b => Relations.members(b).length)
+        .map(b => {
+          const withTone = !!(b.show_tone && tones && !tones.missing);
+          const svg = detached(box => Relations.drawBoard(box, b, { interactive: false, tones: withTone ? tones : null }));
+          return `<h3>${this.esc(Relations.boardName(b))}</h3><div class="grafico">${svg}</div>`
+            + `<div class="meta leyenda">${Relations.legendHtml(withTone, b)}</div>`
+            + (withTone ? `<p class="meta">${r("toneNote")}</p>` : "");
+        }).join("");
+
+      // Ajustes del léxico (FR-086): transparencia sobre lo que el investigador cambió
+      const catLabel = (c) => c === "positivo" ? r("positive") : c === "negativo" ? r("negative") : I18N.emotion(c);
+      const adjCats = [...new Set([...Object.keys(overrides.removed || {}), ...Object.keys(overrides.added || {})])];
+      const count = (group) => Object.values(overrides[group] || {}).reduce((n, w) => n + w.length, 0);
+      const adjustedNote = adjCats.length ? " " + r("adjusted", { removed: count("removed"), added: count("added") }) : "";
+      const adjustmentsHtml = adjCats.length
+        ? `<h3>${r("adjustments")}</h3><table><tr><th>${r("colCategory")}</th><th>${r("colRemoved")}</th><th>${r("colAdded")}</th></tr>`
+          + adjCats.map(c => `<tr><td>${this.esc(catLabel(c))}</td><td>${this.esc(((overrides.removed || {})[c] || []).join(", ")) || "—"}</td><td>${this.esc(((overrides.added || {})[c] || []).join(", ")) || "—"}</td></tr>`).join("")
+          + "</table>"
+        : "";
 
       // Relaciones: listado textual + organizador
       const relList = project.relations.map(rel =>
-        `<li>${this.esc(rel.source)} <em>${this.esc(I18N.relVerb(rel.type))}</em> ${this.esc(rel.target)}</li>`).join("");
+        `<li>${this.esc(Relations.nodeLabel(rel.source_kind, rel.source))} <em>${this.esc(I18N.relVerb(rel.type))}</em> ${this.esc(Relations.nodeLabel(rel.target_kind, rel.target))}</li>`).join("");
 
       const today = new Date().toLocaleDateString(I18N.locale, { year: "numeric", month: "long", day: "numeric" });
       const anchored = project.codes.filter(c => c.doc_id).length;
@@ -188,6 +267,17 @@ const Reporte = {
   svg { max-width: 100%; height: auto; }
   .grafico { border: 1px solid #ccc; padding: 10px; margin: 8px 0; page-break-inside: avoid; }
   .dos-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .codigo { margin: 8px 0 14px; padding-left: 12px; border-left: 2px solid #ccc; page-break-inside: avoid; }
+  .codigo h4 { margin-top: 6px; } .codigo .meta { font-weight: normal; }
+  dl.libro { margin: 4px 0; font-size: 0.9rem; }
+  dl.libro dt { font-family: "Courier New", monospace; font-size: 0.72rem; font-weight: bold;
+                text-transform: uppercase; letter-spacing: 0.05em; color: #444; margin-top: 6px; }
+  dl.libro dd { margin: 2px 0 0 0; }
+  .memos { font-size: 0.85rem; color: #333; }
+  .rel-legend-item { margin-right: 14px; }
+  .leyenda .rel-legend-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+  .leyenda .rel-sample { flex-shrink: 0; }
+  .leyenda .rel-legend-guide { color: #666; }
   @media print { .no-print { display: none; } body { padding: 0; } }
   .no-print { background: #000; color: #fff; padding: 10px 16px; font-family: monospace;
               font-size: 0.8rem; margin-bottom: 20px; }
@@ -200,9 +290,10 @@ const Reporte = {
 </header>
 
 <h2>${r("s1")}</h2>
-<p>${r("method", lexiconParams)}</p>
+<p>${r("method", lexiconParams)}${adjustedNote}</p>
 
 <h2>${r("s2")}</h2>
+<p>${r("book")}</p>
 ${libro || `<p>${r("noCodes")}</p>`}
 
 <h2>${r("s3")}</h2>
@@ -220,8 +311,7 @@ ${citas || `<p>${r("noQuotes")}</p>`}
 <div class="grafico">${frag("chart-doccode")}</div>
 
 <h2>${r("s6")}</h2>
-<div class="grafico">${frag("rel-graph")}</div>
-${frag("rel-legend") ? `<p class="meta">${frag("rel-legend")}</p>` : ""}
+${boardsHtml ? `<p class="meta">${r("boardsNote")}</p>${boardsHtml}` : ""}
 <ul>${relList || `<li>${r("noRels")}</li>`}</ul>
 <h3>${r("tree")}</h3>
 ${frag("rel-tree")}
@@ -232,6 +322,7 @@ ${arcsHtml || `<p>${r("noDocs")}</p>`}
   <div><h3>${r("toneDomain")}</h3><div class="grafico">${domainsHtml}</div></div>
   <div><h3>${r("emotions")}</h3><div class="grafico">${emotionsHtml}</div></div>
 </div>
+${adjustmentsHtml}
 
 <footer class="page"><hr>${r("footer", { date: today })}</footer>
 </body></html>`;

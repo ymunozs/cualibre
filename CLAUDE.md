@@ -80,6 +80,23 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
   abre la app, importa un .doc, actualiza y desinstala, también en rutas con tildes;
   `packaging/smoke_test.sh` hace lo equivalente con la .app de Mac. `cualibre.iss` y
   `smoke_test.ps1` llevan BOM UTF-8: no quitarlo.
+- v2.0 (FR-084..086): `Project.codebook`/`category_notes` (libro de códigos; nunca se
+  borran solos, migran al fusionar), `Relation.source_kind/target_kind` ("code" |
+  "category"; `_prune_relations` y `_remap_relations` respetan el tipo), `general_board`
+  (id 0, muestra todas las relaciones; sus nodos solo guardan posición/color) + `boards`
+  propios, y `sentiment_overrides[lang]` aplicados al puntuar (`sentiment.apply_overrides`)
+  sobre la caché v4, que guarda las posiciones negadas (`neg`): ajustar el léxico NO
+  vuelve a pasar el corpus por spaCy. Libro: `frontend/js/libro.js`.
+- **Simbología nativa de Cua-libre (regla de diseño, decisión del investigador
+  2026-10-15):** círculo = código, cuadrado = categoría (borde grueso, nombre en
+  mayúsculas). Es SIEMPRE la forma por defecto; el investigador puede elegir otra por
+  nodo (`BoardNode.shape`: circle, square, diamond, hexagon, box) y «Nativa» la restaura.
+  Las categorías conservan su borde grueso con cualquier forma. Trazos por tipo
+  (`Relations.STROKES`): jerarquía gruesa con rombo en el origen, asociación de guiones,
+  causalidad seguida con flecha, contradicción de puntos con marca de choque; el color
+  de una relación es solo un añadido. Los cuadros se guardan enteros (PUT): todo nodo
+  que se envíe pasa por `Relations._nodeOut` para no perder forma ni candado. En el
+  organizador ⌘Z NO deshace codificaciones (tiene «↶ DESHACER MOVIMIENTO»).
 - Windows sin WebView2: pywebview NO lanza error, recurre al motor de Internet Explorer
   y deja la ventana en blanco. `run.py` lo detecta (`window_engine_ok`) y usa el navegador.
 

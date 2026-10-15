@@ -20,6 +20,7 @@ Rendimiento: los tokens con carga de cada documento se calculan una sola vez
 from __future__ import annotations
 
 import bisect
+import re
 from collections import Counter
 
 from . import lexicons
@@ -65,6 +66,95 @@ def sentiment_records(doc, offset: int = 0, lang: str = "es") -> list[list]:
         word = lemma if lex.get(lemma) else text
         records.append([offset + token.idx, polarity, word, [] if negated else list(emos)])
     return records
+
+
+def negated_starts(doc, offset: int = 0, lang: str = "es") -> list[int]:
+    """Posiciones de las palabras que caen bajo una negación (misma ventana y
+    los mismos negadores que sentiment_records). Permite aplicar los ajustes
+    del investigador al léxico (FR-086) sin volver a pasar el corpus por spaCy."""
+    negators = NEGATORS.get(lang, set())
+    tokens = [t for t in doc if t.is_alpha or t.lower_ in negators]
+    starts = []
+    for i, token in enumerate(tokens):
+        if not token.is_alpha or token.lower_ in negators:
+            continue
+        if any(t.text.lower() in negators for t in tokens[max(0, i - WINDOW):i]):
+            starts.append(offset + token.idx)
+    return starts
+
+
+POLARITY_CATEGORIES = {"positivo": 1, "negativo": -1}
+
+
+def _word_pattern(word: str):
+    """La palabra exacta, sin importar mayúsculas, entre límites de letras."""
+    return re.compile(r"(?<![^\W\d_])" + re.escape(word) + r"(?![^\W\d_])", re.IGNORECASE)
+
+
+def apply_overrides(text: str, data: dict, overrides) -> list[list]:
+    """Tokens con carga tras los ajustes del investigador al léxico (FR-086).
+
+    - Descartar una palabra de una emoción le quita esa emoción; descartarla
+      de una polaridad la deja sin polaridad.
+    - Sumar una palabra la busca en el texto por forma (literal) o por lema
+      (sustantivos, verbos y adjetivos ya lematizados) y le da la emoción o
+      polaridad indicada. La negación se respeta igual que en el léxico: una
+      palabra negada invierte su polaridad y no aporta emociones.
+
+    data es el análisis guardado del documento (analysis.get). Sin ajustes,
+    devuelve los registros tal cual."""
+    records = data["sent"]
+    if overrides is None or overrides.is_empty():
+        return records
+    removed: dict[str, set] = {}
+    for category, words in overrides.removed.items():
+        for word in words:
+            removed.setdefault(word, set()).add(category)
+    added: dict[str, set] = {}
+    for category, words in overrides.added.items():
+        for word in words:
+            added.setdefault(word, set()).add(category)
+    negated = set(data.get("neg", ()))
+
+    # Registro de trabajo: [posición, polaridad base (antes de negar), palabra, emociones, negada]
+    work: dict[int, list] = {}
+    for position, polarity, word, emos in records:
+        is_negated = position in negated
+        work[position] = [position, -polarity if is_negated else polarity, word,
+                          list(emos), is_negated, set()]
+    if added:
+        by_lemma: dict[str, list[int]] = {}
+        for start, _end, _key, lemma, _form in data.get("pos", ()):
+            if lemma in added:
+                by_lemma.setdefault(lemma, []).append(start)
+        for word, categories in added.items():
+            starts = set(by_lemma.get(word, ()))
+            starts.update(m.start() for m in _word_pattern(word).finditer(text))
+            for start in starts:
+                entry = work.get(start)
+                if entry is None:  # palabra fuera del léxico: registro nuevo
+                    entry = work[start] = [start, 0, word, [], start in negated, set()]
+                entry[5] |= categories
+
+    adjusted = []
+    for position in sorted(work):
+        _, base, word, emos, is_negated, extra = work[position]
+        drop = removed.get(word, set())
+        extra = extra | added.get(word, set())
+        if (base > 0 and "positivo" in drop) or (base < 0 and "negativo" in drop):
+            base = 0
+        if extra & POLARITY_CATEGORIES.keys():
+            base = sum(POLARITY_CATEGORIES[c] for c in extra & POLARITY_CATEGORIES.keys())
+        if is_negated:
+            polarity, emotions = -base, []
+        else:
+            polarity = base
+            emotions = [e for e in emos if e not in drop]
+            emotions += sorted(c for c in extra
+                               if c not in POLARITY_CATEGORIES and c not in emotions)
+        if polarity or emotions:
+            adjusted.append([position, polarity, word, emotions])
+    return adjusted
 
 
 def score_records(records) -> dict:

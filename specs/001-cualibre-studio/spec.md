@@ -626,6 +626,46 @@ que se listan resultados con título, año, citas y DOI clicable.
   Windows sin WebView2 la aplicación MUST abrirse en el navegador, nunca en una ventana
   en blanco.
 
+### v2.0 — Libro de códigos, cuadros organizadores y ajustes del léxico (2026-10-15)
+
+- **FR-084**: El sistema MUST ofrecer un libro de códigos (pestaña ▥ LIBRO DE CÓDIGOS) con
+  todos los códigos y categorías del proyecto, donde el investigador escribe para cada uno
+  definición, cuándo usarlo, cuándo no y un ejemplo (para categorías: los tres primeros).
+  Guardado automático sin redibujar lo que se escribe. Las descripciones MUST NOT perderse
+  al borrar la última cita de un código, al deshacer ni al renombrar (se conservan como
+  descripciones sin código y se recuperan al volver a usar el nombre); al fusionar
+  códigos MUST sumarse en la del destino. MUST viajar en el respaldo .zip (CSV propio),
+  en REFI-QDA (Description) y en el reporte académico. Nada se completa solo
+  (Principio VIII).
+- **FR-085**: Las relaciones MUST admitir como extremos tanto códigos como categorías
+  (Básicas o propias). El organizador MUST permitir arrastrar los nodos (posiciones
+  guardadas), cambiar el color de nodos y relaciones como ajuste propio del cuadro (sin
+  tocar los colores de categoría; el tipo sigue marcado por trazo y letra) y crear varios
+  cuadros por proyecto: el general muestra siempre todas las relaciones; los propios,
+  solo los nodos elegidos y las relaciones entre ellos. Eliminar una categoría propia con
+  relaciones MUST pedir confirmación. Exportación PNG/SVG y árbol de jerarquía se
+  conservan; REFI-QDA exporta e importa los vínculos con categorías.
+- **FR-086**: En el análisis de sentimiento, el investigador MUST poder desplegar la lista
+  completa de palabras de cada emoción y polaridad, descartar palabras y sumar otras, por
+  proyecto e idioma. Toda modificación MUST repercutir en valencias, arcos, tono por
+  categoría y por código, emociones, palabras con carga y el tono emocional que el
+  organizador puede mostrar sobre sus nodos. Las palabras sumadas se buscan por forma y
+  lema con la misma regla de negación. Los ajustes MUST declararse en el reporte
+  académico (transparencia, Principio VIII).
+- **FR-087**: El organizador MUST usar por defecto la simbología nativa de Cua-libre
+  (círculo para códigos; cuadrado con borde grueso y nombre en mayúsculas para
+  categorías) y permitir elegir otra forma por nodo (círculo, cuadrado, rombo, hexágono,
+  caja con el nombre adentro) con opción de volver a la nativa; la leyenda MUST mostrar
+  la simbología nativa y las formas propias en uso. Cada tipo de relación MUST
+  reconocerse por su trazo, con leyenda dibujada y una guía de cuándo usarlo al crearla.
+  El investigador MUST poder seleccionar varios nodos (Shift + clic o rectángulo) y
+  moverlos juntos, deshacer movimientos sin afectar colores ni formas, bloquear nodos y
+  el cuadro entero, invertir el sentido de una relación y ampliar el organizador casi
+  a pantalla completa. En Relaciones, ⌘Z MUST NOT deshacer codificaciones.
+- **FR-088**: En un cuadro propio, el investigador MUST poder traer relaciones que ya
+  existen en el proyecto (selector «＋ TRAER RELACIÓN»); crear desde ese cuadro una
+  relación existente MUST traerla (sus dos extremos) en vez de dar error, sin duplicarla.
+
 ## Assumptions
 
 - Un solo usuario local (el investigador) por proyecto; no se requiere autenticación ni

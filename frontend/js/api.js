@@ -107,6 +107,24 @@ const API = {
   getRelationTypes: () => API._fetch("/api/relation-types"),
   createRelation: (payload) => API._json("POST", "/api/relations", payload),
   deleteRelation: (id) => API._fetch(`/api/relations/${id}`, { method: "DELETE" }),
+  bringRelation: (boardId, relationId) =>
+    API._fetch(`/api/boards/${boardId}/relations/${relationId}`, { method: "POST" }),
+  reverseRelation: (id) => API._fetch(`/api/relations/${id}/reverse`, { method: "POST" }),
+
+  // Libro de códigos (FR-084)
+  saveCodebook: (payload) => API._json("PUT", "/api/codebook", payload),
+  deleteCodebook: (kind, name) => API._fetch(
+    `/api/codebook?kind=${encodeURIComponent(kind)}&name=${encodeURIComponent(name)}&confirm=true`,
+    { method: "DELETE" }),
+
+  // Cuadros organizadores (FR-085)
+  createBoard: (name) => API._json("POST", "/api/boards", { name }),
+  updateBoard: (id, payload) => API._json("PUT", `/api/boards/${id}`, payload),
+  deleteBoard: (id) => API._fetch(`/api/boards/${id}?confirm=true`, { method: "DELETE" }),
+
+  // Ajustes del léxico de sentimiento (FR-086)
+  setSentimentOverrides: (lang, removed, added) =>
+    API._json("PUT", "/api/sentiment/overrides", { lang, removed, added }),
 
   // Música de foco (FR-040)
   music: () => API._fetch("/api/music"),

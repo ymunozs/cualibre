@@ -12,7 +12,10 @@ Correspondencias Cua-libre → REFI-QDA
   QualCoder. El Canvas trabaja en UTF-16: se convierte en ambos sentidos.
 - Memo de una cita → Note (PlainTextContent) referida desde la selección.
 - Código manual (sin cita) → código del libro con su memo en Description.
-- Relaciones → Links entre códigos (dirección OneWay, nombre = tipo).
+- Libro de códigos (definición, cuándo usar, cuándo no, ejemplo) → Description
+  del código o de la categoría, con sus apartados rotulados (v2.0).
+- Relaciones → Links entre códigos (dirección OneWay, nombre = tipo); una
+  categoría como extremo es el código padre de su rama (v2.0).
 
 Posiciones: el estándar cuenta puntos de código con saltos de línea de un
 carácter, pero NVivo para Windows cuenta unidades UTF-16 (un emoji vale 2) y
@@ -30,6 +33,8 @@ REFI-QDA → Cua-libre
 - El código de primer nivel de cada rama pasa a ser la categoría; los niveles
   intermedios se conservan como relaciones de jerarquía. Un código de primer
   nivel sin padre queda en la categoría propia «QDPX».
+- Description de un código o categoría → libro de códigos (v2.0). Los códigos
+  sin citas se crean además como códigos manuales con esa descripción de memo.
 """
 
 from __future__ import annotations
@@ -41,8 +46,18 @@ import zipfile
 from datetime import datetime
 from xml.etree import ElementTree as ET
 
+from .export import codebook_text
 from .i18n import DOMAIN_LABELS, domain_label
-from .models import DOMAINS, Code, Document, Project, Relation, now_iso, utf16_len
+from .models import (
+    DOMAINS,
+    Code,
+    CodebookEntry,
+    Document,
+    Project,
+    Relation,
+    now_iso,
+    utf16_len,
+)
 
 NS = "urn:QDA-XML:project:1.0"
 Q = "{%s}" % NS
@@ -142,23 +157,37 @@ def export_qdpx(project: Project, user_name: str = "Cua-libre", profile: str = "
         tree.setdefault(code.domain, {}).setdefault(code.name, []).append(code)
     for domain in project.custom_domains:  # las categorías propias, aunque estén vacías
         tree.setdefault(domain, {})
+    for relation in project.relations:  # categorías que participan en relaciones (FR-085)
+        for kind, name in ((relation.source_kind, relation.source),
+                           (relation.target_kind, relation.target)):
+            if kind == "category" and name in colors:
+                tree.setdefault(name, {})
     code_guid: dict[tuple[str, str], str] = {}
     first_guid_by_name: dict[str, str] = {}
+    category_guid: dict[str, str] = {}
     codebook = ET.SubElement(root, Q + "CodeBook")
     codes_el = ET.SubElement(codebook, Q + "Codes")
     for domain, by_name in tree.items():
         color = colors.get(domain, "#999999")
+        category_guid[domain] = _guid()
         parent = ET.SubElement(codes_el, Q + "Code", {  # etiqueta en el idioma de la interfaz
-            "guid": _guid(), "name": domain_label(domain), "isCodable": "false", "color": color})
+            "guid": category_guid[domain], "name": domain_label(domain),
+            "isCodable": "false", "color": color})
+        note = project.category_notes.get(domain)
+        if note is not None and not note.is_empty():  # libro de códigos (FR-084)
+            ET.SubElement(parent, Q + "Description").text = codebook_text(note)
         for name, instances in by_name.items():
             guid = _guid()
             code_guid[(domain, name)] = guid
             first_guid_by_name.setdefault(name, guid)
             child = ET.SubElement(parent, Q + "Code", {
                 "guid": guid, "name": name, "isCodable": "true", "color": color})
-            manual_memos = [c.memo for c in instances if not c.doc_id and c.memo]
-            if manual_memos:
-                ET.SubElement(child, Q + "Description").text = "\n\n".join(manual_memos)
+            entry = project.codebook.get(name)
+            description = [codebook_text(entry)] if entry is not None else []
+            description += [c.memo for c in instances if not c.doc_id and c.memo]
+            description = [d for d in description if d]
+            if description:
+                ET.SubElement(child, Q + "Description").text = "\n\n".join(description)
 
     notes: list[tuple[str, str, str]] = []  # (guid, texto, fecha)
     files: dict[str, bytes] = {}
@@ -200,15 +229,22 @@ def export_qdpx(project: Project, user_name: str = "Cua-libre", profile: str = "
                 "guid": guid, "name": "Memo", "creatingUser": user_guid, "creationDateTime": created})
             ET.SubElement(note, Q + "PlainTextContent").text = text
 
-    links = [r for r in project.relations
-             if r.source in first_guid_by_name and r.target in first_guid_by_name]
+    def endpoint_guid(kind: str, name: str) -> str | None:
+        # Una categoría es el código padre de su rama en el libro (FR-085)
+        return category_guid.get(name) if kind == "category" else first_guid_by_name.get(name)
+
+    links = []
+    for relation in project.relations:
+        origin = endpoint_guid(relation.source_kind, relation.source)
+        target = endpoint_guid(relation.target_kind, relation.target)
+        if origin and target:
+            links.append((relation, origin, target))
     if links:
         links_el = ET.SubElement(root, Q + "Links")
-        for relation in links:
+        for relation, origin, target in links:
             ET.SubElement(links_el, Q + "Link", {
                 "guid": _guid(), "name": relation.type, "direction": "OneWay",
-                "originGUID": first_guid_by_name[relation.source],
-                "targetGUID": first_guid_by_name[relation.target],
+                "originGUID": origin, "targetGUID": target,
             })
 
     xml = ET.tostring(root, encoding="utf-8", xml_declaration=True)
@@ -310,8 +346,12 @@ def import_qdpx(data: bytes, fallback_name: str = "QDPX") -> tuple[Project, dict
                 has_children = bool(code_el.findall(Q + "Code"))
                 if not has_children and code_el.get("isCodable") == "false":
                     # Categoría vacía: se conserva como categoría, no como código
+                    # (registrada igual: puede describirse o ser extremo de un vínculo)
                     if not domain_key:
                         project.custom_domains.setdefault(name, color or IMPORT_COLOR)
+                    codes[code_el.get("guid", "").upper()] = {
+                        "name": name, "domain": domain_key or name, "color": color,
+                        "description": description, "top": True}
                     continue
                 if not domain_key and has_children:
                     project.custom_domains.setdefault(name, color or IMPORT_COLOR)
@@ -422,31 +462,56 @@ def import_qdpx(data: bytes, fallback_name: str = "QDPX") -> tuple[Project, dict
     report["codes"] = len({c.name for c in project.codes})
 
     # Descripciones del libro en la primera cita de cada código sin memo
+    # Descripción de cada código o categoría → libro de códigos (FR-084).
+    # Antes de v2.0 iba al memo de la primera cita del código; el libro es su
+    # lugar propio (describe al código, no a una cita).
     for info in codes.values():
         if not info["description"]:
             continue
-        first = next((c for c in project.codes if c.name == info["name"] and c.doc_id), None)
-        if first is not None and not first.memo:
-            first.memo = info["description"]
+        is_category = info["top"] and info["domain"] not in (None, IMPORT_CATEGORY) \
+            and info["domain"] in (project.custom_domains | DOMAINS)
+        book = project.category_notes if is_category else project.codebook
+        key = info["domain"] if is_category else info["name"]
+        if key in book:
+            book[key].definition += "\n\n" + info["description"]
+        else:
+            book[key] = CodebookEntry(definition=info["description"])
 
     names = {c.name for c in project.codes}
-    by_guid = {guid: info["name"] for guid, info in codes.items()}
+    all_domains = project.custom_domains | DOMAINS
+
+    def endpoint(guid: str):
+        """(tipo, nombre) de un extremo de vínculo: una categoría (código padre
+        de una rama) o un código (FR-085)."""
+        info = codes.get(guid.upper())
+        if info is None:
+            return None
+        if info["top"] and info["domain"] not in (None, IMPORT_CATEGORY) \
+                and info["domain"] in all_domains:
+            return ("category", info["domain"])
+        return ("code", info["name"]) if info["name"] in names else None
+
     links = root.find(Q + "Links")
-    candidates = [(parent, child, "jerarquía") for parent, child in hierarchy]
+    candidates = [(("code", parent), ("code", child), "jerarquía") for parent, child in hierarchy]
     for link in list(links) if links is not None else []:
-        source_name = by_guid.get((link.get("originGUID") or "").upper())
-        target_name = by_guid.get((link.get("targetGUID") or "").upper())
         kind = RELATION_NAMES.get((link.get("name") or "").strip().lower(), "asociación")
-        candidates.append((source_name, target_name, kind))
+        candidates.append((endpoint(link.get("originGUID") or ""),
+                           endpoint(link.get("targetGUID") or ""), kind))
     seen = set()
-    for source_name, target_name, kind in candidates:
-        key = (source_name, target_name, kind)
-        if source_name in names and target_name in names and source_name != target_name \
-                and key not in seen:
-            seen.add(key)
-            project.relations.append(Relation(id=project.next_relation_id, source=source_name,
-                                              target=target_name, type=kind))
-            project.next_relation_id += 1
+    for source, target, kind in candidates:
+        if not source or not target or source == target:
+            continue
+        if (source[0] == "code" and source[1] not in names) or \
+                (target[0] == "code" and target[1] not in names):
+            continue
+        key = (source, target, kind)
+        if key in seen:
+            continue
+        seen.add(key)
+        project.relations.append(Relation(
+            id=project.next_relation_id, source=source[1], target=target[1], type=kind,
+            source_kind=source[0], target_kind=target[0]))
+        project.next_relation_id += 1
     report["relations"] = len(project.relations)
     report["conventions"] = sorted(report["conventions"])
     return project, report

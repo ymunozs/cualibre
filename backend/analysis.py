@@ -12,8 +12,10 @@ se guarda:
   simplemente deja de usarse. Borrar la carpeta cache/ es siempre seguro.
 
 Cada análisis guarda los tokens con categoría gramatical (para frecuencias y
-concordancias por lema) y, en español, los tokens con carga emocional ya
-resueltos contra el léxico NRC (para valencia, arco y tono por cita). Todos
+concordancias por lema), los tokens con carga emocional ya resueltos contra
+el léxico NRC (para valencia, arco y tono por cita) y las posiciones que caen
+bajo una negación (para aplicar los ajustes del investigador al léxico sin
+volver a analizar, FR-086). Todos
 los números que muestra la app se reconstruyen desde esas listas: siguen
 siendo auditables (Principio VIII).
 
@@ -34,7 +36,9 @@ from collections import OrderedDict
 
 from . import lexicons, storage
 
-CACHE_VERSION = 3  # 2: sentimiento en inglés y portugués; 3: negadores sin carga propia (v1.12)
+# 2: sentimiento en inglés y portugués; 3: negadores sin carga propia (v1.12);
+# 4: posiciones negadas, para los ajustes del léxico (v2.0)
+CACHE_VERSION = 4
 CHUNK_CHARS = 100_000  # spaCy procesa por tramos: acota memoria y evita max_length
 SYNC_LIMIT_CHARS = 250_000  # por debajo, se analiza en la misma petición
 
@@ -99,10 +103,11 @@ def _chunks(text: str):
 
 def _compute(text: str, lang: str) -> dict:
     from .nlp import MODEL_LOCK, _get_model
-    from .sentiment import sentiment_records
+    from .sentiment import negated_starts, sentiment_records
 
     pos: list[list] = []
     sent: list[list] = []
+    neg: list[int] = []
     lex_id = lexicons.lexicon_id(lang)
     chunks = list(_chunks(text))
     with MODEL_LOCK:
@@ -116,7 +121,8 @@ def _compute(text: str, lang: str) -> dict:
                                 token.lemma_.lower().strip(), token.text.lower()])
             if lex_id:  # sin léxico instalado para el idioma no hay sentimiento
                 sent.extend(sentiment_records(doc, offset, lang))
-    return {"v": CACHE_VERSION, "lex": lex_id, "pos": pos, "sent": sent}
+                neg.extend(negated_starts(doc, offset, lang))
+    return {"v": CACHE_VERSION, "lex": lex_id, "pos": pos, "sent": sent, "neg": neg}
 
 
 def _remember(key: tuple[str, str], data: dict) -> None:
@@ -162,7 +168,8 @@ def _run_background(texts: list[str], lang: str) -> None:
         except Exception as exc:  # un documento problemático no debe colgar el sondeo
             print(f"[cualibre] análisis fallido ({lang}): {exc!r}", file=sys.stderr)
             _remember((lang, digest(text)),
-                      {"v": CACHE_VERSION, "lex": lexicons.lexicon_id(lang), "pos": [], "sent": []})
+                      {"v": CACHE_VERSION, "lex": lexicons.lexicon_id(lang), "pos": [], "sent": [],
+                       "neg": []})
 
 
 def _background_running(lang: str) -> bool:

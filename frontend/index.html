@@ -9,7 +9,7 @@
 <body>
 
 <header id="topbar">
-  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v1.13.0</small></h1>
+  <h1 class="cua-title">CUA-LIBRE <span class="title-accent">STUDIO</span> <small id="version">v2.0.0</small></h1>
   <div id="project-bar">
     <label for="project-select" class="mini-label" data-i18n="proj.label">PROYECTO</label>
     <select id="project-select"></select>
@@ -47,6 +47,7 @@
   <button class="tab" data-view="analytics" data-i18n="tab.analytics">◫ ANALYTICS</button>
   <button class="tab" data-view="sentimiento" data-i18n="tab.sentimiento">◑ SENTIMIENTO</button>
   <button class="tab" data-view="codigos" data-i18n="tab.codigos">▤ CÓDIGOS</button>
+  <button class="tab" data-view="libro" data-i18n="tab.libro" data-i18n-title="book.title">▥ LIBRO</button>
   <button class="tab" data-view="relaciones" data-i18n="tab.relaciones">◈ RELACIONES</button>
   <button class="tab" data-view="acuerdo" data-i18n="tab.acuerdo">⚖ ACUERDO</button>
   <button class="tab" data-view="exportar" data-i18n="tab.exportar">⇄ EXPORTAR</button>
@@ -199,6 +200,11 @@
     <p id="sent-empty" class="empty-note hidden" data-i18n="sent.empty"></p>
     <p id="sent-progress" class="progress-note hidden"></p>
     <div id="sent-body">
+      <!-- Ajustes del investigador al léxico (FR-086) -->
+      <div class="section-title" data-i18n="lexf.title">AJUSTAR EL LÉXICO</div>
+      <p class="empty-note" style="padding:0 0 4px" data-i18n="lexf.hint"></p>
+      <div id="lexf-chips" class="lexf-chips"></div>
+      <div id="lexf-summary" class="panel lexf-summary hidden"></div>
       <div class="section-title" data-i18n="sent.docs">TONO Y ARCO EMOCIONAL POR DOCUMENTO</div>
       <div id="sent-docs"></div>
       <div id="sent-grid">
@@ -239,23 +245,70 @@
     </div>
   </section>
 
-  <!-- RELACIONES (FR-038/039) -->
+  <!-- LIBRO DE CÓDIGOS (FR-084): descripción cualitativa de cada código y categoría -->
+  <section id="view-libro" class="view hidden">
+    <div class="section-title"><span data-i18n="book.title">LIBRO DE CÓDIGOS</span>
+      <a id="btn-book-csv" class="btn-export-mini" data-download="/api/codebook.csv" href="/api/codebook.csv" download data-i18n-title="book.csv.title">⬇ CSV</a>
+    </div>
+    <p class="empty-note" style="padding-top:0" data-i18n="book.intro"></p>
+    <p id="book-empty" class="empty-note hidden" data-i18n="book.empty"></p>
+    <div id="book-grid">
+      <aside id="book-index-col">
+        <input type="text" id="book-search" data-i18n-placeholder="book.search.placeholder">
+        <div id="book-progress" class="mini-label"></div>
+        <div id="book-index" class="panel"></div>
+      </aside>
+      <article id="book-page" class="panel"></article>
+    </div>
+  </section>
+
+  <!-- RELACIONES (FR-038/039, FR-085): códigos y categorías, cuadros editables -->
   <section id="view-relaciones" class="view hidden">
     <div class="section-title" data-i18n="rel.title">RELACIONES ENTRE CÓDIGOS</div>
     <p id="rel-empty" class="empty-note hidden" data-i18n="rel.empty"></p>
-    <div id="rel-builder" class="controls-row">
-      <select id="rel-source"></select>
-      <select id="rel-type"></select>
-      <select id="rel-target"></select>
-      <button id="btn-rel-create" class="btn btn-accent" style="width:auto" data-i18n="rel.create">◉ CREAR RELACIÓN</button>
+    <!-- El creador se muda dentro del organizador cuando este se amplía (relations.js) -->
+    <div id="rel-builder-home">
+      <div id="rel-builder" class="controls-row">
+        <select id="rel-source"></select>
+        <select id="rel-type"></select>
+        <select id="rel-target"></select>
+        <button id="btn-rel-create" class="btn btn-accent" style="width:auto" data-i18n="rel.create">◉ CREAR RELACIÓN</button>
+      </div>
+      <p id="rel-guide" class="rel-guide"></p>
     </div>
     <div id="rel-body">
-      <div>
+      <div id="rel-organizer">
         <div class="section-title"><span data-i18n="rel.graph">ORGANIZADOR (GRAFO)</span>
           <button id="btn-export-graph-png" class="btn-export-mini" data-i18n-title="rel.export.png">⬇ PNG</button>
           <button id="btn-export-graph-svg" class="btn-export-mini" data-i18n-title="rel.export.svg">⬇ SVG</button>
+          <button id="btn-rel-expand" class="btn-export-mini" data-i18n-title="board.expand.title">⛶ AMPLIAR</button>
         </div>
+        <div id="board-bar" class="board-bar">
+          <label class="mini-label"><span data-i18n="board.label">CUADRO</span>
+            <select id="board-select"></select>
+          </label>
+          <button id="btn-board-new" class="btn btn-small" data-i18n="board.new" data-i18n-title="board.new.title">+ NUEVO</button>
+          <button id="btn-board-rename" class="btn btn-small" data-i18n-title="board.rename.title">✎</button>
+          <button id="btn-board-delete" class="btn btn-small" data-i18n-title="board.delete.title">🗑</button>
+          <span id="board-add-group" class="board-add-group">
+            <select id="board-add" data-i18n-title="board.add.title"></select>
+            <button id="btn-board-add" class="btn btn-small" data-i18n="board.add">＋ AÑADIR</button>
+          </span>
+          <span id="board-bring-group" class="board-add-group">
+            <select id="board-bring" data-i18n-title="board.bring.title"></select>
+            <button id="btn-board-bring" class="btn btn-small" data-i18n="board.bring">＋ TRAER RELACIÓN</button>
+          </span>
+          <button id="btn-board-layout" class="btn btn-small" data-i18n="board.layout" data-i18n-title="board.layout.title">↺ REORDENAR</button>
+          <button id="btn-board-undo" class="btn btn-small" data-i18n="board.undo" data-i18n-title="board.undo.title" disabled>↶ DESHACER MOVIMIENTO</button>
+          <button id="btn-board-lock" class="btn btn-small" data-i18n-title="board.lockboard.title">🔒 BLOQUEAR CUADRO</button>
+          <label class="mini-label board-tone-label" data-i18n-title="board.tone.hint">
+            <input type="checkbox" id="board-tone"> <span data-i18n="board.tone">◑ TONO</span>
+          </label>
+        </div>
+        <p id="board-hint" class="empty-note board-hint"></p>
+        <p id="board-tone-note" class="empty-note board-hint"></p>
         <div id="rel-graph"></div>
+        <div id="rel-selection" class="panel rel-selection hidden"></div>
         <div id="rel-legend"></div>
       </div>
       <div>
@@ -391,6 +444,10 @@
     <span class="nube-title" id="emotion-words-title" style="color:var(--accent)" data-i18n="words.title">PALABRAS</span>
     <button id="emotion-words-close" class="btn btn-small">✕</button>
   </div>
+  <div id="emotion-words-add" class="lexf-add">
+    <input type="text" id="lexf-add-input" class="dialog-input" maxlength="60" autocomplete="off" data-i18n-placeholder="lexf.add.placeholder">
+    <button id="lexf-add-btn" class="btn btn-small" data-i18n="lexf.add">＋ SUMAR</button>
+  </div>
   <div id="emotion-words-body"></div>
 </dialog>
 
@@ -459,6 +516,7 @@
 <script src="/static/js/nube.js"></script>
 <script src="/static/js/paleta.js"></script>
 <script src="/static/js/relations.js"></script>
+<script src="/static/js/libro.js"></script>
 <script src="/static/js/acuerdo.js"></script>
 <script src="/static/js/musica.js"></script>
 <script src="/static/js/sesion.js"></script>

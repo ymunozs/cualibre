@@ -211,6 +211,89 @@ MESSAGES: dict[str, dict[str, str]] = {
         "pt": "{n} código(s) usam a categoria “{name}”. Repita a operação com "
               "confirmação: manterão o nome, mas ficarão sem cor própria.",
     },
+    "custom_category_has_relations": {
+        "es": "La categoría «{name}» participa en {r} relación(es). Repite la operación "
+              "con confirmación: esas relaciones se eliminarán.",
+        "en": "The category “{name}” takes part in {r} relationship(s). Repeat the "
+              "operation with confirmation: those relationships will be deleted.",
+        "pt": "A categoria “{name}” participa de {r} relação(ões). Repita a operação "
+              "com confirmação: essas relações serão excluídas.",
+    },
+    # ----- v2.0: libro de códigos, cuadros y léxico (FR-084..086) -----
+    "no_category_named": {
+        "es": "No existe una categoría llamada «{name}»",
+        "en": "No category called “{name}” exists",
+        "pt": "Não existe uma categoria chamada “{name}”",
+    },
+    "invalid_node_kind": {
+        "es": "Tipo de elemento inválido: «{value}» (código o categoría)",
+        "en": "Invalid element type: “{value}” (code or category)",
+        "pt": "Tipo de elemento inválido: “{value}” (código ou categoria)",
+    },
+    "codebook_entry_not_found": {
+        "es": "No hay descripción guardada para «{name}»",
+        "en": "There is no saved description for “{name}”",
+        "pt": "Não há descrição salva para “{name}”",
+    },
+    "codebook_delete_needs_confirm": {
+        "es": "Eliminar una descripción del libro de códigos requiere confirmación",
+        "en": "Deleting a codebook description requires confirmation",
+        "pt": "Excluir uma descrição do livro de códigos requer confirmação",
+    },
+    "board_not_found": {
+        "es": "Cuadro no encontrado",
+        "en": "Board not found",
+        "pt": "Quadro não encontrado",
+    },
+    "board_delete_needs_confirm": {
+        "es": "Eliminar un cuadro requiere confirmación",
+        "en": "Deleting a board requires confirmation",
+        "pt": "Excluir um quadro requer confirmação",
+    },
+    "board_general_fixed": {
+        "es": "El cuadro general no se puede eliminar ni renombrar",
+        "en": "The general board cannot be deleted or renamed",
+        "pt": "O quadro geral não pode ser excluído nem renomeado",
+    },
+    "invalid_node_shape": {
+        "es": "Forma inválida: «{value}»",
+        "en": "Invalid shape: “{value}”",
+        "pt": "Forma inválida: “{value}”",
+    },
+    "invalid_sentiment_category": {
+        "es": "Categoría del léxico inválida: «{value}»",
+        "en": "Invalid lexicon category: “{value}”",
+        "pt": "Categoria do léxico inválida: “{value}”",
+    },
+    "lexicon_word_invalid": {
+        "es": "«{value}» no es una palabra válida: escribe una sola palabra, sin números ni signos",
+        "en": "“{value}” is not a valid word: type a single word, without numbers or symbols",
+        "pt": "“{value}” não é uma palavra válida: escreva uma só palavra, sem números nem sinais",
+    },
+    "codebook_csv_columns": {
+        "es": "tipo|nombre|categorias|citas|definicion|cuando_usar|cuando_no_usar|ejemplo|actualizado",
+        "en": "type|name|categories|quotes|definition|when_to_use|when_not_to_use|example|updated",
+        "pt": "tipo|nome|categorias|citacoes|definicao|quando_usar|quando_nao_usar|exemplo|atualizado",
+    },
+    "codebook_kind_code": {"es": "código", "en": "code", "pt": "código"},
+    "codebook_kind_category": {"es": "categoría", "en": "category", "pt": "categoria"},
+    "codebook_kind_orphan": {
+        "es": "código (sin citas en el proyecto)",
+        "en": "code (no quotes in the project)",
+        "pt": "código (sem citações no projeto)",
+    },
+    "codebook_csv_name": {
+        "es": "libro_de_codigos.csv",
+        "en": "codebook.csv",
+        "pt": "livro_de_codigos.csv",
+    },
+    "codebook_file": {"es": "libro_de_codigos", "en": "codebook", "pt": "livro_de_codigos"},
+    "codebook_label_definition": {"es": "Definición", "en": "Definition", "pt": "Definição"},
+    "codebook_label_inclusion": {"es": "Cuándo usarlo", "en": "When to use",
+                                 "pt": "Quando usar"},
+    "codebook_label_exclusion": {"es": "Cuándo no usarlo", "en": "When not to use",
+                                 "pt": "Quando não usar"},
+    "codebook_label_example": {"es": "Ejemplo", "en": "Example", "pt": "Exemplo"},
     # ----- Validación (models.py) -----
     "project_name_empty": {
         "es": "El nombre del proyecto no puede estar vacío",
@@ -394,6 +477,8 @@ MESSAGES: dict[str, dict[str, str]] = {
             "                   memos, categorías propias). Fidelidad total: impórtalo\n"
             "                   desde Cua-libre con el botón IMPORTAR de la cabecera.\n"
             "- {csv}     → el banco de códigos en una tabla (UTF-8, abre en Excel).\n"
+            "- {book} → el libro de códigos: definición, cuándo usar cada\n"
+            "                   código, cuándo no y ejemplo.\n"
             "- {docs}/    → el texto de cada documento del corpus, en .txt plano.\n\n"
             "Generado por CUA-LIBRE STUDIO · https://github.com/ymunozs/cualibre\n"
         ),
@@ -405,6 +490,8 @@ MESSAGES: dict[str, dict[str, str]] = {
             "                   memos, custom categories). Full fidelity: import it\n"
             "                   from Cua-libre with the IMPORT button in the header.\n"
             "- {csv}       → the code bank as a table (UTF-8, opens in Excel).\n"
+            "- {book}   → the codebook: definition, when to use each code,\n"
+            "                   when not to and an example.\n"
             "- {docs}/     → the text of every corpus document, as plain .txt.\n\n"
             "Generated by CUA-LIBRE STUDIO · https://github.com/ymunozs/cualibre\n"
         ),
@@ -416,6 +503,8 @@ MESSAGES: dict[str, dict[str, str]] = {
             "                   memos, categorias próprias). Fidelidade total: importe-o\n"
             "                   no Cua-libre com o botão IMPORTAR do cabeçalho.\n"
             "- {csv}     → o banco de códigos em tabela (UTF-8, abre no Excel).\n"
+            "- {book} → o livro de códigos: definição, quando usar cada\n"
+            "                   código, quando não usar e exemplo.\n"
             "- {docs}/    → o texto de cada documento do corpus, em .txt simples.\n\n"
             "Gerado pelo CUA-LIBRE STUDIO · https://github.com/ymunozs/cualibre\n"
         ),

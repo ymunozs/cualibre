@@ -52,6 +52,7 @@ const State = {
   Nube.init();
   Paleta.init();
   Relations.init();
+  Libro.init();
   Acuerdo.init();
   Views.init();
   Musica.init();

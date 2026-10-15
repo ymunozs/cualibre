@@ -22,61 +22,127 @@ from pydantic import BaseModel
 from starlette.responses import Response
 
 from . import agreement, analysis, i18n, lexicons, qdpx, storage
-from .export import project_to_csv, project_to_zip
+from .export import codebook_to_csv, project_to_csv, project_to_zip
 from .extraction import ExtractionError, extract_document
 from .i18n import tr
 from .literature import LiteratureError, search_works
 from .models import (
     DOMAINS,
     RELATION_TYPES,
+    Board,
+    BoardCreate,
+    BoardNode,
+    BoardUpdate,
     Code,
+    CodebookEntry,
+    CodebookUpdate,
     CodeCreate,
     CodeMerge,
     CodeUpdate,
     ConfirmPayload,
     CustomDomainCreate,
     Document,
+    LexiconOverrides,
+    LexiconOverridesUpdate,
     Project,
     ProjectCreate,
     Relation,
     RelationCreate,
+    now_iso,
     utf16_len,
 )
 from .nlp import POS_LANGS, STOPWORDS, detect_language, word_frequencies
 
-APP_VERSION = "1.13.0"
+APP_VERSION = "2.0.0"
 CORPUS_LANGS = tuple(STOPWORDS)  # es, en, pt
 POS_FILTERS = ("all", "verb", "noun", "adj")
 
 
+def _node_exists(project: Project, kind: str, name: str) -> bool:
+    if kind == "category":
+        return name in _all_domains(project)
+    return any(c.name == name for c in project.codes)
+
+
+def _all_boards(project: Project) -> list[Board]:
+    return [project.general_board, *project.boards]
+
+
 def _prune_relations(project: Project) -> None:
-    """Elimina relaciones cuyos códigos ya no existen por nombre (FR-038)."""
+    """Elimina relaciones cuyos extremos ya no existen (FR-038): códigos por
+    nombre, categorías por clave (FR-085). Los cuadros pierden también los
+    nodos huérfanos y los colores de relaciones que ya no están."""
     names = {c.name for c in project.codes}
+    domains = _all_domains(project)
+
+    def alive(kind: str, name: str) -> bool:
+        return name in domains if kind == "category" else name in names
+
     project.relations = [
-        r for r in project.relations if r.source in names and r.target in names
+        r for r in project.relations
+        if alive(r.source_kind, r.source) and alive(r.target_kind, r.target)
     ]
+    relation_ids = {str(r.id) for r in project.relations}
+    for board in _all_boards(project):
+        board.nodes = [n for n in board.nodes if alive(n.kind, n.name)]
+        board.edge_colors = {k: v for k, v in board.edge_colors.items() if k in relation_ids}
 
 
 def _remap_relations(project: Project, old_name: str, new_name: str) -> None:
     """Al fusionar/renombrar (FR-068), las relaciones migran con el nombre —
     nunca se pierden por una simple fusión. Se descartan solo las que quedan
-    reflexivas (A→A) o duplicadas tras el remapeo."""
+    reflexivas (A→A) o duplicadas tras el remapeo. Solo se tocan extremos de
+    tipo código: una categoría homónima no se renombra (FR-085)."""
     for r in project.relations:
-        if r.source == old_name:
+        if r.source_kind == "code" and r.source == old_name:
             r.source = new_name
-        if r.target == old_name:
+        if r.target_kind == "code" and r.target == old_name:
             r.target = new_name
-    seen: set[tuple[str, str, str]] = set()
+    seen: set[tuple] = set()
     deduped = []
     for r in project.relations:
-        if r.source == r.target:
+        if (r.source_kind, r.source) == (r.target_kind, r.target):
             continue
-        key = (r.source, r.target, r.type)
+        key = (r.source_kind, r.source, r.target_kind, r.target, r.type)
         if key in seen:
             continue
         seen.add(key)
         deduped.append(r)
     project.relations = deduped
+    # Cuadros: el nodo del código fusionado pasa a ser el del destino; si el
+    # destino ya estaba en el cuadro, conserva su propia posición y color
+    relation_ids = {str(r.id) for r in project.relations}
+    for board in _all_boards(project):
+        has_target = any(n.kind == "code" and n.name == new_name for n in board.nodes)
+        kept = []
+        for node in board.nodes:
+            if node.kind == "code" and node.name == old_name:
+                if has_target:
+                    continue
+                node.name = new_name
+                has_target = True
+            kept.append(node)
+        board.nodes = kept
+        board.edge_colors = {k: v for k, v in board.edge_colors.items() if k in relation_ids}
+
+
+def _merge_entries(a: CodebookEntry, b: CodebookEntry) -> CodebookEntry:
+    """Une dos descripciones sin perder texto: cada apartado conserva ambos."""
+    merged = {}
+    for field in ("definition", "inclusion", "exclusion", "example"):
+        parts = [getattr(a, field).strip(), getattr(b, field).strip()]
+        merged[field] = "\n\n".join(dict.fromkeys(p for p in parts if p))
+    return CodebookEntry(**merged)
+
+
+def _migrate_codebook(project: Project, old_name: str, new_name: str) -> None:
+    """La descripción de un código viaja con su nombre (FR-084): al fusionar se
+    suma a la del destino; nunca se borra."""
+    entry = project.codebook.pop(old_name, None)
+    if entry is None:
+        return
+    target = project.codebook.get(new_name)
+    project.codebook[new_name] = entry if target is None else _merge_entries(target, entry)
 
 
 def _all_domains(project: Project) -> dict[str, str]:
@@ -306,11 +372,19 @@ def reset_project(payload: ConfirmPayload) -> Project:
     if not payload.confirm:
         raise HTTPException(400, tr("reset_needs_confirm"))
     project = storage.get_active_project()
+    # Red de seguridad: el estado previo queda en el historial (FR-062)
+    storage._maybe_snapshot(project, force=True)
     project.documents = []
     project.codes = []
     project.next_code_id = 1
     project.relations = []
     project.next_relation_id = 1
+    # El libro de códigos y los cuadros describen los códigos borrados (v2.0)
+    project.codebook = {}
+    project.category_notes = {}
+    project.general_board = Board(id=0)
+    project.boards = []
+    project.next_board_id = 1
     storage.save_project(project)
     return project
 
@@ -431,12 +505,20 @@ def update_code(code_id: int, payload: CodeUpdate) -> Code:
     # Validar TODO antes de tocar nada: una edición inválida no deja cambios a medias
     if payload.domain is not None and payload.domain not in _all_domains(project):
         raise HTTPException(422, tr("invalid_domain", name=payload.domain))
+    old_name = code.name
     if payload.name is not None:
         code.name = payload.name
     if payload.domain is not None:
         code.domain = payload.domain
     if payload.memo is not None:
         code.memo = payload.memo
+    # Renombrar la última cita de un código: su descripción se va con ella,
+    # salvo que el nombre nuevo ya tenga la suya (entonces queda a la vista
+    # como descripción sin código, nunca se borra)
+    if (code.name != old_name and old_name in project.codebook
+            and code.name not in project.codebook
+            and not any(c.name == old_name for c in project.codes)):
+        project.codebook[code.name] = project.codebook.pop(old_name)
     _prune_relations(project)
     storage.save_project(project)
     return code
@@ -477,6 +559,7 @@ def merge_codes(payload: CodeMerge) -> dict:
             code.domain = target_domain
 
     _remap_relations(project, payload.from_name, payload.to_name)
+    _migrate_codebook(project, payload.from_name, payload.to_name)
     storage.save_project(project)
     return {"merged": len(sources), "name": payload.to_name, "domain": target_domain}
 
@@ -488,24 +571,94 @@ def get_relation_types() -> dict[str, str]:
     return RELATION_TYPES
 
 
+def _add_endpoints(board: Board, relation: Relation) -> None:
+    """Pone en el cuadro los dos extremos de la relación que aún no estén."""
+    present = {(n.kind, n.name) for n in board.nodes}
+    for kind, name in ((relation.source_kind, relation.source),
+                       (relation.target_kind, relation.target)):
+        if (kind, name) not in present:
+            board.nodes.append(BoardNode(kind=kind, name=name))
+            present.add((kind, name))
+
+
 @app.post("/api/relations", status_code=201)
-def create_relation(payload: RelationCreate) -> Relation:
+def create_relation(payload: RelationCreate, response: Response) -> dict:
+    """Relación entre códigos y/o categorías (FR-038, FR-085).
+
+    Las relaciones son del proyecto. Si ya existe y se pide desde un cuadro
+    propio, no es un error: se trae a ese cuadro (sus dos extremos) y se
+    responde 200 con existed=True (FR-088)."""
     project = storage.get_active_project()
-    names = {c.name for c in project.codes}
-    for endpoint in (payload.source, payload.target):
-        if endpoint not in names:
-            raise HTTPException(422, tr("no_code_named", name=endpoint))
-    if any(r.source == payload.source and r.target == payload.target
-           and r.type == payload.type for r in project.relations):
-        raise HTTPException(409, tr("relation_exists"))
+    for kind, endpoint in ((payload.source_kind, payload.source),
+                           (payload.target_kind, payload.target)):
+        if not _node_exists(project, kind, endpoint):
+            key = "no_category_named" if kind == "category" else "no_code_named"
+            raise HTTPException(422, tr(key, name=endpoint))
+    board = None
+    if payload.board_id:
+        board = next((b for b in project.boards if b.id == payload.board_id), None)
+        if board is None:
+            raise HTTPException(404, tr("board_not_found"))
+    existing = next((r for r in project.relations
+                     if r.source == payload.source and r.target == payload.target
+                     and r.source_kind == payload.source_kind
+                     and r.target_kind == payload.target_kind
+                     and r.type == payload.type), None)
+    if existing is not None:
+        if board is None:
+            raise HTTPException(409, tr("relation_exists"))
+        _add_endpoints(board, existing)
+        storage.save_project(project)
+        response.status_code = 200
+        return {**existing.model_dump(), "existed": True}
     relation = Relation(
         id=project.next_relation_id,
         source=payload.source,
         target=payload.target,
         type=payload.type,
+        source_kind=payload.source_kind,
+        target_kind=payload.target_kind,
     )
     project.next_relation_id += 1
     project.relations.append(relation)
+    if board is not None:  # el cuadro activo recibe ambos extremos
+        _add_endpoints(board, relation)
+    storage.save_project(project)
+    return {**relation.model_dump(), "existed": False}
+
+
+@app.post("/api/boards/{board_id}/relations/{relation_id}")
+def bring_relation(board_id: int, relation_id: int) -> Board:
+    """Trae a un cuadro propio una relación que ya existe (FR-088)."""
+    if board_id == 0:
+        raise HTTPException(422, tr("board_general_fixed"))
+    project = storage.get_active_project()
+    board = next((b for b in project.boards if b.id == board_id), None)
+    if board is None:
+        raise HTTPException(404, tr("board_not_found"))
+    relation = next((r for r in project.relations if r.id == relation_id), None)
+    if relation is None:
+        raise HTTPException(404, tr("relation_not_found"))
+    _add_endpoints(board, relation)
+    storage.save_project(project)
+    return board
+
+
+@app.post("/api/relations/{relation_id}/reverse")
+def reverse_relation(relation_id: int) -> Relation:
+    """Invierte el sentido de una relación (A → B pasa a B → A, FR-087). Conserva
+    su id: el color que tenga en los cuadros no se pierde."""
+    project = storage.get_active_project()
+    relation = next((r for r in project.relations if r.id == relation_id), None)
+    if relation is None:
+        raise HTTPException(404, tr("relation_not_found"))
+    if any(r.id != relation.id and r.type == relation.type
+           and (r.source_kind, r.source) == (relation.target_kind, relation.target)
+           and (r.target_kind, r.target) == (relation.source_kind, relation.source)
+           for r in project.relations):
+        raise HTTPException(409, tr("relation_exists"))
+    relation.source, relation.target = relation.target, relation.source
+    relation.source_kind, relation.target_kind = relation.target_kind, relation.source_kind
     storage.save_project(project)
     return relation
 
@@ -517,6 +670,119 @@ def delete_relation(relation_id: int) -> None:
         raise HTTPException(404, tr("relation_not_found"))
     project.relations = [r for r in project.relations if r.id != relation_id]
     storage.save_project(project)
+
+
+# ----- Libro de códigos (FR-084) -----
+
+@app.put("/api/codebook")
+def save_codebook_entry(payload: CodebookUpdate) -> dict:
+    """Guarda la descripción cualitativa de un código o de una categoría.
+    Una descripción vacía se retira del libro (no queda una ficha en blanco)."""
+    project = storage.get_active_project()
+    book = project.category_notes if payload.kind == "category" else project.codebook
+    if payload.name not in book and not _node_exists(project, payload.kind, payload.name):
+        key = "no_category_named" if payload.kind == "category" else "no_code_named"
+        raise HTTPException(422, tr(key, name=payload.name))
+    entry = CodebookEntry(
+        definition=payload.definition, inclusion=payload.inclusion,
+        exclusion=payload.exclusion, example=payload.example, updated_at=now_iso(),
+    )
+    if entry.is_empty():
+        book.pop(payload.name, None)
+    else:
+        book[payload.name] = entry
+    storage.save_project(project)
+    return {"kind": payload.kind, "name": payload.name,
+            "entry": None if entry.is_empty() else entry.model_dump()}
+
+
+@app.delete("/api/codebook")
+def delete_codebook_entry(kind: str, name: str, confirm: bool = False) -> dict:
+    """Retira una descripción (p. ej., la de un código que ya no existe)."""
+    if not confirm:
+        raise HTTPException(400, tr("codebook_delete_needs_confirm"))
+    project = storage.get_active_project()
+    book = project.category_notes if kind == "category" else project.codebook
+    if name not in book:
+        raise HTTPException(404, tr("codebook_entry_not_found", name=name))
+    del book[name]
+    storage.save_project(project)
+    return {"deleted": name}
+
+
+@app.get("/api/codebook.csv")
+def export_codebook_csv() -> Response:
+    project = storage.get_active_project()
+    return Response(
+        content=codebook_to_csv(project),
+        media_type="text/csv; charset=utf-8",
+        headers=_attachment(f"cualibre_{tr('codebook_file')}_{_safe_name(project.name)}.csv"),
+    )
+
+
+# ----- Cuadros organizadores (FR-085) -----
+
+def _find_board(project: Project, board_id: int) -> Board:
+    board = next((b for b in _all_boards(project) if b.id == board_id), None)
+    if board is None:
+        raise HTTPException(404, tr("board_not_found"))
+    return board
+
+
+@app.post("/api/boards", status_code=201)
+def create_board(payload: BoardCreate) -> Board:
+    project = storage.get_active_project()
+    board = Board(id=project.next_board_id, name=payload.name)
+    project.next_board_id += 1
+    project.boards.append(board)
+    storage.save_project(project)
+    return board
+
+
+@app.put("/api/boards/{board_id}")
+def update_board(board_id: int, payload: BoardUpdate) -> Board:
+    """Reemplaza nombre, nodos (posición y color), colores de relaciones y
+    tono de un cuadro. Solo cambia la vista: los datos (relaciones, colores
+    de categoría) no se tocan."""
+    project = storage.get_active_project()
+    board = _find_board(project, board_id)
+    if payload.name is not None:
+        name = payload.name.strip()
+        if board.id == 0:
+            if name:
+                raise HTTPException(422, tr("board_general_fixed"))
+        elif not name:
+            raise HTTPException(422, tr("name_empty"))
+        else:
+            board.name = name
+    nodes, seen = [], set()
+    for node in payload.nodes:
+        key = (node.kind, node.name)
+        if key in seen or not _node_exists(project, node.kind, node.name):
+            continue  # duplicados o elementos que ya no existen: se ignoran
+        seen.add(key)
+        nodes.append(BoardNode(**node.model_dump()))
+    board.nodes = nodes
+    relation_ids = {str(r.id) for r in project.relations}
+    board.edge_colors = {k: v for k, v in payload.edge_colors.items() if k in relation_ids}
+    board.show_tone = payload.show_tone
+    board.locked = payload.locked
+    storage.save_project(project)
+    return board
+
+
+@app.delete("/api/boards/{board_id}")
+def delete_board(board_id: int, confirm: bool = False) -> dict:
+    """Elimina un cuadro propio. Las relaciones se conservan (viven en el proyecto)."""
+    if board_id == 0:
+        raise HTTPException(422, tr("board_general_fixed"))
+    if not confirm:
+        raise HTTPException(400, tr("board_delete_needs_confirm"))
+    project = storage.get_active_project()
+    _find_board(project, board_id)
+    project.boards = [b for b in project.boards if b.id != board_id]
+    storage.save_project(project)
+    return {"deleted": board_id}
 
 
 # ----- Categorías -----
@@ -549,15 +815,20 @@ def delete_custom_domain(name: str, confirm: bool = False) -> dict:
     if name not in project.custom_domains:
         raise HTTPException(404, tr("custom_category_not_found"))
     in_use = sum(1 for c in project.codes if c.domain == name)
-    if in_use and not confirm:
+    in_relations = sum(1 for r in project.relations
+                       if (r.source_kind, r.source) == ("category", name)
+                       or (r.target_kind, r.target) == ("category", name))
+    if (in_use or in_relations) and not confirm:
+        message = tr("custom_category_in_use", n=in_use, name=name) if in_use \
+            else tr("custom_category_has_relations", r=in_relations, name=name)
         raise HTTPException(
-            409,
-            tr("custom_category_in_use", n=in_use, name=name),
-            headers={"X-Code-Count": str(in_use)},
+            409, message,
+            headers={"X-Code-Count": str(in_use), "X-Relation-Count": str(in_relations)},
         )
     del project.custom_domains[name]
+    _prune_relations(project)  # relaciones y nodos de cuadro de esa categoría (FR-085)
     storage.save_project(project)
-    return {"in_use": in_use}
+    return {"in_use": in_use, "relations": in_relations}
 
 
 # ----- Análisis -----
@@ -800,24 +1071,35 @@ def serve_music(filename: str) -> FileResponse:
 
 # ----- Sentimiento (FR-059) -----
 
-def _top(counter: dict, n: int = 15) -> list[dict]:
-    return [{"word": w, "count": c} for w, c in sorted(counter.items(), key=lambda x: -x[1])[:n]]
+def _top(counter: dict, n: int | None = 15) -> list[dict]:
+    """Palabras por frecuencia (n=None: todas). Empates en orden alfabético."""
+    ranked = sorted(counter.items(), key=lambda x: (-x[1], x[0]))
+    return [{"word": w, "count": c} for w, c in (ranked if n is None else ranked[:n])]
 
 
 @app.get("/api/sentiment")
 def sentiment(response: Response, lang: str = "") -> dict:
     """Análisis de valencia y emociones por léxico (auditable), en el idioma
     del corpus (FR-077)."""
-    from .sentiment import arc_from_records, records_between, score_records, valence
+    from .sentiment import (
+        apply_overrides,
+        arc_from_records,
+        records_between,
+        score_records,
+        valence,
+    )
 
     project = storage.get_active_project()
     lang = lang or project.corpus_lang or "es"
     if lang not in CORPUS_LANGS:
         raise HTTPException(422, tr("corpus_lang_unsupported"))
-    info = {"lang": lang, "lexicon_size": len(lexicons.get(lang) or {})}
+    overrides = project.sentiment_overrides.get(lang) or LexiconOverrides()
+    info = {"lang": lang, "lexicon_size": len(lexicons.get(lang) or {}),
+            "overrides": overrides.model_dump()}
     if not project.documents and not project.codes:
-        return {"documents": [], "domains": [], "codes": [],
+        return {"documents": [], "domains": [], "codes": [], "code_tones": {},
                 "words": {"positive": [], "negative": []},
+                "polarity_words": {"positivo": [], "negativo": []},
                 "emotions": [], "emotion_words": {}, **info}
     if lexicons.get(lang) is None:  # léxico aún no instalado en este equipo
         return {"lexicon_missing": True, **info}
@@ -834,7 +1116,8 @@ def sentiment(response: Response, lang: str = "") -> dict:
     all_emos: dict = {}
     all_emotion_words: dict[str, dict[str, int]] = {}
     for doc in project.documents:
-        records = analysis.get(doc.text, lang)["sent"]
+        # Ajustes del investigador al léxico (FR-086): repercuten en todo lo que sigue
+        records = apply_overrides(doc.text, analysis.get(doc.text, lang), overrides)
         records_by_doc[doc.id] = records
         result = score_records(records)
         documents.append({
@@ -858,6 +1141,7 @@ def sentiment(response: Response, lang: str = "") -> dict:
     starts_by_doc = {doc_id: [r[0] for r in recs] for doc_id, recs in records_by_doc.items()}
     by_domain: dict = {}
     by_code: dict = {}
+    by_name: dict = {}  # tono por nombre de código, para el organizador (FR-086)
     for code in project.codes:
         if not (code.doc_id and code.quote) or code.doc_id not in offset_maps:
             continue
@@ -867,6 +1151,7 @@ def sentiment(response: Response, lang: str = "") -> dict:
         score, _ = valence(chunk)
         by_domain.setdefault(code.domain, []).append(score)
         by_code.setdefault((code.name, code.domain), []).append(score)
+        by_name.setdefault(code.name, []).append(score)
     domains = [
         {"domain": d, "score": round(sum(s) / len(s), 3), "n": len(s)}
         for d, s in by_domain.items()
@@ -881,15 +1166,40 @@ def sentiment(response: Response, lang: str = "") -> dict:
         "documents": documents,
         "domains": domains,
         "codes": codes,
+        "code_tones": {n: {"score": round(sum(s) / len(s), 3), "n": len(s)}
+                       for n, s in by_name.items()},
         "words": {"positive": _top(all_pos), "negative": _top(all_neg)},
+        # Listas completas (no solo las 15 primeras): el investigador las revisa
+        # palabra por palabra para descartar o sumar (FR-086)
+        "polarity_words": {"positivo": _top(all_pos, None), "negativo": _top(all_neg, None)},
         "emotions": [
             {"emotion": e, "count": c}
             for e, c in sorted(all_emos.items(), key=lambda x: -x[1])
         ],
         # Trazabilidad por emoción (FR-071): qué palabras exactas la dispararon
-        "emotion_words": {e: _top(words) for e, words in all_emotion_words.items()},
+        "emotion_words": {e: _top(words, None) for e, words in all_emotion_words.items()},
         **info,
     }
+
+
+@app.put("/api/sentiment/overrides")
+def set_sentiment_overrides(payload: LexiconOverridesUpdate) -> dict:
+    """Ajustes del investigador al léxico (FR-086), por proyecto e idioma:
+    palabras descartadas de una emoción o polaridad y palabras sumadas."""
+    if payload.lang not in CORPUS_LANGS:
+        raise HTTPException(422, tr("corpus_lang_unsupported"))
+    # Sumar una palabra a una categoría anula su descarte en esa misma categoría
+    removed = {cat: [w for w in words if w not in payload.added.get(cat, [])]
+               for cat, words in payload.removed.items()}
+    overrides = LexiconOverrides(removed={c: w for c, w in removed.items() if w},
+                                 added=payload.added)
+    project = storage.get_active_project()
+    if overrides.is_empty():
+        project.sentiment_overrides.pop(payload.lang, None)
+    else:
+        project.sentiment_overrides[payload.lang] = overrides
+    storage.save_project(project)
+    return {"lang": payload.lang, "overrides": overrides.model_dump()}
 
 
 # ----- Manual (FR-052) -----

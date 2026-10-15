@@ -201,7 +201,13 @@ const Paleta = {
     } catch (error) {
       if (error.status === 409) {
         const count = error.headers?.get?.("X-Code-Count") || I18N.t("custom.some");
-        const ok = await Views.confirm(I18N.t("custom.inuse.confirm", { n: count, name }));
+        const relations = Number(error.headers?.get?.("X-Relation-Count") || 0);
+        // Usada por códigos, por relaciones (FR-085) o por ambos
+        let message = Number(count) === 0 && relations
+          ? I18N.t("custom.relations.confirm", { r: relations, name })
+          : I18N.t("custom.inuse.confirm", { n: count, name });
+        if (Number(count) > 0 && relations) message += " " + I18N.t("custom.relations.also", { r: relations });
+        const ok = await Views.confirm(message);
         if (!ok) return;
         try {
           await API.deleteCustomDomain(name, true);

@@ -196,8 +196,15 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   con respaldo en el navegador, OCR de PDF escaneados con el motor del sistema (páginas
   marcadas como OCR), sentimiento y foco gramatical en español, inglés y portugués según
   el idioma del corpus, acuerdo entre codificadores (kappa de Cohen, alfa de
-  Krippendorff, fragmentos en desacuerdo; solo lectura) e intercambio REFI-QDA (.qdpx)
-  con NVivo, ATLAS.ti, MAXQDA y QualCoder.
+  Krippendorff, fragmentos en desacuerdo; solo lectura), intercambio REFI-QDA (.qdpx)
+  con NVivo, ATLAS.ti, MAXQDA y QualCoder, libro de códigos (definición, cuándo usar,
+  cuándo no y ejemplo por código y por categoría, sin pérdida de descripciones),
+  relaciones entre códigos y categorías con cuadros organizadores múltiples y editables
+  (arrastre de nodos y colores propios del cuadro, simbología nativa de Cua-libre con
+  formas elegibles, selección múltiple, deshacer movimientos, bloqueo de nodos y cuadros,
+  inversión de relaciones y vista ampliada) y ajustes del investigador al léxico
+  de sentimiento (descartar y sumar palabras por emoción o polaridad, declarados en el
+  reporte).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -222,7 +229,15 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
   se valida contra los Principios I–VII antes de generar tareas y de nuevo antes de
   entregar.
 
-**Version**: 1.14.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-10-06
+**Version**: 1.15.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-10-15
+<!-- 1.15.0: inventario ampliado por pedido del investigador (2026-10-15): libro de
+códigos (FR-084), relaciones con categorías y cuadros organizadores editables (FR-085) y
+ajustes del léxico de sentimiento (FR-086), para Cua-libre v2.0. Aprobado por el
+investigador el 2026-10-15, junto con la lectura de que recolorear un nodo en un cuadro
+es un ajuste de vista compatible con el Principio VI (las 9 Categorías Básicas conservan
+su color en el resto de la app). El mismo día aprobó también FR-087 (simbología
+nativa como forma por defecto, formas elegibles, selección múltiple, bloqueo y vista
+ampliada del organizador) y FR-088 (traer a un cuadro propio relaciones que ya existen). -->
 <!-- 1.14.0: inventario ampliado por pedido del investigador (2026-10-06): importación
 de Word 97-2003 (.doc), con notas y cuadros de texto también en .docx (FR-082), e
 instalación apta para quien no programa, con el instalador de Windows probado ya

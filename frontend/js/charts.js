@@ -247,6 +247,7 @@ const Charts = {
   downloadSvg(svgEl, filename) {
     const clone = svgEl.cloneNode(true);
     clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    clone.querySelectorAll(".no-export").forEach(el => el.remove()); // marcas de selección
     const source = new XMLSerializer().serializeToString(clone);
     this._download(new Blob([source], { type: "image/svg+xml;charset=utf-8" }), filename);
   },
@@ -254,6 +255,7 @@ const Charts = {
   downloadSvgAsPng(svgEl, filename, scale = 2) {
     const clone = svgEl.cloneNode(true);
     clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    clone.querySelectorAll(".no-export").forEach(el => el.remove());
     const vb = svgEl.viewBox.baseVal;
     const width = (vb && vb.width) || svgEl.clientWidth || 800;
     const height = (vb && vb.height) || svgEl.clientHeight || 600;

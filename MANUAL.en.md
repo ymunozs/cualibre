@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — User manual (v1.13)
+# CUA-LIBRE STUDIO — User manual (v2.0)
 
 A complete guide to the commands and workflows for qualitative analysis.
 
@@ -190,6 +190,30 @@ Everything is **auditable**: each score comes with the words that produced it.
   corpus: 12 of 60 documents…"). The result is stored: later queries, even in another
   session, are immediate.
 
+### Adjusting the lexicon to your corpus
+
+The lexicon is general and translated: in a specific corpus some words do not mean what
+the lexicon assumes (in a school, *teacher* is not necessarily "trust") and others that
+do carry emotion are missing. That is why you can adjust it, word by word.
+
+- **ADJUST THE LEXICON** shows the eight emotions and the two polarities (positive and
+  negative), each with its number of mentions. A click opens the full list of its words
+  in your corpus (so does a click on a bar in **EMOTIONS DETECTED**).
+- **✕ DISCARD** removes that word from the emotion or polarity across the analysis. It
+  goes to the **DISCARDED** list, with **↺ RESTORE** to bring it back.
+- **＋ ADD** adds a missing word. It is matched in the corpus by its form and by its
+  lemma (adding *fight* also finds *fighting*), with the lexicon's negation rule. A
+  participle used as an adjective (*overwhelmed*) is added as it is: it is its own lemma.
+  If it does not appear, Cua-libre tells you and the adjustment is saved anyway.
+- Every adjustment recalculates everything at once: valences, arcs, tone by category and
+  by code, emotions, charged words and the tone shown on the Relationships organiser.
+- **YOUR LEXICON ADJUSTMENTS** summarises everything you changed and lets you undo each
+  adjustment or go back to the original lexicon. Adjustments are saved per project and
+  per corpus language.
+- Transparency: the academic report declares the adjustments in the methodological note
+  and lists them in the sentiment section. Discarding and adding are your analytic
+  decisions: it is worth recording them in your memos too.
+
 ### How the analysis is produced (rationale and method)
 
 Cua-libre is designed to **promote 100% human decisions**: sentiment analysis does not
@@ -258,15 +282,87 @@ The complete code bank, with search and merging.
 - With thousands of codes, the bank is drawn in batches: **Show more** at the end of the
   list loads the next batch.
 
-## 11. ◈ Relationships
+## 11. ▥ Codebook
 
-1. Choose a source code → **type** → target code → **◉ CREATE RELATIONSHIP**.
+The place to give content to each code and each category: what qualitative research
+calls a codebook.
+
+- On the left, the **index**: each category with its codes, the number of quotes and a
+  mark ● (described) or ○ (not described yet). Above it, the search box and the progress
+  ("3 of 11 codes described").
+- On the right, the **entry** for the chosen code, with four parts: **definition**,
+  **when to use it** (inclusion criteria), **when not to use it** (exclusion criteria and
+  differences from similar codes) and **example**. The example can be taken straight
+  from one of its quotes with the selector below it.
+- Categories (Basic and custom) have their own entry: definition, when to use it and
+  when not to.
+- It saves itself as you type and when you leave the field (you will see "✓ Saved").
+  There is nothing to press.
+- The entry also gathers what already exists about the code: the memos on its quotes,
+  its relationships and its first quotes, with **SEE ALL QUOTES** to read them all.
+- **◀ PREVIOUS / NEXT ▶** go through the codebook entry by entry, like a book.
+- If a code is left without quotes (you deleted it or undid the coding), its description
+  **is not lost**: it moves to **DESCRIPTIONS WITHOUT A CODE** and comes back by itself if
+  you code with that name again. When you **merge** codes, both descriptions are joined
+  in the target's.
+- **⬇ CSV** downloads the whole codebook as a table. The codebook also travels in the .zip
+  backup, in the REFI-QDA exchange (as each code's description) and in the academic
+  report.
+
+## 12. ◈ Relationships
+
+1. Choose the source → **type** → the target → **◉ CREATE RELATIONSHIP**. Source and
+   target can be **codes** or **categories** (the selectors show both groups): you can
+   relate a code to a category or two categories to each other.
 2. Types: **hierarchy** (contains), **association**, **causality** (influences), **contradiction** (is in tension with).
-3. **Organiser (graph)**: nodes coloured by category, edges with a style and letter per type (H/A/C/T). Exportable with **⬇ PNG** (to insert in documents) or **⬇ SVG** (editable in Illustrator/Inkscape).
-4. **Hierarchy tree**: built automatically from the "contains" relationships.
-5. If a code disappears from the project, its relationships are cleaned up automatically.
+3. **Organiser (graph)**: codes are circles and categories are squares; edges have a style
+   and letter per type (H/A/C/T). Exportable with **⬇ PNG** (to insert in documents) or
+   **⬇ SVG** (editable in Illustrator/Inkscape).
+4. **Arranging the diagram**: drag any node to place it; positions are saved. To move
+   several at once, pick them with **Shift + click** or by dragging a rectangle on the
+   empty background, then drag any of them: the group moves together. **↶ UNDO MOVE**
+   puts the nodes back where they were (it does not touch colours or shapes).
+   **↺ REARRANGE** goes back to the circular layout. In Relationships, ⌘Z does not undo
+   coding: use the button.
+   - **Symbols**: Cua-libre offers native symbols (● code, ■ CATEGORY with a thick border
+     and its name in capitals). In a node's panel, **SHAPE** lets you choose circle,
+     square, diamond, hexagon or a **box with the name inside**, for one node or for all
+     the selected ones; **Native** restores it. Categories keep their thick border with
+     any shape, and the legend shows the shapes in use.
+   - **Locking**: **🔒 LOCK** in the panel fixes the chosen nodes (a padlock shows it);
+     they cannot be dragged and REARRANGE leaves them alone. **🔒 LOCK BOARD** fixes the
+     whole board, useful before exporting or presenting: colours and shapes can still
+     change, but nothing moves.
+   - **⛶ EXPAND** takes the organiser almost full screen, with the relationship builder
+     included; **Esc** or **✕ EXIT EXPANDED VIEW** goes back.
+   - **Line types**: hierarchy is a thick line with a diamond at the source (A contains
+     B: arranges categories and subcodes), association is dashed (a link without claiming
+     cause), causality is solid with an arrow (A produces or conditions B) and
+     contradiction is dotted with a clash mark (oppositions and tensions). When you choose
+     the type a guide on when to use it appears, and the legend draws them.
+5. **Changing colours**: click a node or a relationship (its letter or its line) to open a
+   panel below the organiser with the **COLOUR** picker. **↺ CATEGORY COLOUR** and
+   **↺ BLACK** undo the change. On a relationship, **⇄ REVERSE DIRECTION** turns A → B
+   into B → A without losing its colour. The colour belongs to the board only: it does not change
+   the category colour elsewhere in the app. The relationship type is still shown by its
+   stroke and letter, never by colour alone.
+6. **Several boards per project**: **BOARD** chooses which one to see. The **general**
+   board always shows every relationship. **+ NEW** creates a board of your own, which
+   starts empty and shows only what you put on it: **＋ ADD** places a code or a category,
+   and every relationship you create while that board is open adds both its ends. Useful
+   for a diagram per research question or per chapter. Relationships belong to the
+   project: **＋ BRING RELATIONSHIP** adds an existing one to the board, and creating an
+   existing relationship while the board is open also brings it (it is not duplicated). ✎ renames and 🗑 deletes the board
+   (the relationships stay in the project).
+7. **◑ TONE**: shows on each node the mean valence of its quotes (from −1 to +1) and how
+   many there are, with your lexicon adjustments (see ◑ Sentiment). It needs the lexicon
+   installed.
+8. **Hierarchy tree**: built automatically from the "contains" relationships.
+9. If a code or a custom category disappears from the project, its relationships and its
+   nodes on the boards are cleaned up automatically; when you merge codes, they move to
+   the new name.
 
-## 12. ⚖ Intercoder agreement
+## 13. ⚖ Intercoder agreement
 
 Compares how two people coded the same corpus, to support the team's methodological
 discussion.
@@ -285,14 +381,15 @@ Clicking a code shows the **passages in disagreement** (who coded them and where
 jump to the Canvas to discuss them. **⬇ CSV** exports the table. None of this changes the
 code bank: the decisions remain the team's.
 
-## 13. ⇄ Export
+## 14. ⇄ Export
 
 The full table of the bank and a **CSV download** in UTF-8 with BOM: it opens in Excel with accents intact. Columns: id, date, document, category, code, quote, memo.
 
 **📄 Academic report**: generates a self-contained HTML document with the WHOLE project:
 a methodological note with formal citations (and the statement of 100% human analysis),
-the codebook, quotes grouped by category and code with their memos, charts,
-co-occurrence matrices, the relationship organiser and the sentiment analysis. It opens
+the codebook with its definitions, quotes grouped by category and code with their
+memos, charts, co-occurrence matrices, every board and the sentiment analysis with your
+lexicon adjustments. It opens
 in a new tab: **⌘P** to save it as PDF (an appendix ready for a thesis or paper) or
 **⌘S** to save the HTML.
 
@@ -308,26 +405,26 @@ told if any non-text sources (image, audio, video) were left out.
 
 **🗄 Full backup (.zip)**: a self-contained file with the entire project:
 `proyecto.json` (full fidelity: corpus, codes, relationships, memos, custom categories;
-reopen it with **⤒ IMPORT**), `codes.csv` and the text of every document as `.txt`.
+reopen it with **⤒ IMPORT**), `codes.csv`, `codebook.csv` and the text of every document as `.txt`.
 Designed to be deposited as reproducibility evidence when publishing, or as a portable
 copy independent of the app.
 
-## 14. 📚 Literature
+## 15. 📚 Literature
 
 Concept search in **OpenAlex** (title, year, citations, DOI link). Together with the one-off download of the sentiment lexicon, the only thing that needs the internet; without a connection, the rest of the app works as usual.
 
-## 15. ◷ Focus session
+## 16. ◷ Focus session
 
 When you open the app (or by clicking **◷ session** in the bottom bar) you can set a
 **goal** ("code interview 3") and a block of **15/25/50/90 minutes**, or **SKIP**. The
 indicator shows the time left and how many codes you have made in the session; when it
 ends, a gentle notice suggests a break (no alarms).
 
-## 16. ♫ Focus music (bottom bar)
+## 17. ♫ Focus music (bottom bar)
 
 Put your audio files (mp3, m4a, ogg, wav, flac) in the `musica/` folder next to your data; **clicking the bar's title** shows you the exact path. `▶` plays on a loop, `⏭` skips a track, and the volume is remembered.
 
-## 17. Quick shortcut table
+## 18. Quick shortcut table
 
 | Shortcut | Action |
 |-------|--------|
@@ -339,7 +436,7 @@ Put your audio files (mp3, m4a, ogg, wav, flac) in the `musica/` folder next to 
 | `⌘Z` / `Ctrl+Z` | Undo the last coding |
 | Drag selection → code in the bank | Reapply that code |
 
-## 18. Troubleshooting
+## 19. Troubleshooting
 
 - **The Mac says the app cannot be opened**: this happens only the first time, because the app is not signed with an Apple certificate. On macOS 15 (Sequoia) or later: *System Settings → Privacy & Security → Open Anyway*. On macOS 14 or earlier: right-click the app → Open.
 - **It does not open on another Mac / nothing happens**: most likely it is the **wrong DMG for its chip**. There are two installers: one for **Intel** Macs and one for **Apple Silicon (M1/M2/M3/M4)** Macs, and they are not interchangeable (unlike Rosetta, which only translates Intel → Apple Silicon, never the reverse). On that Mac, go to the  menu → *About This Mac* to see which chip it has, and download the matching DMG. **macOS 10.15 (Catalina) or later** is also required.

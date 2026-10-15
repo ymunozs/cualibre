@@ -51,6 +51,19 @@ const Views = {
     // Concordancias / KWIC (FR-063)
     WordCloud.onWordClick = (word) => this.openKwic(word);
 
+    // Ajustes del léxico (FR-086): sumar una palabra a la categoría abierta
+    const addWord = () => {
+      const input = document.getElementById("lexf-add-input");
+      const word = input.value.trim().toLowerCase();
+      if (!word || !this._lexCat) return;
+      input.value = "";
+      this._adjustLexicon(this._lexCat, word, "add");
+    };
+    document.getElementById("lexf-add-btn").addEventListener("click", addWord);
+    document.getElementById("lexf-add-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); addWord(); }
+    });
+
     // NLP
     // Idioma del corpus: un solo valor por proyecto, compartido por NLP y Sentimiento
     document.querySelectorAll("select.corpus-lang").forEach(select => {
@@ -159,10 +172,16 @@ const Views = {
           && document.getElementById("nube").classList.contains("hidden")) {
         document.body.classList.remove("immersion");
       }
-      // Deshacer última codificación (FR-050) — fuera de campos de texto
+      // Deshacer última codificación (FR-050) — fuera de campos de texto.
+      // En Relaciones no: ahí se espera deshacer un movimiento, que tiene su
+      // propio botón (FR-087); borrar una cita por error sería grave.
       if ((e.metaKey || e.ctrlKey) && key === "z" && !e.shiftKey
           && !e.target.matches("input, textarea, select")) {
         e.preventDefault();
+        if (this.current === "relaciones") {
+          this.toast(I18N.t("rel.undo.hint"));
+          return;
+        }
         this._undoLastCode();
       }
     });
@@ -369,6 +388,7 @@ const Views = {
   },
 
   show(view) {
+    if (view !== "relaciones" && Relations.expanded) Relations.setExpanded(false);
     this.current = view;
     document.querySelectorAll("#tabs .tab").forEach(tab => {
       tab.classList.toggle("active", tab.dataset.view === view);
@@ -384,6 +404,7 @@ const Views = {
     else if (this.current === "nlp") this.renderNlp();
     else if (this.current === "exportar") this.renderExport();
     else if (this.current === "relaciones") Relations.render();
+    else if (this.current === "libro") Libro.render();
     else if (this.current === "sentimiento") this.renderSentiment();
     else if (this.current === "acuerdo") Acuerdo.render();
   },
@@ -403,6 +424,7 @@ const Views = {
   /* ---------- Sentimiento (FR-059) ---------- */
 
   _sentimentRun: 0,
+  _sentData: null, // última respuesta: la usan el diálogo de palabras y los ajustes
   async renderSentiment() {
     const run = ++this._sentimentRun; // descarta respuestas de sondeos anteriores
     const progress = this._progress("sent-progress");
@@ -418,6 +440,7 @@ const Views = {
     }
     progress.hide();
     if (run !== this._sentimentRun) return;
+    this._sentData = data;
     const empty = document.getElementById("sent-empty");
     const body = document.getElementById("sent-body");
     const language = I18N.t(`langname.${data.lang}`);
@@ -446,6 +469,7 @@ const Views = {
     }
     empty.classList.add("hidden");
     body.classList.remove("hidden");
+    this._renderLexiconAdjustments(data);
 
     // Documentos: score + arco
     const docsBox = document.getElementById("sent-docs");
@@ -472,7 +496,7 @@ const Views = {
     // Emociones (conteos, un solo tono) y palabras con carga — ambos clicables
     // hacia su trazabilidad (FR-071): qué menciones exactas produjeron el número.
     Charts.hbar(document.getElementById("sent-emotions"), this.sentimentEmotions(data),
-      (d) => this.openEmotionWords(d.key, data.emotion_words[d.key] || []));
+      (d) => this.openEmotionWords(d.key));
 
     const rows = [];
     const maxLen = Math.max(data.words.positive.length, data.words.negative.length);
@@ -511,41 +535,225 @@ const Views = {
       value: e.count, color: "#FF3300" }));
   },
 
-  /* Trazabilidad de una emoción (FR-071): qué palabras exactas la dispararon,
-     cada una clicable hacia sus concordancias en el corpus. */
-  openEmotionWords(emotion, words) {
-    const dialog = document.getElementById("emotion-words-dialog");
-    const body = document.getElementById("emotion-words-body");
-    document.getElementById("emotion-words-title").textContent =
-      I18N.t("sent.emo.title", { emotion: I18N.emotion(emotion).toUpperCase() });
-    body.textContent = "";
-    const note = document.createElement("p");
-    note.className = "empty-note";
-    if (!words.length) {
-      note.textContent = I18N.t("sent.emo.empty");
-      body.appendChild(note);
-      dialog.showModal();
+  /* ---------- Ajustes del léxico (FR-086) ---------- */
+
+  LEXICON_CATEGORIES: ["alegría", "confianza", "anticipación", "sorpresa",
+    "miedo", "tristeza", "rabia", "asco", "positivo", "negativo"],
+
+  lexCategoryLabel(cat) {
+    if (cat === "positivo") return I18N.t("lexf.positive");
+    if (cat === "negativo") return I18N.t("lexf.negative");
+    return I18N.emotion(cat);
+  },
+
+  /* Palabras (ya ajustadas) de una emoción o polaridad. */
+  _lexWords(data, cat) {
+    if (cat === "positivo" || cat === "negativo") return (data.polarity_words || {})[cat] || [];
+    return (data.emotion_words || {})[cat] || [];
+  },
+
+  _overrides(data) {
+    const o = (data && data.overrides) || {};
+    return { removed: o.removed || {}, added: o.added || {} };
+  },
+
+  /* Las diez categorías siempre visibles (aunque un ajuste deje una en cero,
+     se puede volver a abrir y restaurar) y el resumen de todo lo ajustado. */
+  _renderLexiconAdjustments(data) {
+    const chips = document.getElementById("lexf-chips");
+    chips.textContent = "";
+    const { removed, added } = this._overrides(data);
+    for (const cat of this.LEXICON_CATEGORIES) {
+      const total = this._lexWords(data, cat).reduce((sum, w) => sum + w.count, 0);
+      const adjusted = (removed[cat] || []).length + (added[cat] || []).length;
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "filter-chip" + (adjusted ? " lexf-adjusted" : "");
+      const label = this.lexCategoryLabel(cat);
+      chip.textContent = `${label.charAt(0).toLocaleUpperCase(I18N.locale)}${label.slice(1)} (${total})${adjusted ? ` ✎${adjusted}` : ""}`;
+      chip.title = I18N.t("lexf.chip.title");
+      chip.addEventListener("click", () => this.openEmotionWords(cat));
+      chips.appendChild(chip);
+    }
+
+    const summary = document.getElementById("lexf-summary");
+    summary.textContent = "";
+    const cats = this.LEXICON_CATEGORIES.filter(c => (removed[c] || []).length || (added[c] || []).length);
+    summary.classList.toggle("hidden", !cats.length);
+    if (!cats.length) return;
+    const head = document.createElement("div");
+    head.className = "mini-label";
+    const n = cats.reduce((sum, c) => sum + (removed[c] || []).length + (added[c] || []).length, 0);
+    head.textContent = I18N.t("lexf.summary", { n });
+    summary.appendChild(head);
+    for (const cat of cats) {
+      const row = document.createElement("div");
+      row.className = "lexf-row";
+      const label = document.createElement("strong");
+      const text = this.lexCategoryLabel(cat);
+      label.textContent = `${text.charAt(0).toLocaleUpperCase(I18N.locale)}${text.slice(1)}:`;
+      row.appendChild(label);
+      for (const word of removed[cat] || []) {
+        row.appendChild(this._lexToken(`− ${word}`, I18N.t("lexf.restore.title", { word }),
+          () => this._adjustLexicon(cat, word, "restore"), "lexf-removed"));
+      }
+      for (const word of added[cat] || []) {
+        row.appendChild(this._lexToken(`+ ${word}`, I18N.t("lexf.unadd.title", { word }),
+          () => this._adjustLexicon(cat, word, "unadd"), "lexf-added"));
+      }
+      summary.appendChild(row);
+    }
+    const reset = document.createElement("button");
+    reset.className = "btn btn-small";
+    reset.textContent = I18N.t("lexf.reset");
+    reset.addEventListener("click", () => this._resetLexicon());
+    summary.appendChild(reset);
+  },
+
+  _lexToken(text, title, onClick, cls) {
+    const token = document.createElement("button");
+    token.type = "button";
+    token.className = `filter-chip ${cls}`;
+    token.textContent = `${text} ✕`;
+    token.title = title;
+    token.addEventListener("click", onClick);
+    return token;
+  },
+
+  /* Un cambio en el léxico: descartar, restaurar, sumar o quitar lo sumado.
+     Se guarda y se recalcula todo (valencias, arcos, tono, emociones). */
+  async _adjustLexicon(cat, word, action) {
+    const data = this._sentData;
+    if (!data) return;
+    const { removed, added } = this._overrides(data);
+    const next = {
+      removed: Object.fromEntries(Object.entries(removed).map(([c, w]) => [c, [...w]])),
+      added: Object.fromEntries(Object.entries(added).map(([c, w]) => [c, [...w]])),
+    };
+    const list = (group) => (next[group][cat] = next[group][cat] || []);
+    const drop = (group) => { next[group][cat] = list(group).filter(w => w !== word); };
+    if (action === "discard") { if (!list("removed").includes(word)) list("removed").push(word); }
+    else if (action === "restore") drop("removed");
+    else if (action === "add") { drop("removed"); if (!list("added").includes(word)) list("added").push(word); }
+    else if (action === "unadd") drop("added");
+    try {
+      await API.setSentimentOverrides(data.lang, next.removed, next.added);
+    } catch (error) {
+      this.toast(error.message, true);
       return;
     }
+    await this.renderSentiment();
+    const fresh = this._sentData;
+    if (action === "add" && fresh && !this._lexWords(fresh, cat).some(w => w.word === word)) {
+      this.toast(I18N.t("lexf.add.none", { word }), true);
+    } else {
+      const key = { discard: "lexf.done.discard", restore: "lexf.done.restore",
+        add: "lexf.done.add", unadd: "lexf.done.unadd" }[action];
+      this.toast(I18N.t(key, { word, cat: this.lexCategoryLabel(cat) }));
+    }
+    if (document.getElementById("emotion-words-dialog").open && this._lexCat === cat) {
+      this._drawEmotionWords(cat);
+    }
+  },
+
+  async _resetLexicon() {
+    const data = this._sentData;
+    if (!data || !await this.confirm(I18N.t("lexf.reset.confirm"))) return;
+    try {
+      await API.setSentimentOverrides(data.lang, {}, {});
+      await this.renderSentiment();
+      this.toast(I18N.t("lexf.reset.done"));
+    } catch (error) {
+      this.toast(error.message, true);
+    }
+  },
+
+  /* Trazabilidad de una emoción (FR-071): qué palabras exactas la dispararon,
+     cada una clicable hacia sus concordancias en el corpus. Desde v2.0 es
+     también el lugar para ajustar el léxico (FR-086): descartar una palabra
+     de la emoción, restaurarla o sumar otra. */
+  _lexCat: null,
+  openEmotionWords(cat) {
+    this._lexCat = cat;
+    this._drawEmotionWords(cat);
+    const dialog = document.getElementById("emotion-words-dialog");
+    if (!dialog.open) dialog.showModal();
+  },
+
+  _drawEmotionWords(cat) {
+    const data = this._sentData || {};
+    const body = document.getElementById("emotion-words-body");
+    document.getElementById("emotion-words-title").textContent =
+      I18N.t("sent.emo.title", { emotion: this.lexCategoryLabel(cat).toUpperCase() });
+    body.textContent = "";
+    const { removed, added } = this._overrides(data);
+    const words = this._lexWords(data, cat);
+    const addedHere = new Set(added[cat] || []);
+    const note = document.createElement("p");
+    note.className = "empty-note";
     note.style.paddingTop = "0";
-    note.textContent = I18N.t("sent.emo.hint");
+    note.textContent = words.length ? I18N.t("lexf.dialog.hint") : I18N.t("sent.emo.empty");
     body.appendChild(note);
+
     const list = document.createElement("ul");
     list.className = "plain-list";
-    for (const w of words) {
+    const shown = new Set();
+    const row = (word, count) => {
       const li = document.createElement("li");
       const label = document.createElement("span");
-      label.className = "clickable-word";
-      label.textContent = `${w.word} (${w.count})`;
-      label.addEventListener("click", () => {
-        dialog.close();
-        this.openKwic(w.word, "all");
-      });
-      li.appendChild(label);
+      label.className = count ? "clickable-word" : "muted";
+      label.textContent = `${word} (${count})`;
+      if (count) {
+        label.title = I18N.t("sent.mentions");
+        label.addEventListener("click", () => {
+          document.getElementById("emotion-words-dialog").close();
+          this.openKwic(word, "all");
+        });
+      }
+      const side = document.createElement("span");
+      side.className = "lexf-side";
+      if (addedHere.has(word)) {
+        const badge = document.createElement("span");
+        badge.className = "lexf-badge";
+        badge.textContent = I18N.t(count ? "lexf.badge.added" : "lexf.badge.added.none");
+        side.appendChild(badge);
+      }
+      const action = document.createElement("button");
+      action.className = "btn btn-small";
+      const isAdded = addedHere.has(word);
+      action.textContent = I18N.t(isAdded ? "lexf.unadd" : "lexf.discard");
+      action.title = I18N.t(isAdded ? "lexf.unadd.title" : "lexf.discard.title", { word });
+      action.addEventListener("click", () => this._adjustLexicon(cat, word, isAdded ? "unadd" : "discard"));
+      side.appendChild(action);
+      li.append(label, side);
       list.appendChild(li);
-    }
+    };
+    for (const w of words) { shown.add(w.word); row(w.word, w.count); }
+    for (const word of addedHere) if (!shown.has(word)) row(word, 0);
     body.appendChild(list);
-    dialog.showModal();
+
+    const gone = removed[cat] || [];
+    if (gone.length) {
+      const title = document.createElement("div");
+      title.className = "section-title";
+      title.textContent = I18N.t("lexf.discarded", { n: gone.length });
+      body.appendChild(title);
+      const ul = document.createElement("ul");
+      ul.className = "plain-list";
+      for (const word of gone) {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.className = "lexf-struck";
+        label.textContent = word;
+        const restore = document.createElement("button");
+        restore.className = "btn btn-small";
+        restore.textContent = I18N.t("lexf.restore");
+        restore.addEventListener("click", () => this._adjustLexicon(cat, word, "restore"));
+        li.append(label, restore);
+        ul.appendChild(li);
+      }
+      body.appendChild(ul);
+    }
   },
 
   async _saveProject() {

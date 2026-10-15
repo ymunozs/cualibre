@@ -81,12 +81,76 @@ RELATION_TYPES: dict[str, str] = {
 }
 
 
+# Extremos de una relación (FR-085): un código (por nombre) o una categoría
+# (por su clave: Básica en castellano o nombre de la personalizada)
+NODE_KINDS = ("code", "category")
+
+
 class Relation(BaseModel):
     id: int
-    source: str  # nombre de código
-    target: str  # nombre de código
+    source: str  # nombre de código o clave de categoría
+    target: str
     type: str
     created_at: str = Field(default_factory=now_iso)
+    source_kind: str = "code"  # proyectos anteriores a v2.0: siempre códigos
+    target_kind: str = "code"
+
+
+class CodebookEntry(BaseModel):
+    """Descripción cualitativa de un código o categoría (FR-084): la estructura
+    clásica de un libro de códigos. Texto libre, escrito solo por el investigador."""
+
+    definition: str = ""
+    inclusion: str = ""  # cuándo aplicarlo
+    exclusion: str = ""  # cuándo no aplicarlo
+    example: str = ""
+    updated_at: str = Field(default_factory=now_iso)
+
+    def is_empty(self) -> bool:
+        return not any(f.strip() for f in (self.definition, self.inclusion,
+                                           self.exclusion, self.example))
+
+
+# Formas de nodo (FR-087). None = simbología nativa de Cua-libre: círculo para
+# los códigos y cuadrado para las categorías
+NODE_SHAPES = ("circle", "square", "diamond", "hexagon", "box")
+
+
+class BoardNode(BaseModel):
+    kind: str = "code"
+    name: str
+    x: Optional[float] = None  # None = ubicación automática (círculo)
+    y: Optional[float] = None
+    color: Optional[str] = None  # None = color de su categoría
+    shape: Optional[str] = None  # None = forma nativa (FR-087)
+    locked: bool = False  # fijo: no se arrastra ni se reordena (FR-087)
+
+
+class Board(BaseModel):
+    """Cuadro organizador (FR-085): una vista de las relaciones del proyecto.
+
+    El cuadro general (id 0) muestra siempre todas las relaciones, como el
+    organizador de siempre; sus nodos solo guardan posición y color. Los
+    cuadros propios muestran únicamente los nodos que el investigador puso en
+    ellos y las relaciones entre esos nodos."""
+
+    id: int
+    name: str = ""
+    nodes: list[BoardNode] = Field(default_factory=list)
+    edge_colors: dict[str, str] = Field(default_factory=dict)  # id de relación -> #hex
+    show_tone: bool = False  # tono emocional sobre los nodos (FR-086)
+    locked: bool = False  # cuadro bloqueado: nada se mueve (FR-087)
+
+
+class LexiconOverrides(BaseModel):
+    """Ajustes del investigador al léxico de sentimiento (FR-086), por idioma:
+    palabras descartadas de una emoción o polaridad, y palabras sumadas."""
+
+    removed: dict[str, list[str]] = Field(default_factory=dict)  # categoría -> palabras
+    added: dict[str, list[str]] = Field(default_factory=dict)
+
+    def is_empty(self) -> bool:
+        return not any(self.removed.values()) and not any(self.added.values())
 
 
 class Project(BaseModel):
@@ -102,6 +166,13 @@ class Project(BaseModel):
     nlp_exclusions: list[str] = Field(default_factory=list)
     custom_domains: dict[str, str] = Field(default_factory=dict)  # nombre -> #hex (FR-064)
     corpus_lang: Optional[str] = None  # es/en/pt (FR-077); None = aún no definido
+    # v2.0 (todos con valor por omisión: los proyectos anteriores abren igual)
+    codebook: dict[str, CodebookEntry] = Field(default_factory=dict)  # nombre de código
+    category_notes: dict[str, CodebookEntry] = Field(default_factory=dict)  # clave de categoría
+    general_board: Board = Field(default_factory=lambda: Board(id=0))
+    boards: list[Board] = Field(default_factory=list)
+    next_board_id: int = 1
+    sentiment_overrides: dict[str, LexiconOverrides] = Field(default_factory=dict)  # idioma
 
     def summary(self) -> dict:
         return {
@@ -239,10 +310,19 @@ class CustomDomainCreate(BaseModel):
         return v.upper()
 
 
+def _valid_kind(v: str) -> str:
+    if v not in NODE_KINDS:
+        raise ValueError(tr("invalid_node_kind", value=v))
+    return v
+
+
 class RelationCreate(BaseModel):
     source: str = Field(min_length=1)
     target: str = Field(min_length=1)
     type: str
+    source_kind: str = "code"
+    target_kind: str = "code"
+    board_id: Optional[int] = None  # cuadro activo: recibe ambos extremos
 
     @field_validator("type")
     @classmethod
@@ -251,11 +331,122 @@ class RelationCreate(BaseModel):
             raise ValueError(tr("invalid_relation_type", value=v))
         return v
 
+    @field_validator("source_kind", "target_kind")
+    @classmethod
+    def valid_kind(cls, v: str) -> str:
+        return _valid_kind(v)
+
     @model_validator(mode="after")
     def distinct_ends(self) -> "RelationCreate":
-        if self.source == self.target:
+        if (self.source_kind, self.source) == (self.target_kind, self.target):
             raise ValueError(tr("relation_same_ends"))
         return self
+
+
+class CodebookUpdate(BaseModel):
+    kind: str  # "code" | "category"
+    name: str = Field(min_length=1, max_length=200)
+    definition: str = Field(default="", max_length=20000)
+    inclusion: str = Field(default="", max_length=20000)
+    exclusion: str = Field(default="", max_length=20000)
+    example: str = Field(default="", max_length=20000)
+
+    @field_validator("kind")
+    @classmethod
+    def valid_kind(cls, v: str) -> str:
+        return _valid_kind(v)
+
+
+class BoardCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError(tr("name_empty"))
+        return v
+
+
+class BoardNodeIn(BaseModel):
+    kind: str = "code"
+    name: str = Field(min_length=1, max_length=200)
+    x: Optional[float] = None
+    y: Optional[float] = None
+    color: Optional[str] = None
+    shape: Optional[str] = None
+    locked: bool = False
+
+    @field_validator("shape")
+    @classmethod
+    def valid_shape(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in NODE_SHAPES:
+            raise ValueError(tr("invalid_node_shape", value=v))
+        return v
+
+    @field_validator("kind")
+    @classmethod
+    def valid_kind(cls, v: str) -> str:
+        return _valid_kind(v)
+
+    @field_validator("color")
+    @classmethod
+    def valid_hex(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not HEX_COLOR_RE.match(v):
+            raise ValueError(tr("invalid_color", value=v))
+        return v.upper() if v else v
+
+
+class BoardUpdate(BaseModel):
+    """Reemplazo completo de un cuadro (posiciones, colores, nombre, tono)."""
+
+    name: Optional[str] = Field(default=None, max_length=80)
+    nodes: list[BoardNodeIn] = Field(default_factory=list, max_length=2000)
+    edge_colors: dict[str, str] = Field(default_factory=dict)
+    show_tone: bool = False
+    locked: bool = False
+
+    @field_validator("edge_colors")
+    @classmethod
+    def valid_colors(cls, v: dict[str, str]) -> dict[str, str]:
+        for color in v.values():
+            if not HEX_COLOR_RE.match(color):
+                raise ValueError(tr("invalid_color", value=color))
+        return {k: c.upper() for k, c in v.items()}
+
+
+# Categorías del léxico que el investigador puede ajustar (FR-086): las ocho
+# emociones del NRC (claves en castellano, como en lexicons.EMOTIONS) y las
+# dos polaridades
+SENTIMENT_CATEGORIES = ("alegría", "confianza", "miedo", "sorpresa", "tristeza", "asco",
+                        "rabia", "anticipación", "positivo", "negativo")
+LEXICON_WORD_RE = re.compile(r"^[^\W\d_]+(?:['’-][^\W\d_]+)*$")
+
+
+class LexiconOverridesUpdate(BaseModel):
+    lang: str
+    removed: dict[str, list[str]] = Field(default_factory=dict)
+    added: dict[str, list[str]] = Field(default_factory=dict)
+
+    @field_validator("removed", "added")
+    @classmethod
+    def clean(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
+        cleaned: dict[str, list[str]] = {}
+        for category, words in v.items():
+            if category not in SENTIMENT_CATEGORIES:
+                raise ValueError(tr("invalid_sentiment_category", value=category))
+            normalized = set()
+            for word in words:
+                word = word.strip().lower()
+                if not word:
+                    continue
+                if len(word) > 60 or not LEXICON_WORD_RE.match(word):
+                    raise ValueError(tr("lexicon_word_invalid", value=word))
+                normalized.add(word)
+            if normalized:
+                cleaned[category] = sorted(normalized)
+        return cleaned
 
 
 class ConfirmPayload(BaseModel):

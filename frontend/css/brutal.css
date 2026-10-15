@@ -146,7 +146,7 @@ body {
   font-weight: 700;
   background: #EEE;
   border: var(--border-thin);
-  padding: 10px 20px;
+  padding: 10px 14px;
   cursor: pointer;
 }
 .tab.active { background: var(--accent); color: #fff; }
@@ -400,7 +400,7 @@ body.dark #canvas ::selection { background: #E8E8E2; color: #141412; }
 
 #rel-body { display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px; margin-top: 10px; align-items: start; }
 #rel-builder select { max-width: 240px; }
-#rel-legend { margin-top: 4px; }
+#rel-legend { margin-top: 6px; }
 
 .tree-branch { list-style: none; padding-left: 22px; }
 .tree-root { padding-left: 0; }
@@ -977,3 +977,140 @@ body.dark .band-substantial td:last-child, body.dark .band-almost_perfect td:las
 .qdpx-group .btn { border-right: none; }
 #qdpx-profile { font-family: var(--mono); font-size: 11px; font-weight: 700; border: var(--border-thin); padding: 0 6px; background: #fff; }
 body.dark #qdpx-profile { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
+
+/* ---------- Libro de códigos (FR-084) ---------- */
+
+#book-grid { display: grid; grid-template-columns: 300px 1fr; gap: 22px; align-items: start; }
+#book-index-col { position: sticky; top: 12px; min-width: 0; }
+#book-search {
+  width: 100%; font-family: var(--mono); font-size: 13px;
+  border: var(--border-thin); padding: 7px 8px; margin-bottom: 6px; background: #fff;
+}
+#book-progress { margin-bottom: 6px; }
+#book-index { max-height: 70vh; overflow-y: auto; padding: 6px; }
+.book-entry {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  font-family: var(--mono); font-size: 12px; text-align: left;
+  background: none; border: none; border-bottom: 1px dashed #ccc;
+  padding: 5px 4px; cursor: pointer; color: inherit;
+}
+.book-entry:hover { background: #F2F2EC; }
+.book-entry.active { background: var(--ink); color: #fff; }
+.book-category { font-weight: 700; margin-top: 6px; border-bottom: 2px solid var(--ink); }
+.book-code { padding-left: 22px; }
+.book-mark { font-family: var(--symbols); font-size: 10px; flex-shrink: 0; }
+.book-entry-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.book-count { font-size: 10px; color: #888; flex-shrink: 0; }
+.book-entry.active .book-count { color: #ccc; }
+.book-orphans-title { margin: 14px 0 4px; }
+#book-page { padding: 18px 22px; min-height: 60vh; }
+.book-title {
+  font-family: var(--display); font-size: 26px; margin: 4px 0 6px;
+  display: flex; align-items: center; gap: 10px; overflow-wrap: anywhere;
+}
+.book-title-chip { width: 18px; height: 18px; }
+.book-meta { font-size: 12px; color: #666; margin-bottom: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.book-categories { display: inline-flex; flex-wrap: wrap; gap: 5px; }
+.book-field { display: block; margin: 12px 0; }
+.book-field-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+.book-field-hint { display: block; font-size: 11px; color: #777; margin: 2px 0 4px; }
+.book-field textarea {
+  width: 100%; font-family: var(--serif); font-size: 15px; line-height: 1.5;
+  border: var(--border-thin); padding: 8px 10px; background: #FDFDF7; resize: vertical;
+}
+.book-field textarea:focus { outline: 3px solid var(--accent); outline-offset: -1px; }
+.book-example-pick {
+  width: 100%; font-family: var(--mono); font-size: 12px;
+  border: 1px solid var(--ink); padding: 5px 6px; margin-top: 4px; background: #fff;
+}
+.book-status { min-height: 1.2em; margin: 4px 0 10px; }
+.book-section { margin-top: 18px; }
+.book-list li { word-break: normal; overflow-wrap: anywhere; }
+.book-quote { font-size: 14px; border-left: 3px solid #bbb; padding-left: 10px; }
+.book-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.book-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 10px; }
+.book-nav .btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; transform: none; }
+
+@media (max-width: 980px) {
+  #book-grid { grid-template-columns: 1fr; }
+  #book-index-col { position: static; }
+  #book-index { max-height: 40vh; }
+}
+
+/* ---------- Cuadros organizadores (FR-085) ---------- */
+
+.board-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 4px; }
+.board-bar label { display: flex; align-items: center; gap: 6px; }
+.board-bar select {
+  font-family: var(--mono); font-size: 12px; border: var(--border-thin);
+  padding: 4px 6px; background: #fff; max-width: 280px;
+}
+.board-bar .btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; transform: none; }
+.board-add-group { display: inline-flex; gap: 4px; align-items: center; }
+.board-tone-label input { accent-color: var(--accent); }
+.board-hint { padding: 2px 0 6px; font-size: 11px; }
+.board-hint:empty { display: none; }
+.rel-selection { margin-top: 8px; border-left: 6px solid var(--accent); }
+.rel-selection-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.rel-selection .btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; transform: none; }
+.rel-color-label { display: inline-flex; align-items: center; gap: 6px; }
+.rel-color-label input[type="color"] { width: 44px; height: 28px; border: var(--border-thin); padding: 0; background: #fff; cursor: pointer; }
+.rel-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; margin: 6px 14px 0 0; font-weight: 700; }
+.tree-category { border-width: 2px; }
+
+/* ---------- Ajustes del léxico (FR-086) ---------- */
+
+.lexf-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.lexf-chips .filter-chip { font-size: 11px; padding: 4px 8px; }
+.filter-chip.lexf-adjusted { border: 2px solid var(--accent); }
+.lexf-summary { border-left: 6px solid var(--accent); margin-bottom: 10px; }
+.lexf-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin: 6px 0; font-size: 12px; }
+.lexf-removed { text-decoration: line-through; }
+.lexf-added { border-color: var(--accent); }
+.lexf-add { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+.lexf-add .dialog-input { flex: 1; margin: 0; }
+.lexf-side { display: inline-flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.lexf-badge { font-size: 9px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); padding: 0 4px; }
+.lexf-struck { text-decoration: line-through; color: #888; }
+
+body.dark #book-search, body.dark .board-bar select, body.dark .book-example-pick {
+  background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2;
+}
+body.dark .book-entry { border-bottom-color: #444; }
+body.dark .book-entry:hover { background: #2A2A24; }
+body.dark .book-entry.active { background: #E8E8E2; color: #141412; }
+body.dark .book-entry.active .book-count { color: #555; }
+body.dark .book-category { border-bottom-color: #E8E8E2; }
+body.dark .book-meta, body.dark .book-field-hint { color: #aaa; }
+body.dark .book-field textarea { background: #1B1B16; color: #E4E2D8; border-color: #E8E8E2; }
+body.dark .book-quote { border-left-color: #555; }
+body.dark .rel-color-label input[type="color"] { border-color: #E8E8E2; background: #1E1E1A; }
+body.dark .lexf-struck { color: #777; }
+
+/* ---------- Organizador: simbología, selección y vista ampliada (FR-087) ---------- */
+
+.rel-guide { font-size: 11px; color: #555; margin: -2px 0 8px; min-height: 1.2em; }
+#rel-organizer #rel-builder select { max-width: 220px; }
+.rel-legend-row { display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 4px 0; }
+.rel-legend-row strong { font-weight: 700; }
+.rel-sample { flex-shrink: 0; color: var(--ink); }
+.rel-legend-guide { color: #666; }
+.rel-shape-select { font-family: var(--mono); font-size: 11px; border: var(--border-thin); padding: 3px 4px; background: #fff; }
+.btn-locked { background: var(--ink); color: #fff; }
+#btn-board-undo:disabled, #btn-board-layout:disabled { opacity: 0.35; cursor: default; box-shadow: none; transform: none; }
+
+/* Vista ampliada: el organizador ocupa la ventana, sobre la página y bajo la
+   barra de música y los avisos; los diálogos quedan siempre encima */
+body.rel-expanded-open { overflow: hidden; }
+#rel-organizer.rel-expanded {
+  position: fixed; inset: 0; z-index: 8000; overflow: auto;
+  background: var(--paper); padding: 16px 28px 70px;
+}
+#rel-organizer.rel-expanded #rel-graph svg { height: calc(100vh - 330px); min-height: 360px; width: 100%; }
+#rel-organizer.rel-expanded #btn-rel-expand { background: var(--accent); color: #fff; }
+
+body.dark .rel-guide, body.dark .rel-legend-guide { color: #aaa; }
+body.dark .rel-sample { color: #E8E8E2; }
+body.dark .rel-shape-select { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
+body.dark .btn-locked { background: #E8E8E2; color: #141412; }
+body.dark #rel-organizer.rel-expanded { background: #141412; }
