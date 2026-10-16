@@ -494,7 +494,15 @@ const Paleta = {
   async _deleteCode(code) {
     if (!await Views.confirm(I18N.t("bank.delete.confirm", { name: code.name }))) return;
     try {
-      await API.deleteCode(code.id);
+      try {
+        await API.deleteCode(code.id);
+      } catch (error) {
+        if (error.status !== 409) throw error;
+        // Última instancia de un código con pasajes de literatura (FR-091)
+        const n = error.headers.get("X-Lit-Count") || "?";
+        if (!await Views.confirm(I18N.t("bank.delete.literature", { name: code.name, n }))) return;
+        await API.deleteCode(code.id, true);
+      }
       await State.reload(); // FR-031: resaltado fuera, analytics al día
       Views.toast(I18N.t("bank.deleted"));
     } catch (error) {

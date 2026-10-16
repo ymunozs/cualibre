@@ -274,3 +274,67 @@ def test_bibliography_scopes_and_exports(client, crossref):
 def test_old_project_loads_without_lit_fields():
     loaded = Project.model_validate_json('{"id": "a", "name": "viejo"}')
     assert loaded.lit_codings == [] and loaded.next_lit_id == 1
+
+
+def test_deleting_last_instance_with_literature_asks_and_cleans(client, offline):
+    item = upload(client, "a.pdf", make_pdf("x")).json()
+    manual = client.post("/api/codes", json={"domain": "Teórico", "name": "teoría"}).json()
+    client.post("/api/lit-codings", json={"item_id": item["id"], "quote": "x", "page": 1,
+                                          "rects": [[0, 0, 0.1, 0.1]], "name": "teoría", "domain": "Teórico"})
+    r = client.delete(f"/api/codes/{manual['id']}")
+    assert r.status_code == 409 and r.headers["X-Lit-Count"] == "1"
+    assert len(project(client)["lit_codings"]) == 1  # nada cambió
+    assert client.delete(f"/api/codes/{manual['id']}?confirm=true").status_code == 204
+    data = project(client)
+    assert data["codes"] == [] and data["lit_codings"] == []  # nunca quedan huérfanos
+    # Si quedan otras instancias del nombre, se borra sin preguntar
+    a = client.post("/api/codes", json={"domain": "Teórico", "name": "otra"}).json()
+    client.post("/api/codes", json={"domain": "Teórico", "name": "otra"})
+    client.post("/api/lit-codings", json={"item_id": item["id"], "quote": "x", "page": 1,
+                                          "rects": [[0, 0, 0.1, 0.1]], "name": "otra", "domain": "Teórico"})
+    assert client.delete(f"/api/codes/{a['id']}").status_code == 204
+    assert len(project(client)["lit_codings"]) == 1
+
+
+def test_reference_order_ignores_accents():
+    names = ["Zúñiga", "Álvarez", "Ortega", "Ñúñez"]
+    ordered = sorted((LitMeta(authors=[Person(family=n)]) for n in names), key=library.sort_key)
+    assert [m.authors[0].family for m in ordered] == ["Álvarez", "Ñúñez", "Ortega", "Zúñiga"]
+
+
+def test_scanned_pdf_imports_without_ocr(client, offline, monkeypatch):
+    from backend import ocr
+
+    def boom(*args, **kwargs):
+        raise AssertionError("la biblioteca no debe hacer OCR")
+    monkeypatch.setattr(ocr, "recognize_png", boom)
+    doc = fitz.open()
+    page = doc.new_page()
+    pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 50, 50), False)
+    page.insert_image(fitz.Rect(72, 72, 300, 300), pixmap=pix)
+    r = upload(client, "escaneado.pdf", doc.tobytes())
+    assert r.status_code == 201 and r.json()["pages"] == 1 and r.json()["meta"]["title"] == "escaneado"
+
+
+def test_literature_stays_out_of_corpus_analyses(client, nrc_lexicons, offline):
+    """FR-091: la literatura codificada no entra en REFI-QDA, sentimiento ni acuerdo."""
+    from backend import agreement, qdpx, storage
+
+    client.post("/api/documents", files={"file": ("e.txt", "Siento alegría y miedo.".encode(), "text/plain")})
+    doc = project(client)["documents"][0]
+    client.post("/api/codes", json={"doc_id": doc["id"], "domain": "Emocional", "name": "afecto",
+                                    "quote": "alegría", "start": 7, "end": 14})
+    item = upload(client, "lit.txt", "La alegría y la tristeza en la escuela.".encode(), "text/plain").json()
+    client.post("/api/lit-codings", json={"item_id": item["id"], "quote": "La alegría y la tristeza",
+                                          "start": 0, "end": 24, "name": "afecto", "domain": "Emocional"})
+    xml = zipfile.ZipFile(io.BytesIO(client.get("/api/export.qdpx").content)).read("project.qde").decode()
+    assert "La alegría y la tristeza" not in xml
+    tones = client.get("/api/sentiment").json()["code_tones"]
+    assert tones["afecto"]["n"] == 1  # solo la cita del corpus
+    me = storage.get_active_project()
+    other = me.model_copy(deep=True)
+    other.id = "otro"
+    other.lit_codings = []
+    result = agreement.compare(me, other)
+    assert result["project_a"]["name"] == me.name  # compara solo códigos del corpus
+    assert all(row["count_a"] == row["count_b"] for row in result["codes"])

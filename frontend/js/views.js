@@ -371,7 +371,10 @@ const Views = {
   },
 
   async _undoLastCode() {
-    const codes = State.project.codes;
+    // Solo codificación del corpus: un código manual nacido en la biblioteca
+    // (con pasajes de literatura) no se deshace con ⌘Z (FR-091)
+    const litNames = new Set((State.project.lit_codings || []).map(c => c.name));
+    const codes = State.project.codes.filter(c => !(c.doc_id === null && litNames.has(c.name)));
     if (!codes.length) { this.toast(I18N.t("undo.none"), true); return; }
     const last = codes.reduce((a, b) => (a.id > b.id ? a : b));
     try {

@@ -641,6 +641,7 @@ const I18N = {
       "book.code.meta.lit": "{n} de la literatura · ",
       "book.lit": "CITAS DE LA LITERATURA ({n})",
       "book.lit.open": "📚 ABRIR EN EL LECTOR",
+      "bank.delete.literature": "«{name}» tiene {n} pasaje(s) de literatura codificado(s). Al eliminar su última instancia también se retiran. ¿Continuar?",
     },
 
     en: {
@@ -1251,6 +1252,7 @@ const I18N = {
       "book.code.meta.lit": "{n} from the literature · ",
       "book.lit": "QUOTES FROM THE LITERATURE ({n})",
       "book.lit.open": "📚 OPEN IN THE READER",
+      "bank.delete.literature": "“{name}” has {n} coded literature passage(s). Deleting its last instance removes them too. Continue?",
     },
 
     pt: {
@@ -1861,6 +1863,7 @@ const I18N = {
       "book.code.meta.lit": "{n} da literatura · ",
       "book.lit": "CITAÇÕES DA LITERATURA ({n})",
       "book.lit.open": "📚 ABRIR NO LEITOR",
+      "bank.delete.literature": "“{name}” tem {n} trecho(s) de literatura codificado(s). Ao excluir sua última instância, eles também são retirados. Continuar?",
     },
   },
 

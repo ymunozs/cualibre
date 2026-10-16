@@ -255,6 +255,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "The general board cannot be deleted or renamed",
         "pt": "O quadro geral não pode ser excluído nem renomeado",
     },
+    "code_has_literature": {
+        "es": "«{name}» tiene {n} pasaje(s) de literatura codificado(s); al eliminar su última instancia se retiran también. Repite la operación con confirmación.",
+        "en": "“{name}” has {n} coded literature passage(s); deleting its last instance removes them too. Repeat the operation with confirmation.",
+        "pt": "“{name}” tem {n} trecho(s) de literatura codificado(s); ao excluir sua última instância, eles também são retirados. Repita a operação com confirmação.",
+    },
     "library_item_not_found": {
         "es": "Documento no encontrado en la biblioteca",
         "en": "Document not found in the library",

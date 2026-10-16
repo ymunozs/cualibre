@@ -124,6 +124,33 @@ def trash_files(item: LibraryItem) -> None:
         storage._replace_with_retry(str(text), trash / f"{stamp}-{item.id}.txt")
 
 
+def pdf_text(data: bytes) -> tuple[str, int, dict]:
+    """Capa de texto, páginas y metadatos de un PDF, SIN OCR: en la biblioteca
+    el texto solo sirve para hallar el DOI, y el OCR de un libro escaneado
+    tomaría minutos (el lector muestra la imagen igual)."""
+    import fitz
+
+    try:
+        with fitz.open(stream=data, filetype="pdf") as doc:
+            text = "\n".join(page.get_text() for page in doc)
+            return text, doc.page_count, dict(doc.metadata or {})
+    except Exception:
+        return "", 0, {}
+
+
+def sort_key(meta: LitMeta) -> tuple:
+    """Orden alfabético de la lista de referencias, sin que las tildes la
+    alteren («Álvarez» antes que «Zúñiga»)."""
+    import unicodedata
+
+    def plain(text: str) -> str:
+        return "".join(c for c in unicodedata.normalize("NFKD", text or "")
+                       if not unicodedata.combining(c)).casefold()
+
+    first = meta.authors[0].family if meta.authors else meta.title
+    return (plain(first), meta.year, plain(meta.title))
+
+
 def sha1(data: bytes) -> str:
     return hashlib.sha1(data).hexdigest()
 
@@ -341,11 +368,6 @@ def apa(meta: LitMeta, lang: str = "es", html: bool = True) -> str:
         parts = [body.pop(0), year]
     parts += [b for b in body if b] + tail
     return " ".join(p for p in parts if p).strip()
-
-
-def sort_key(meta: LitMeta) -> tuple:
-    first = meta.authors[0].family if meta.authors else meta.title
-    return (first.casefold(), meta.year, meta.title.casefold())
 
 
 BIBTEX_TYPES = {"article": "article", "book": "book", "chapter": "incollection",

@@ -542,11 +542,21 @@ def update_code(code_id: int, payload: CodeUpdate) -> Code:
 
 
 @app.delete("/api/codes/{code_id}", status_code=204)
-def delete_code(code_id: int) -> None:
+def delete_code(code_id: int, confirm: bool = False) -> None:
     project = storage.get_active_project()
-    if not any(c.id == code_id for c in project.codes):
+    code = next((c for c in project.codes if c.id == code_id), None)
+    if code is None:
         raise HTTPException(404, tr("code_not_found"))
+    # Última instancia de un nombre que tiene pasajes de literatura (FR-091):
+    # se pide confirmación y se retiran con él (nunca quedan huérfanos)
+    last = not any(c.name == code.name and c.id != code.id for c in project.codes)
+    lit = [c for c in project.lit_codings if c.name == code.name] if last else []
+    if lit and not confirm:
+        raise HTTPException(409, tr("code_has_literature", n=len(lit), name=code.name),
+                            headers={"X-Lit-Count": str(len(lit))})
     project.codes = [c for c in project.codes if c.id != code_id]
+    if lit:
+        project.lit_codings = [c for c in project.lit_codings if c.name != code.name]
     _prune_relations(project)
     storage.save_project(project)
 
@@ -839,16 +849,6 @@ def get_library() -> dict:
     return {"items": [_item_view(i, lib, project) for i in items]}
 
 
-def _pdf_info(data: bytes) -> tuple[int, dict]:
-    import fitz
-
-    try:
-        with fitz.open(stream=data, filetype="pdf") as doc:
-            return doc.page_count, dict(doc.metadata or {})
-    except Exception:
-        return 0, {}
-
-
 @app.post("/api/library/items", status_code=201)
 async def add_library_item(file: UploadFile, response: Response) -> dict:
     """Agrega un PDF, DOCX, DOC o TXT a la biblioteca. Si el mismo archivo ya
@@ -865,19 +865,17 @@ async def add_library_item(file: UploadFile, response: Response) -> dict:
     if existing is not None:
         response.status_code = 200
         return {**_item_view(existing, lib), "duplicate": True}
-    try:
-        text, _ocr = await run_in_threadpool(extract_document, filename, data, None)
-    except ExtractionError as exc:
-        if kind == "pdf":  # un PDF escaneado sin texto igual se puede leer y anotar a mano
-            text = ""
-        else:
-            raise HTTPException(422, str(exc)) from exc
     item = LibraryItem(kind=kind, filename=filename, sha1=digest)
     meta = LitMeta(title=Path(filename).stem)
-    if kind == "pdf":
-        item.pages, info = await run_in_threadpool(_pdf_info, data)
+    if kind == "pdf":  # sin OCR: un PDF escaneado igual se lee (imagen) en el lector
+        text, item.pages, info = await run_in_threadpool(library.pdf_text, data)
         if (info.get("title") or "").strip():
             meta.title = info["title"].strip()
+    else:
+        try:
+            text, _ocr = await run_in_threadpool(extract_document, filename, data, None)
+        except ExtractionError as exc:
+            raise HTTPException(422, str(exc)) from exc
     doi = library.find_doi(text[:20000])
     if doi:
         found = await run_in_threadpool(library.lookup_doi, doi)
