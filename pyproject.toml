@@ -1,6 +1,6 @@
 [project]
 name = "cualibre"
-version = "1.14.0"
+version = "1.14.1"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
 description = "CUA-LIBRE STUDIO — Estudio de análisis cualitativo (QDA/CAQDAS) local"

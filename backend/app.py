@@ -7,6 +7,7 @@ Toda mutación persiste el proyecto de forma atómica ANTES de responder (FR-025
 from __future__ import annotations
 
 import asyncio
+import re
 import sys
 import threading
 import weakref
@@ -62,7 +63,7 @@ from .models import (
 )
 from .nlp import POS_LANGS, STOPWORDS, detect_language, word_frequencies
 
-APP_VERSION = "1.14.0"
+APP_VERSION = "1.14.1"
 CORPUS_LANGS = tuple(STOPWORDS)  # es, en, pt
 POS_FILTERS = ("all", "verb", "noun", "adj")
 
@@ -1649,9 +1650,29 @@ def quit_app(payload: ConfirmPayload) -> dict:
 
 # ----- SPA -----
 
+# Caché de la ventana: tras ACTUALIZAR la app, la ventana (WKWebView, WebView2)
+# reutilizaba scripts de la versión anterior guardados en su caché, mezclados
+# con la portada nueva: claves sin traducir («tab.libro»), menús ausentes y
+# funciones viejas (pasó en v1.14.0). Dos defensas:
+# 1. la portada pide cada script y estilo con «?v=<versión>»: tras actualizar
+#    son direcciones nuevas, que ninguna caché anterior puede responder;
+# 2. todo /static se sirve con «no-cache»: se revalida siempre (barato en local).
+_STATIC_REF = re.compile(r'((?:src|href)="/static/[^"?#]+\.(?:js|css))"')
+
+
 @app.get("/", include_in_schema=False)
-def index() -> FileResponse:
-    return FileResponse(FRONTEND_DIR / "index.html", headers={"Cache-Control": "no-cache"})
+def index() -> Response:
+    html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
+    html = _STATIC_REF.sub(rf'\1?v={APP_VERSION}"', html)
+    return Response(html, media_type="text/html; charset=utf-8",
+                    headers={"Cache-Control": "no-cache"})
 
 
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+class RevalidatedStaticFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
+app.mount("/static", RevalidatedStaticFiles(directory=FRONTEND_DIR), name="static")

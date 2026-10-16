@@ -455,3 +455,26 @@ def test_bring_relation_endpoint(client):
     assert client.post(f"/api/boards/0/relations/{rel['id']}").status_code == 422
     assert client.post(f"/api/boards/{board['id']}/relations/99").status_code == 404
     assert client.post(f"/api/boards/99/relations/{rel['id']}").status_code == 404
+
+
+
+# ----- v1.14.1: la ventana no mezcla archivos de la versión anterior -----
+
+def test_index_versions_every_static_script_and_style(client):
+    import re
+
+    from backend.app import APP_VERSION
+
+    html = client.get("/").text
+    refs = re.findall(r'(?:src|href)="(/static/[^"]+\.(?:js|css)[^"]*)"', html)
+    assert len(refs) > 15
+    assert all(r.endswith(f"?v={APP_VERSION}") for r in refs), [r for r in refs if "?v=" not in r]
+    assert client.get("/").headers["cache-control"] == "no-cache"
+
+
+def test_static_files_are_always_revalidated(client):
+    r = client.get("/static/js/i18n.js?v=cualquiera")
+    assert r.status_code == 200 and r.headers["cache-control"] == "no-cache"
+    assert "etag" in r.headers  # revalidar cuesta poco: 304 si no cambió
+    again = client.get("/static/js/i18n.js", headers={"If-None-Match": r.headers["etag"]})
+    assert again.status_code == 304
