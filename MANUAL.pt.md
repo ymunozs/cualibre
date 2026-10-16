@@ -410,6 +410,13 @@ Cua-libre. Os arquivos originais nunca são modificados.
 - **Adicionar**: **📥 ADICIONAR PDF, DOCX, DOC ou TXT** copia os documentos para a
   biblioteca (o mesmo arquivo não se duplica). Se o documento traz seu **DOI**, a ficha se
   completa sozinha com os dados do Crossref; se não, complete-a à mão em **FICHA**.
+- **A lista**: uma tabela no estilo do Finder ou do Mendeley, com **autoria, título,
+  revista e ano**. Clique em um cabeçalho para ordenar por essa coluna (outro clique
+  inverte); por padrão, por ano, do mais recente ao mais antigo. Abaixo de cada cabeçalho
+  há um **filtro**; o de ano aceita `2019`, intervalos `2015-2020` e `>2018` ou `<2000`. A
+  busca acima procura em todos os campos. Um clique escolhe um documento e mostra sua
+  ficha à direita (referência APA, **✎ EDITAR FICHA**, **🗑 EXCLUIR**); **clique duplo** ou
+  **Enter** o abre, e **↑ ↓** percorrem a lista.
 - **Ler**: **ABRIR** mostra o PDF com suas páginas reais (− / + para o zoom). Word e TXT
   são lidos como texto contínuo. Um PDF digitalizado sem texto pode ser lido, mas não
   anotado sobre o texto.

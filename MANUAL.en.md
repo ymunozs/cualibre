@@ -417,6 +417,13 @@ leaving Cua-libre. Original files are never modified.
 - **Adding**: **📥 ADD PDF, DOCX, DOC or TXT** copies documents into the library (the same
   file is never duplicated). If the document carries its **DOI**, the record fills itself
   in with Crossref data; otherwise, complete it by hand in **RECORD**.
+- **The list**: a table in the style of the Finder or Mendeley, with **author, title,
+  journal and year**. Click a header to sort by that column (click again to reverse); by
+  default, by year, most recent first. Below each header there is a **filter**; the year
+  filter accepts `2019`, ranges `2015-2020` and `>2018` or `<2000`. The search box above
+  searches every field. A click selects a document and shows its record on the right (APA
+  reference, **✎ EDIT RECORD**, **🗑 DELETE**); **double-click** or **Enter** opens it, and
+  **↑ ↓** move through the list.
 - **Reading**: **OPEN** shows the PDF with its real pages (− / + to zoom). Word and TXT
   files are read as continuous text. A scanned PDF with no text can be read, but not
   annotated on its text.

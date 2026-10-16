@@ -338,3 +338,22 @@ def test_literature_stays_out_of_corpus_analyses(client, nrc_lexicons, offline):
     result = agreement.compare(me, other)
     assert result["project_a"]["name"] == me.name  # compara solo códigos del corpus
     assert all(row["count_a"] == row["count_b"] for row in result["codes"])
+
+
+def test_crossref_subtitle_joins_title():
+    meta = library._from_crossref({"type": "journal-article", "title": ["Thematic Analysis"],
+                                   "subtitle": ["Striving to Meet the Trustworthiness Criteria"],
+                                   "issued": {"date-parts": [[2017]]}})
+    assert meta.title == "Thematic Analysis: Striving to Meet the Trustworthiness Criteria"
+    same = library._from_crossref({"type": "journal-article", "title": ["Uno: dos"], "subtitle": ["dos"]})
+    assert same.title == "Uno: dos"  # sin repetir el subtítulo si ya venía en el título
+    question = library._from_crossref({"type": "journal-article", "title": ["How Many Interviews Are Enough?"],
+                                       "subtitle": ["An Experiment with Data Saturation and Variability"]})
+    assert question.title == "How Many Interviews Are Enough? An Experiment with Data Saturation and Variability"
+
+
+def test_crossref_html_entities_and_tags_are_cleaned():
+    meta = library._from_crossref({"type": "journal-article", "title": ["The <i>Homo</i>  ludens &amp; play"],
+                                   "container-title": ["Quality &amp; Quantity"], "publisher": "Taylor &amp; Francis"})
+    assert meta.title == "The Homo ludens & play"
+    assert meta.container == "Quality & Quantity" and meta.publisher == "Taylor & Francis"

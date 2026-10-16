@@ -16,6 +16,11 @@
 const Biblioteca = {
   items: [],
   query: "",
+  // Tabla de la biblioteca, al estilo Finder/Mendeley (FR-089)
+  filters: { author: "", title: "", container: "", year: "" },
+  sort: { key: "year", dir: -1 }, // por omisión: lo más reciente arriba
+  selectedId: null,
+  _editingMeta: false,
   current: null, // documento abierto
   annotations: [],
   codings: [],
@@ -36,6 +41,26 @@ const Biblioteca = {
     document.getElementById("lib-search").addEventListener("input", (e) => {
       this.query = e.target.value.trim().toLowerCase();
       this._renderList();
+    });
+    try { // orden elegido: preferencia de esta persona (no un dato del proyecto)
+      const saved = JSON.parse(localStorage.getItem("cua-lib-sort") || "null");
+      if (saved && ["author", "title", "container", "year"].includes(saved.key)) this.sort = saved;
+    } catch (_) { /* sin almacenamiento */ }
+    // Teclado como en Finder: ↑↓ recorren la lista, Enter abre
+    document.addEventListener("keydown", (e) => {
+      if (Views.current !== "literatura" || this.current) return;
+      if (e.target.matches("input, textarea, select") || document.querySelector("dialog[open]")) return;
+      const rows = this._visible || [];
+      if (!rows.length) return;
+      const i = rows.findIndex(item => item.id === this.selectedId);
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const next = rows[Math.max(0, Math.min(rows.length - 1, i + (e.key === "ArrowDown" ? 1 : -1)))];
+        this._select(next.id, true);
+      } else if (e.key === "Enter" && i >= 0 && rows[i].has_file) {
+        e.preventDefault();
+        this.open(rows[i].id);
+      }
     });
     document.getElementById("lib-back").addEventListener("click", () => this.close());
     document.getElementById("lib-zoom-in").addEventListener("click", () => this._zoom(1.2));
@@ -98,60 +123,253 @@ const Biblioteca = {
     return `${names[0]} et al.`;
   },
 
+  /* ---------- Tabla (al estilo Finder / Mendeley) ---------- */
+
+  COLUMNS: ["kind", "author", "title", "container", "year", "notes"],
+
+  _authorKey(item) {
+    const first = (item.meta.authors || [])[0];
+    return first ? first.family : "";
+  },
+
+  _value(item, key) {
+    if (key === "author") return this._authorsShort(item.meta);
+    if (key === "title") return item.meta.title || item.filename;
+    if (key === "container") return item.meta.container || "";
+    if (key === "year") return item.meta.year || "";
+    return "";
+  },
+
+  _plain(text) {
+    return (text || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  },
+
+  /* Filtro de año: «2019», «2015-2020», «>2018», «<2000», «2018-» */
+  _yearMatches(year, filter) {
+    filter = filter.replace(/\s+/g, "").replace("–", "-");
+    if (!filter) return true;
+    const y = parseInt(year, 10);
+    let m;
+    if ((m = filter.match(/^(\d{4})-(\d{4})$/))) return y >= +m[1] && y <= +m[2];
+    if ((m = filter.match(/^(\d{4})-$/))) return y >= +m[1];
+    if ((m = filter.match(/^-(\d{4})$/))) return y <= +m[1];
+    if ((m = filter.match(/^(>=|<=|>|<)(\d{4})$/))) {
+      const n = +m[2];
+      return { ">": y > n, "<": y < n, ">=": y >= n, "<=": y <= n }[m[1]];
+    }
+    return (year || "").startsWith(filter);
+  },
+
+  _filtered() {
+    const q = this._plain(this.query);
+    const f = this.filters;
+    const people = (item) => this._plain((item.meta.authors || []).map(a => `${a.family} ${a.given}`).join(" "));
+    const rows = this.items.filter(item => {
+      if (q && !this._plain([item.meta.title, item.meta.year, item.meta.container, item.filename,
+        item.meta.publisher, item.meta.doi].join(" ") + " " + people(item)).includes(q)) return false;
+      if (f.author && !people(item).includes(this._plain(f.author))) return false;
+      if (f.title && !this._plain(item.meta.title || item.filename).includes(this._plain(f.title))) return false;
+      if (f.container && !this._plain(item.meta.container).includes(this._plain(f.container))) return false;
+      if (f.year && !this._yearMatches(item.meta.year, f.year)) return false;
+      return true;
+    });
+    const { key, dir } = this.sort;
+    const val = (item) => (key === "author" ? this._plain(this._authorKey(item))
+      : key === "year" ? parseInt(item.meta.year, 10) : this._plain(this._value(item, key)));
+    return rows.sort((a, b) => {
+      const va = val(a), vb = val(b);
+      const emptyA = va === "" || Number.isNaN(va), emptyB = vb === "" || Number.isNaN(vb);
+      if (emptyA !== emptyB) return emptyA ? 1 : -1; // sin dato: siempre al final
+      if (va < vb) return -dir;
+      if (va > vb) return dir;
+      return this._plain(this._value(a, "title")).localeCompare(this._plain(this._value(b, "title")));
+    });
+  },
+
   _renderList() {
     const box = document.getElementById("lib-list");
     box.textContent = "";
-    const q = this.query;
-    const items = this.items.filter(i => !q || [i.meta.title, i.meta.year, i.meta.container, i.filename,
-      ...(i.meta.authors || []).map(a => `${a.family} ${a.given}`)].join(" ").toLowerCase().includes(q));
-    if (!items.length) {
+    if (!this.items.length) {
       const p = document.createElement("p");
       p.className = "empty-note";
-      p.textContent = I18N.t(this.items.length ? "bank.nomatch" : "lib.empty");
+      p.textContent = I18N.t("lib.empty");
+      box.appendChild(p);
+      this._renderDetail();
+      return;
+    }
+    const rows = this._visible = this._filtered();
+    const browser = document.createElement("div");
+    browser.className = "lib-browser";
+    const wrap = document.createElement("div");
+    wrap.className = "lib-table-wrap";
+    const table = document.createElement("table");
+    table.className = "lib-table";
+    const head = document.createElement("thead");
+    const titles = document.createElement("tr");
+    const filters = document.createElement("tr");
+    filters.className = "lib-filter-row";
+    for (const key of this.COLUMNS) {
+      const th = document.createElement("th");
+      th.className = `lib-col-${key}`;
+      const sortable = ["author", "title", "container", "year"].includes(key);
+      th.textContent = I18N.t(`lib.col.${key}`);
+      if (sortable) {
+        th.classList.add("sortable");
+        if (this.sort.key === key) th.textContent += this.sort.dir > 0 ? " ▲" : " ▼";
+        th.title = I18N.t("lib.sort.title");
+        th.addEventListener("click", () => {
+          this.sort = this.sort.key === key ? { key, dir: -this.sort.dir } : { key, dir: key === "year" ? -1 : 1 };
+          try { localStorage.setItem("cua-lib-sort", JSON.stringify(this.sort)); } catch (_) { /* sin almacenamiento */ }
+          this._renderList();
+        });
+      }
+      titles.appendChild(th);
+      const cell = document.createElement("th");
+      if (sortable) {
+        const input = document.createElement("input");
+        input.type = "search";
+        input.className = "lib-filter";
+        input.dataset.filter = key;
+        input.value = this.filters[key];
+        input.placeholder = I18N.t(`lib.filter.${key}`);
+        input.addEventListener("input", () => {
+          this.filters[key] = input.value.trim();
+          this._renderRows(table);
+        });
+        cell.appendChild(input);
+      }
+      filters.appendChild(cell);
+    }
+    head.append(titles, filters);
+    table.appendChild(head);
+    table.appendChild(document.createElement("tbody"));
+    wrap.appendChild(table);
+    const detail = document.createElement("aside");
+    detail.id = "lib-detail";
+    detail.className = "panel lib-detail";
+    browser.append(wrap, detail);
+    box.appendChild(browser);
+    this._renderRows(table);
+  },
+
+  /* Solo las filas: escribir en un filtro no reconstruye los campos (no se pierde el foco). */
+  _renderRows(table) {
+    const rows = this._visible = this._filtered();
+    const body = table.tBodies[0];
+    body.textContent = "";
+    for (const item of rows) {
+      const tr = document.createElement("tr");
+      tr.dataset.id = item.id;
+      if (item.id === this.selectedId) tr.classList.add("selected");
+      for (const key of this.COLUMNS) {
+        const td = document.createElement("td");
+        td.className = `lib-col-${key}`;
+        if (key === "kind") {
+          td.textContent = I18N.t(`lib.kind.short.${item.kind}`);
+          td.title = I18N.t(`lib.kind.${item.kind}`);
+        } else if (key === "notes") {
+          const parts = [];
+          if (item.annotations) parts.push(`✎${item.annotations}`);
+          if (item.codings) parts.push(`◉${item.codings}`);
+          td.textContent = parts.join(" ");
+          td.title = I18N.t("lib.counts", { a: item.annotations, c: item.codings });
+        } else {
+          td.textContent = this._value(item, key) || "—";
+          if (key === "title") td.title = item.meta.title || item.filename;
+          if (!this._value(item, key)) td.classList.add("muted");
+        }
+        tr.appendChild(td);
+      }
+      tr.addEventListener("click", () => this._select(item.id));
+      tr.addEventListener("dblclick", () => { if (item.has_file) this.open(item.id); });
+      body.appendChild(tr);
+    }
+    const count = document.getElementById("lib-count");
+    if (count) count.textContent = I18N.t("lib.count", { n: rows.length, total: this.items.length });
+    if (this.selectedId && !this.items.some(i => i.id === this.selectedId)) this.selectedId = null;
+    this._renderDetail();
+  },
+
+  _select(id, scroll = false) {
+    this.selectedId = id;
+    this._editingMeta = false;
+    document.querySelectorAll("#lib-list .lib-table tbody tr").forEach(tr =>
+      tr.classList.toggle("selected", tr.dataset.id === id));
+    if (scroll) {
+      const row = document.querySelector(`#lib-list .lib-table tbody tr[data-id="${id}"]`);
+      if (row) row.scrollIntoView({ block: "nearest" });
+    }
+    this._renderDetail();
+  },
+
+  /* Panel de detalle del documento elegido (como en Mendeley). */
+  _renderDetail() {
+    const box = document.getElementById("lib-detail");
+    if (!box) return;
+    box.textContent = "";
+    const item = this.item(this.selectedId);
+    if (!item) {
+      const p = document.createElement("p");
+      p.className = "empty-note";
+      p.textContent = I18N.t("lib.detail.empty");
       box.appendChild(p);
       return;
     }
-    for (const item of items) {
-      const card = document.createElement("div");
-      card.className = "lib-card";
-      const head = document.createElement("div");
-      head.className = "lib-card-head";
-      const badge = document.createElement("span");
-      badge.className = "lib-badge";
-      badge.textContent = I18N.t(`lib.kind.${item.kind}`);
-      const title = document.createElement(item.has_file ? "button" : "span");
-      title.className = "lib-card-title";
-      title.textContent = item.meta.title || item.filename;
-      if (item.has_file) {
-        title.type = "button";
-        title.title = I18N.t("lib.open");
-        title.addEventListener("click", () => this.open(item.id));
-      }
-      head.append(badge, title);
-      const meta = document.createElement("div");
-      meta.className = "lib-card-meta";
-      const parts = [this._authorsShort(item.meta), item.meta.year, item.meta.container].filter(Boolean);
-      meta.textContent = parts.join(" · ") || item.filename;
-      const counts = document.createElement("div");
-      counts.className = "lib-card-counts mini-label";
-      counts.textContent = I18N.t("lib.counts", { a: item.annotations, c: item.codings });
-      const actions = document.createElement("div");
-      actions.className = "lib-card-actions";
-      if (item.has_file) {
-        const open = document.createElement("button");
-        open.className = "btn btn-small";
-        open.textContent = I18N.t("lib.open");
-        open.addEventListener("click", () => this.open(item.id));
-        actions.appendChild(open);
-      }
-      const del = document.createElement("button");
-      del.className = "icon-btn";
-      del.title = I18N.t("lib.delete.title");
-      del.textContent = "🗑";
-      del.addEventListener("click", () => this._delete(item));
-      actions.appendChild(del);
-      card.append(head, meta, counts, actions);
-      box.appendChild(card);
+    if (this._editingMeta) {
+      this._renderMeta(item, box);
+      return;
+    }
+    const kind = document.createElement("div");
+    kind.className = "mini-label";
+    kind.textContent = `${I18N.t(`lib.kind.${item.kind}`)} · ${I18N.t(`lib.type.${item.meta.type}`)}`;
+    const title = document.createElement("div");
+    title.className = "lib-detail-title";
+    title.textContent = item.meta.title || item.filename;
+    const people = document.createElement("div");
+    people.className = "lib-detail-people";
+    people.textContent = (item.meta.authors || []).map(a => a.given ? `${a.given} ${a.family}` : a.family).join(", ");
+    const where = document.createElement("div");
+    where.className = "lib-detail-where";
+    where.textContent = [item.meta.container, item.meta.year].filter(Boolean).join(" · ");
+    box.append(kind, title, people, where);
+    const apa = document.createElement("div");
+    apa.className = "lib-apa";
+    const label = document.createElement("div");
+    label.className = "mini-label";
+    label.textContent = I18N.t("lib.apa");
+    const ref = document.createElement("div");
+    ref.className = "lib-apa-text";
+    ref.innerHTML = item.apa; // generado por el servidor con el texto escapado
+    apa.append(label, ref);
+    box.appendChild(apa);
+    const counts = document.createElement("div");
+    counts.className = "mini-label lib-detail-counts";
+    counts.textContent = I18N.t("lib.counts", { a: item.annotations, c: item.codings });
+    box.appendChild(counts);
+    const buttons = document.createElement("div");
+    buttons.className = "lib-meta-buttons";
+    if (item.has_file) {
+      const open = document.createElement("button");
+      open.className = "btn btn-small btn-accent";
+      open.textContent = I18N.t("lib.open");
+      open.addEventListener("click", () => this.open(item.id));
+      buttons.appendChild(open);
+    }
+    const edit = document.createElement("button");
+    edit.className = "btn btn-small";
+    edit.textContent = I18N.t("lib.detail.edit");
+    edit.addEventListener("click", () => { this._editingMeta = true; this._renderDetail(); });
+    const del = document.createElement("button");
+    del.className = "btn btn-small";
+    del.textContent = I18N.t("lib.detail.delete");
+    del.addEventListener("click", () => this._delete(item));
+    buttons.append(edit, del);
+    box.appendChild(buttons);
+    if (item.has_file) {
+      const hint = document.createElement("p");
+      hint.className = "empty-note";
+      hint.textContent = I18N.t("lib.detail.hint");
+      box.appendChild(hint);
     }
   },
 
@@ -1057,10 +1275,8 @@ const Biblioteca = {
   },
 
   /* Ficha bibliográfica (metadatos para APA 7) */
-  _renderMeta() {
-    const box = document.getElementById("lib-side-meta");
+  _renderMeta(item = this.current, box = document.getElementById("lib-side-meta")) {
     box.textContent = "";
-    const item = this.current;
     if (!item) return;
     const m = item.meta;
     const field = (key, value, type = "input") => {
@@ -1115,7 +1331,7 @@ const Biblioteca = {
       try {
         const updated = await API.lookupLibraryItem(item.id, doi.value.trim());
         this._replaceItem(updated);
-        this._renderMeta();
+        this._renderMeta(updated, box);
         Views.toast(I18N.t("lib.lookup.done"));
       } catch (error) {
         Views.toast(error.message, true);
@@ -1124,8 +1340,15 @@ const Biblioteca = {
     const save = document.createElement("button");
     save.className = "btn btn-small btn-accent";
     save.textContent = I18N.t("lib.meta.save");
-    save.addEventListener("click", () => this._saveMeta(box));
+    save.addEventListener("click", () => this._saveMeta(box, item));
     buttons.append(lookup, save);
+    if (!this.current) { // en el panel de detalle: volver sin guardar
+      const cancel = document.createElement("button");
+      cancel.className = "btn btn-small";
+      cancel.textContent = I18N.t("dlg.cancel");
+      cancel.addEventListener("click", () => { this._editingMeta = false; this._renderDetail(); });
+      buttons.appendChild(cancel);
+    }
     box.appendChild(buttons);
     const apa = document.createElement("div");
     apa.className = "lib-apa";
@@ -1146,7 +1369,7 @@ const Biblioteca = {
     });
   },
 
-  async _saveMeta(box) {
+  async _saveMeta(box, item = this.current) {
     const value = (key) => (box.querySelector(`[data-key="${key}"]`) || { value: "" }).value.trim();
     const meta = {
       type: value("type"), title: value("title"), year: value("year"), container: value("container"),
@@ -1155,10 +1378,15 @@ const Biblioteca = {
       authors: this._parsePeople(value("authors")), editors: this._parsePeople(value("editors")),
     };
     try {
-      const updated = await API.updateLibraryItem(this.current.id, { meta });
+      const updated = await API.updateLibraryItem(item.id, { meta });
       this._replaceItem(updated);
-      this._renderMeta();
-      document.getElementById("lib-reader-title").textContent = this._readerTitle(updated);
+      if (this.current) {
+        this._renderMeta(updated, box);
+        document.getElementById("lib-reader-title").textContent = this._readerTitle(updated);
+      } else {
+        this._editingMeta = false;
+        this._renderList(); // la tabla refleja la ficha nueva (orden incluido)
+      }
       Views.toast(I18N.t("lib.meta.saved"));
     } catch (error) {
       Views.toast(error.message, true);

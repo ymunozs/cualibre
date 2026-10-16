@@ -1226,3 +1226,53 @@ body.dark .lib-dict-head { border-bottom-color: #E8E8E2; }
 body.dark .lib-dict-lang { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
 body.dark .lib-dict-lang.active { background: #E8E8E2; color: #141412; }
 body.dark .lib-dict-note, body.dark .lib-dict-pos { color: #aaa; }
+
+/* ---------- Tabla de la biblioteca (al estilo Finder / Mendeley) ---------- */
+
+#lib-list { display: block; margin: 8px 0 22px; }
+.lib-browser { display: grid; grid-template-columns: 1fr 330px; gap: 14px; align-items: start; }
+.lib-table-wrap { border: var(--border-thin); background: #fff; max-height: 70vh; overflow: auto; }
+.lib-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+.lib-table th { position: sticky; z-index: 1; background: #EEE; text-align: left; font-size: 10px;
+  letter-spacing: 0.06em; padding: 6px 8px; border-bottom: 1px solid #bbb; white-space: nowrap; }
+.lib-table thead tr:first-child th { top: 0; }
+.lib-table thead tr.lib-filter-row th { top: 27px; padding: 3px 6px 6px; border-bottom: 2px solid var(--ink); }
+.lib-table th.sortable { cursor: pointer; user-select: none; }
+.lib-table th.sortable:hover { color: var(--accent); }
+.lib-filter { width: 100%; font: 11px var(--mono); border: 1px solid #bbb; padding: 3px 5px; background: #fff; }
+.lib-table td { padding: 5px 8px; border-bottom: 1px solid #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; }
+.lib-table tbody tr:nth-child(even) td { background: #FAFAF6; }
+.lib-table tbody tr:hover td { background: #F1F1EA; }
+.lib-table tbody tr.selected td { background: var(--accent); color: #fff; }
+.lib-table td.muted { color: #aaa; }
+.lib-table tbody tr.selected td.muted { color: #ffd6c9; }
+.lib-col-kind { width: 44px; font-size: 9px; font-weight: 700; color: #777; }
+.lib-col-author { width: 20%; }
+.lib-col-title { width: auto; }
+.lib-col-container { width: 22%; }
+.lib-col-year { width: 96px; text-align: right; font-weight: 700; }
+.lib-table th.lib-col-year { text-align: right; }
+.lib-col-notes { width: 64px; font-size: 10px; color: #777; }
+.lib-table tbody tr.selected .lib-col-kind, .lib-table tbody tr.selected .lib-col-notes { color: #fff; }
+td.lib-col-title { font-family: var(--serif); font-size: 13px; }
+.lib-detail { position: sticky; top: 12px; max-height: 70vh; overflow-y: auto; }
+.lib-detail-title { font-family: var(--serif); font-size: 16px; font-weight: 700; margin: 6px 0; overflow-wrap: anywhere; }
+.lib-detail-people { font-size: 12px; margin-bottom: 4px; }
+.lib-detail-where { font-size: 12px; color: #555; margin-bottom: 10px; }
+.lib-detail-counts { margin: 8px 0; }
+#lib-count { white-space: nowrap; }
+
+@media (max-width: 1100px) {
+  .lib-browser { grid-template-columns: 1fr; }
+  .lib-detail { position: static; }
+}
+
+body.dark .lib-table-wrap { background: #1E1E1A; border-color: #E8E8E2; }
+body.dark .lib-table th { background: #26261F; color: #E8E8E2; border-bottom-color: #555; }
+body.dark .lib-table thead tr.lib-filter-row th { border-bottom-color: #E8E8E2; }
+body.dark .lib-filter { background: #1B1B16; color: #E8E8E2; border-color: #555; }
+body.dark .lib-table td { border-bottom-color: #2E2E28; }
+body.dark .lib-table tbody tr:nth-child(even) td { background: #22221D; }
+body.dark .lib-table tbody tr:hover td { background: #2C2C25; }
+body.dark .lib-table tbody tr.selected td { background: var(--accent); color: #fff; }
+body.dark .lib-detail-where { color: #aaa; }

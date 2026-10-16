@@ -200,22 +200,36 @@ def _persons(entries) -> list[Person]:
     return out
 
 
+def _clean(text: str) -> str:
+    """Crossref entrega a veces entidades y etiquetas HTML («Quality &amp;
+    Quantity», «<i>Homo</i> sapiens»): texto plano, sin espacios dobles."""
+    import html
+
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", text or ""))).strip()
+
+
 def _from_crossref(message: dict) -> LitMeta:
     date = (message.get("issued") or message.get("published-print")
             or message.get("published-online") or {}).get("date-parts") or [[None]]
     year = str(date[0][0]) if date and date[0] and date[0][0] else ""
     first = lambda key: (message.get(key) or [""])[0] if isinstance(message.get(key), list) else (message.get(key) or "")
+    title = _clean(first("title"))
+    subtitle = _clean(first("subtitle"))
+    if subtitle and subtitle.lower() not in title.lower():  # APA: «Título: Subtítulo»
+        # …salvo que el título termine en ? o !: «Are Enough? An Experiment…»
+        joiner = " " if title.rstrip().endswith(("?", "!")) else ": "
+        title = f"{title.rstrip(':').rstrip()}{joiner}{subtitle}"
     return LitMeta(
         type=CROSSREF_TYPES.get(message.get("type", ""), "other"),
-        title=re.sub(r"\s+", " ", first("title")).strip(),
+        title=title,
         authors=_persons(message.get("author")),
         editors=_persons(message.get("editor")),
         year=year,
-        container=re.sub(r"\s+", " ", first("container-title")).strip(),
+        container=_clean(first("container-title")),
         volume=str(message.get("volume") or ""),
         issue=str(message.get("issue") or ""),
         pages=str(message.get("page") or "").replace("-", "–"),
-        publisher=message.get("publisher") or "",
+        publisher=_clean(message.get("publisher") or ""),
         doi=message.get("DOI") or "",
         url="",
         isbn=first("ISBN"),
