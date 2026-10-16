@@ -62,7 +62,7 @@ from .models import (
 )
 from .nlp import POS_LANGS, STOPWORDS, detect_language, word_frequencies
 
-APP_VERSION = "2.0.0"
+APP_VERSION = "1.14.0"
 CORPUS_LANGS = tuple(STOPWORDS)  # es, en, pt
 POS_FILTERS = ("all", "verb", "noun", "adj")
 
@@ -390,7 +390,7 @@ def reset_project(payload: ConfirmPayload) -> Project:
     project.next_code_id = 1
     project.relations = []
     project.next_relation_id = 1
-    # El libro de códigos y los cuadros describen los códigos borrados (v2.0)
+    # El libro de códigos y los cuadros describen los códigos borrados (v1.14)
     project.codebook = {}
     project.category_notes = {}
     project.general_board = Board(id=0)

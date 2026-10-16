@@ -105,6 +105,22 @@ O idioma da interface é escolhido no cabeçalho. Manual: [MANUAL.pt.md](MANUAL.
 
 ## Novedades
 
+**v1.14**
+- **Biblioteca de literatura**, común a todos tus proyectos: importa PDF, DOCX, DOC y TXT,
+  completa la ficha sola si el documento trae su DOI, y se ordena y filtra como en el
+  Finder o en Mendeley (autoría, título, revista, año). Lector con páginas reales para
+  **resaltar, subrayar, tachar y anotar**, y para **codificar pasajes con los códigos del
+  proyecto** (se registran aparte del corpus). Referencias en APA 7, BibTeX y RIS.
+- **Diccionario en el lector** (castellano, inglés y portugués): doble clic en una palabra.
+  Se descarga una sola vez y luego funciona sin internet.
+- **Libro de códigos**: definición, cuándo usar, cuándo no y ejemplo de cada código y
+  categoría; viaja en el respaldo, en REFI-QDA y en el reporte académico.
+- **Relaciones con categorías y cuadros organizadores**: varios cuadros por proyecto,
+  nodos que se arrastran (también en grupo), colores, formas, bloqueo y vista ampliada.
+- **Ajustar el léxico de sentimiento**: descartar o sumar palabras por emoción o
+  polaridad; todo el análisis se recalcula y el reporte lo declara.
+- **Licencia libre**: Cua-libre pasa a la GNU AGPL-3.0 o posterior.
+
 **v1.13**
 - **Documentos de Word antiguos (.doc)**: se importan directamente, igual que los
   `.docx`, sin tener Word instalado ni convertir nada a mano.

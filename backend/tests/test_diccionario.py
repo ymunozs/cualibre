@@ -1,4 +1,4 @@
-"""v2.0: diccionario del lector de la biblioteca (FR-093). Datos sintéticos con
+"""v1.14: diccionario del lector de la biblioteca (FR-093). Datos sintéticos con
 el formato real de las fuentes (Wiktextract y Open English WordNet); sin red."""
 
 import gzip
@@ -112,3 +112,13 @@ def test_download_failure_is_reported(client):
     assert state["installed"] is False and state["progress"]["state"] == "error"
     missing = client.get("/api/dictionary/lookup", params={"word": "casa", "lang": "pt"}).json()
     assert missing["installed"] is False and missing["groups"] == []
+
+
+def test_lookup_with_spaces_accents_and_symbols_in_the_data_path(monkeypatch, tmp_path):
+    """La carpeta real en Mac es «Application Support»; en Windows hay tildes y barras."""
+    folder = tmp_path / "Application Support" / "Pérez #1 ¿datos?"
+    monkeypatch.setenv("CUALIBRE_DATA_DIR", str(folder))
+    source = tmp_path / "es.gz"
+    source.write_bytes(wiktextract("es", ES))
+    dictionary.build_wiktionary(source, "es", dictionary.db_path("es"))
+    assert dictionary.lookup("es", "peleaban")["groups"][0]["headword"] == "pelear"

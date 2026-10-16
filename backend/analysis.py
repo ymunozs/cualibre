@@ -37,7 +37,7 @@ from collections import OrderedDict
 from . import lexicons, storage
 
 # 2: sentimiento en inglés y portugués; 3: negadores sin carga propia (v1.12);
-# 4: posiciones negadas, para los ajustes del léxico (v2.0)
+# 4: posiciones negadas, para los ajustes del léxico (v1.14)
 CACHE_VERSION = 4
 CHUNK_CHARS = 100_000  # spaCy procesa por tramos: acota memoria y evita max_length
 SYNC_LIMIT_CHARS = 250_000  # por debajo, se analiza en la misma petición

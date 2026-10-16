@@ -262,8 +262,13 @@ def install_all(langs=LANGS, download=None) -> bool:
 
 # ----- Consulta -----
 
+def _open_ro(lang: str) -> sqlite3.Connection:
+    """Solo lectura. La URI se arma con as_uri(): funciona con las barras de
+    Windows y con espacios, tildes, # o ? en la ruta («Application Support»)."""
+    return sqlite3.connect(db_path(lang).resolve().as_uri() + "?mode=ro", uri=True)
+
 def _query(lang: str, word: str) -> list[dict]:
-    con = sqlite3.connect(f"file:{db_path(lang)}?mode=ro", uri=True)
+    con = _open_ro(lang)
     try:
         rows = con.execute("SELECT pos, senses FROM entries WHERE word = ?", (word,)).fetchall()
         return [{"pos": pos, "senses": json.loads(senses)} for pos, senses in rows]
@@ -273,7 +278,7 @@ def _query(lang: str, word: str) -> list[dict]:
 
 def _form_lemmas(lang: str, word: str) -> list[tuple[str, str]]:
     """(lema, descripción gramatical) de una forma flexionada."""
-    con = sqlite3.connect(f"file:{db_path(lang)}?mode=ro", uri=True)
+    con = _open_ro(lang)
     try:
         rows = con.execute("""SELECT f.lemma, d.text FROM forms f
                               LEFT JOIN descrs d ON d.id = f.descr WHERE f.form = ?""",

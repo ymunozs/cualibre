@@ -1,4 +1,4 @@
-# CUA-LIBRE STUDIO — Manual de uso (v2.0)
+# CUA-LIBRE STUDIO — Manual de uso (v1.14)
 
 Guia completo de comandos e fluxos para a análise qualitativa.
 

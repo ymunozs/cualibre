@@ -219,7 +219,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "pt": "A categoria “{name}” participa de {r} relação(ões). Repita a operação "
               "com confirmação: essas relações serão excluídas.",
     },
-    # ----- v2.0: libro de códigos, cuadros y léxico (FR-084..086) -----
+    # ----- v1.14: libro de códigos, cuadros y léxico (FR-084..086) -----
     "no_category_named": {
         "es": "No existe una categoría llamada «{name}»",
         "en": "No category called “{name}” exists",

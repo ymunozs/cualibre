@@ -13,9 +13,9 @@ Correspondencias Cua-libre → REFI-QDA
 - Memo de una cita → Note (PlainTextContent) referida desde la selección.
 - Código manual (sin cita) → código del libro con su memo en Description.
 - Libro de códigos (definición, cuándo usar, cuándo no, ejemplo) → Description
-  del código o de la categoría, con sus apartados rotulados (v2.0).
+  del código o de la categoría, con sus apartados rotulados (v1.14).
 - Relaciones → Links entre códigos (dirección OneWay, nombre = tipo); una
-  categoría como extremo es el código padre de su rama (v2.0).
+  categoría como extremo es el código padre de su rama (v1.14).
 
 Posiciones: el estándar cuenta puntos de código con saltos de línea de un
 carácter, pero NVivo para Windows cuenta unidades UTF-16 (un emoji vale 2) y
@@ -33,7 +33,7 @@ REFI-QDA → Cua-libre
 - El código de primer nivel de cada rama pasa a ser la categoría; los niveles
   intermedios se conservan como relaciones de jerarquía. Un código de primer
   nivel sin padre queda en la categoría propia «QDPX».
-- Description de un código o categoría → libro de códigos (v2.0). Los códigos
+- Description de un código o categoría → libro de códigos (v1.14). Los códigos
   sin citas se crean además como códigos manuales con esa descripción de memo.
 """
 
@@ -463,7 +463,7 @@ def import_qdpx(data: bytes, fallback_name: str = "QDPX") -> tuple[Project, dict
 
     # Descripciones del libro en la primera cita de cada código sin memo
     # Descripción de cada código o categoría → libro de códigos (FR-084).
-    # Antes de v2.0 iba al memo de la primera cita del código; el libro es su
+    # Antes de v1.14 iba al memo de la primera cita del código; el libro es su
     # lugar propio (describe al código, no a una cita).
     for info in codes.values():
         if not info["description"]:

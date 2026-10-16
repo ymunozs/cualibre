@@ -239,7 +239,8 @@ Esta constitución prevalece sobre cualquier otra práctica o preferencia de imp
 **Version**: 1.15.0 | **Ratified**: 2026-07-06 | **Last Amended**: 2026-10-15
 <!-- 1.15.0: inventario ampliado por pedido del investigador (2026-10-15): libro de
 códigos (FR-084), relaciones con categorías y cuadros organizadores editables (FR-085) y
-ajustes del léxico de sentimiento (FR-086), para Cua-libre v2.0. Aprobado por el
+ajustes del léxico de sentimiento (FR-086), publicados en Cua-libre v1.14 (la v2.0 queda
+reservada para el logo y la música, decisión del investigador). Aprobado por el
 investigador el 2026-10-15, junto con la lectura de que recolorear un nodo en un cuadro
 es un ajuste de vista compatible con el Principio VI (las 9 Categorías Básicas conservan
 su color en el resto de la app). El mismo día aprobó también FR-087 (simbología

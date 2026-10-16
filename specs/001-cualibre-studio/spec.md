@@ -626,7 +626,7 @@ que se listan resultados con título, año, citas y DOI clicable.
   Windows sin WebView2 la aplicación MUST abrirse en el navegador, nunca en una ventana
   en blanco.
 
-### v2.0 — Libro de códigos, cuadros organizadores y ajustes del léxico (2026-10-15)
+### v1.14 — Libro de códigos, cuadros organizadores y ajustes del léxico (2026-10-15)
 
 - **FR-084**: El sistema MUST ofrecer un libro de códigos (pestaña ▥ LIBRO DE CÓDIGOS) con
   todos los códigos y categorías del proyecto, donde el investigador escribe para cada uno
@@ -666,7 +666,7 @@ que se listan resultados con título, año, citas y DOI clicable.
   existen en el proyecto (selector «＋ TRAER RELACIÓN»); crear desde ese cuadro una
   relación existente MUST traerla (sus dos extremos) en vez de dar error, sin duplicarla.
 
-### v2.0 — Biblioteca de literatura (2026-10-15, versión de prueba)
+### v1.14 — Biblioteca de literatura (2026-10-15)
 
 - **FR-089**: Biblioteca común a todos los proyectos: importar PDF, DOCX, DOC y TXT (copia;
   el original no se toca; sin duplicar el mismo archivo), fichas con metadatos (tipo,

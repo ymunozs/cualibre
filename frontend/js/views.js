@@ -677,7 +677,7 @@ const Views = {
   },
 
   /* Trazabilidad de una emoción (FR-071): qué palabras exactas la dispararon,
-     cada una clicable hacia sus concordancias en el corpus. Desde v2.0 es
+     cada una clicable hacia sus concordancias en el corpus. Desde v1.14 es
      también el lugar para ajustar el léxico (FR-086): descartar una palabra
      de la emoción, restaurarla o sumar otra. */
   _lexCat: null,

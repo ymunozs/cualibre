@@ -1,4 +1,4 @@
-"""v2.0: libro de códigos (FR-084), relaciones con categorías y cuadros
+"""v1.14: libro de códigos (FR-084), relaciones con categorías y cuadros
 organizadores editables (FR-085) y ajustes del léxico de sentimiento (FR-086)."""
 
 import io

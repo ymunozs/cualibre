@@ -80,7 +80,7 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
   abre la app, importa un .doc, actualiza y desinstala, también en rutas con tildes;
   `packaging/smoke_test.sh` hace lo equivalente con la .app de Mac. `cualibre.iss` y
   `smoke_test.ps1` llevan BOM UTF-8: no quitarlo.
-- v2.0 (FR-084..086): `Project.codebook`/`category_notes` (libro de códigos; nunca se
+- v1.14 (FR-084..086): `Project.codebook`/`category_notes` (libro de códigos; nunca se
   borran solos, migran al fusionar), `Relation.source_kind/target_kind` ("code" |
   "category"; `_prune_relations` y `_remap_relations` respetan el tipo), `general_board`
   (id 0, muestra todas las relaciones; sus nodos solo guardan posición/color) + `boards`
@@ -100,7 +100,7 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 - Windows sin WebView2: pywebview NO lanza error, recurre al motor de Internet Explorer
   y deja la ventana en blanco. `run.py` lo detecta (`window_engine_ok`) y usa el navegador.
 
-- **Biblioteca de literatura (v2.0, FR-089..092):** `backend/library.py` (almacén global en
+- **Biblioteca de literatura (v1.14, FR-089..092):** `backend/library.py` (almacén global en
   `<datos>/biblioteca/`: `biblioteca.json` con fichas y anotaciones, `archivos/`, `textos/`,
   `papelera/`; metadatos por DOI con Crossref y luego OpenAlex, sin el correo del
   investigador en las cabeceras; APA 7, BibTeX y RIS propios). Lector en

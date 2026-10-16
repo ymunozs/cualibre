@@ -1,4 +1,4 @@
-"""v2.0: biblioteca de literatura, anotaciones, literatura codificada y
+"""v1.14: biblioteca de literatura, anotaciones, literatura codificada y
 referencias (FR-089..092). Ninguna prueba sale a internet: Crossref y OpenAlex
 se simulan."""
 

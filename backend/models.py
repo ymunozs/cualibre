@@ -92,7 +92,7 @@ class Relation(BaseModel):
     target: str
     type: str
     created_at: str = Field(default_factory=now_iso)
-    source_kind: str = "code"  # proyectos anteriores a v2.0: siempre códigos
+    source_kind: str = "code"  # proyectos anteriores a v1.14: siempre códigos
     target_kind: str = "code"
 
 
@@ -184,7 +184,7 @@ class Project(BaseModel):
     nlp_exclusions: list[str] = Field(default_factory=list)
     custom_domains: dict[str, str] = Field(default_factory=dict)  # nombre -> #hex (FR-064)
     corpus_lang: Optional[str] = None  # es/en/pt (FR-077); None = aún no definido
-    # v2.0 (todos con valor por omisión: los proyectos anteriores abren igual)
+    # v1.14 (todos con valor por omisión: los proyectos anteriores abren igual)
     codebook: dict[str, CodebookEntry] = Field(default_factory=dict)  # nombre de código
     category_notes: dict[str, CodebookEntry] = Field(default_factory=dict)  # clave de categoría
     general_board: Board = Field(default_factory=lambda: Board(id=0))
