@@ -116,7 +116,11 @@ def test_download_failure_is_reported(client):
 
 def test_lookup_with_spaces_accents_and_symbols_in_the_data_path(monkeypatch, tmp_path):
     """La carpeta real en Mac es «Application Support»; en Windows hay tildes y barras."""
-    folder = tmp_path / "Application Support" / "Pérez #1 ¿datos?"
+    import sys
+
+    # Windows no admite «?» en nombres de carpeta; tildes, espacios y # sí
+    name = "Pérez #1 datos" if sys.platform == "win32" else "Pérez #1 ¿datos?"
+    folder = tmp_path / "Application Support" / name
     monkeypatch.setenv("CUALIBRE_DATA_DIR", str(folder))
     source = tmp_path / "es.gz"
     source.write_bytes(wiktextract("es", ES))
