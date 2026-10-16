@@ -18,6 +18,9 @@ python -m PyInstaller --noconfirm --clean --windowed ^
   --add-data "MANUAL.md;." ^
   --add-data "MANUAL.en.md;." ^
   --add-data "MANUAL.pt.md;." ^
+  --add-data "LICENSE;." ^
+  --add-data "AVISOS-DE-TERCEROS.md;." ^
+  --add-data "licencias;licencias" ^
   --collect-all es_core_news_sm ^
   --collect-all en_core_web_sm ^
   --collect-all pt_core_news_sm ^

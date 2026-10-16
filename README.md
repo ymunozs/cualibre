@@ -250,3 +250,21 @@ Silicon no corre en Intel, ni viceversa (Rosetta 2 solo traduce de Intel a Apple
 - `packaging/build_mac.sh` detecta la arquitectura real del binario (`lipo -archs`) y
   nombra el DMG en consecuencia. El workflow construye Apple Silicon en `macos-14`; el
   runner Intel de GitHub (`macos-13`) no tiene capacidad estable.
+
+## Licencia
+
+CUA-LIBRE STUDIO © 2026 Yerko Muñoz-Salinas.
+
+Este programa es software libre: puedes redistribuirlo y/o modificarlo según los términos
+de la **GNU Affero General Public License** publicada por la Free Software Foundation,
+ya sea la versión 3 de la licencia o (a tu elección) cualquier versión posterior. Se
+distribuye con la esperanza de que sea útil, pero SIN NINGUNA GARANTÍA. Consulta el
+archivo [`LICENSE`](LICENSE) para más detalles. La licencia cubre todas las versiones de
+Cua-libre.
+
+En corto: cualquier persona o institución puede usar, estudiar, copiar y compartir
+Cua-libre gratis. Quien distribuya una versión modificada, o la ofrezca a otras personas
+a través de internet, debe compartir también su código bajo esta misma licencia. Los
+componentes de terceros y sus licencias están en
+[`AVISOS-DE-TERCEROS.md`](AVISOS-DE-TERCEROS.md).
+

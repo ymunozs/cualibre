@@ -385,7 +385,7 @@ const I18N = {
       "docs.ocr": "OCR",
       "docs.ocr.title": "Texto leído por OCR (página(s) {pages}): revisa la transcripción contra el original",
       "import.ocr.hint": " Los PDF escaneados se leen con OCR ({engine}); puede tardar unos segundos por página.",
-      "about.credits": "<p class=\"about-credits\">Cua-libre utiliza el <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, creado por Saif M. Mohammad y Peter Turney en el National Research Council Canada, y los modelos lingüísticos de spaCy (Explosion).</p>",
+      "about.credits": "<p class=\"about-credits\">Cua-libre utiliza el <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, creado por Saif M. Mohammad y Peter Turney en el National Research Council Canada, y los modelos lingüísticos de spaCy (Explosion).</p> <p class=\"about-credits\">Cua-libre es software libre: se distribuye bajo la <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, versión 3 o posterior</a>, sin ninguna garantía. Su código fuente está en el <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">github del proyecto</a>, junto con los avisos de los componentes de terceros (AVISOS-DE-TERCEROS.md).</p>",
 
       // v2.0: libro de códigos, cuadros organizadores y ajustes del léxico
       "tab.libro": "▥ LIBRO",
@@ -897,7 +897,7 @@ const I18N = {
       "docs.ocr": "OCR",
       "docs.ocr.title": "Text read by OCR (page(s) {pages}): check the transcription against the original",
       "import.ocr.hint": " Scanned PDFs are read with OCR ({engine}); this may take a few seconds per page.",
-      "about.credits": "<p class=\"about-credits\">This application makes use of the <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, created by Saif M. Mohammad and Peter Turney at the National Research Council Canada, and the spaCy language models (Explosion).</p>",
+      "about.credits": "<p class=\"about-credits\">This application makes use of the <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, created by Saif M. Mohammad and Peter Turney at the National Research Council Canada, and the spaCy language models (Explosion).</p> <p class=\"about-credits\">Cua-libre is free software: it is distributed under the <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, version 3 or later</a>, without any warranty. Its source code is on the <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">project’s GitHub</a>, together with the third-party notices (AVISOS-DE-TERCEROS.md).</p>",
 
       // v2.0: libro de códigos, cuadros organizadores y ajustes del léxico
       "tab.libro": "▥ CODEBOOK",
@@ -1409,7 +1409,7 @@ const I18N = {
       "docs.ocr": "OCR",
       "docs.ocr.title": "Texto lido por OCR (página(s) {pages}): confira a transcrição com o original",
       "import.ocr.hint": " PDFs digitalizados são lidos com OCR ({engine}); pode levar alguns segundos por página.",
-      "about.credits": "<p class=\"about-credits\">O Cua-libre utiliza o <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, criado por Saif M. Mohammad e Peter Turney no National Research Council Canada, e os modelos linguísticos do spaCy (Explosion).</p>",
+      "about.credits": "<p class=\"about-credits\">O Cua-libre utiliza o <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, criado por Saif M. Mohammad e Peter Turney no National Research Council Canada, e os modelos linguísticos do spaCy (Explosion).</p> <p class=\"about-credits\">O Cua-libre é software livre: é distribuído sob a <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, versão 3 ou posterior</a>, sem nenhuma garantia. Seu código-fonte está no <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">GitHub do projeto</a>, junto com os avisos dos componentes de terceiros (AVISOS-DE-TERCEROS.md).</p>",
 
       // v2.0: libro de códigos, cuadros organizadores y ajustes del léxico
       "tab.libro": "▥ LIVRO",

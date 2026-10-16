@@ -100,6 +100,16 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 - Windows sin WebView2: pywebview NO lanza error, recurre al motor de Internet Explorer
   y deja la ventana en blanco. `run.py` lo detecta (`window_engine_ok`) y usa el navegador.
 
+## Licencia (decisión del investigador, 2026-10-15)
+
+Cua-libre es **AGPL-3.0-or-later** (`LICENSE`, `pyproject.toml`, README, «Acerca de»),
+sin mención institucional. Toda dependencia nueva DEBE ser compatible con la AGPL-3.0 y
+quedar registrada en `AVISOS-DE-TERCEROS.md` (con su texto en `licencias/` si la licencia
+lo exige, como las OFL de las fuentes o la Apache-2.0 de PDF.js). Comprobar la licencia
+real con `importlib.metadata`, no de memoria (p. ej., `es_core_news_sm` es GPL-3.0 y
+`pt_core_news_sm`, CC BY-SA 4.0). `LICENSE`, `AVISOS-DE-TERCEROS.md` y `licencias/`
+viajan en los instaladores (los 4 lugares de empaquetado).
+
 ## Comandos
 
 - Ejecutar: `./start.sh` (usa uv: aprovisiona Python 3.12+ y deps, abre la ventana)

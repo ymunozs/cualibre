@@ -157,6 +157,9 @@ interpretación a un modelo destruye la validez del método y la autoría del an
 - Formatos de corpus soportados: PDF, DOCX, DOC (Word 97-2003), TXT (UTF-8).
 - Idiomas del corpus: español, inglés y portugués (stopwords, foco gramatical y
   sentimiento). Idiomas de la interfaz: es-419, en-GB, pt-BR.
+- Licencia: Cua-libre es software libre bajo la GNU AGPL-3.0-or-later (decisión del
+  investigador, 2026-10-15). Toda dependencia o dato que se incorpore DEBE ser compatible
+  con ella y declararse en AVISOS-DE-TERCEROS.md.
 - Recursos de terceros se usan según sus licencias: el léxico NRC no se redistribuye en
   ningún idioma (ni en el repositorio ni en los instaladores); cada equipo lo obtiene una
   vez desde la fuente oficial (decisión del investigador, 2026-09-23).
