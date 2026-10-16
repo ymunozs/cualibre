@@ -105,6 +105,9 @@ O idioma da interface é escolhido no cabeçalho. Manual: [MANUAL.pt.md](MANUAL.
 
 ## Novedades
 
+**v1.14.1**
+- **Corrección de la actualización desde versiones anteriores**: al actualizar a la v1.14.0, la ventana mezclaba archivos nuevos con copias guardadas de la versión anterior (textos sin traducir, menús faltantes, nodos de Relaciones que no se movían). Ahora, tras actualizar, la ventana siempre carga los archivos de la versión instalada; basta con instalar encima, sin borrar nada.
+
 **v1.14**
 - **Biblioteca de literatura**, común a todos tus proyectos: importa PDF, DOCX, DOC y TXT,
   completa la ficha sola si el documento trae su DOI, y se ordena y filtra como en el
