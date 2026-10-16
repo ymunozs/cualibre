@@ -409,9 +409,38 @@ se reabre con **⤒ IMPORTAR**), `codigos.csv`, `libro_de_codigos.csv` y el text
 documento en `.txt`. Pensado para depositar como evidencia de reproducibilidad al
 publicar, o como copia portable independiente de la app.
 
-## 15. 📚 Literatura
+## 15. 📚 Biblioteca
 
-Búsqueda por conceptos en **OpenAlex** (título, año, citas, enlace DOI). Junto con la descarga única del léxico de sentimiento, es lo único que requiere internet; si no hay conexión, el resto de la app sigue igual.
+Tu literatura, **común a todos tus proyectos**: leerla, anotarla y codificarla sin salir
+de Cua-libre. Los archivos originales nunca se modifican.
+
+- **Añadir**: **📥 AÑADIR PDF, DOCX, DOC o TXT** copia los documentos a la biblioteca (el
+  mismo archivo no se duplica). Si el documento trae su **DOI**, la ficha se completa sola
+  con los datos de Crossref; si no, se completa a mano en **FICHA**.
+- **Leer**: **ABRIR** muestra el PDF con sus páginas reales (− / + para el zoom). Los Word
+  y TXT se leen como texto continuo. Un PDF escaneado sin texto se puede leer, pero no
+  anotar sobre su texto.
+- **Anotar**: selecciona un pasaje y aparece un menú que desaparece al terminar: cuatro
+  colores para **resaltar**, **subrayar**, **tachar** y **✎ nota**. En **ANOTACIONES** ves
+  todas, con su página, y puedes comentarlas o eliminarlas; un clic en una marca del
+  documento la destaca en el panel. **⬇ CSV** descarga el cuaderno de lectura.
+- **Codificar**: en el mismo menú, **◉ CODIFICAR** usa los códigos y categorías del
+  **proyecto activo**. Un nombre nuevo se crea como código manual del proyecto. Los
+  pasajes de la literatura se registran **aparte del corpus**: no cuentan en Analytics,
+  co-ocurrencia, sentimiento ni acuerdo. En el **▥ LIBRO** de códigos, cada ficha muestra
+  sus **citas de la literatura**, con un botón para abrirlas en el lector.
+- **Ficha y referencias**: tipo (artículo, libro, capítulo, tesis, informe), autoría,
+  año, revista o libro, páginas, DOI… con su referencia en **APA 7** a la vista.
+  **⟳ COMPLETAR DESDE EL DOI** la rellena desde internet. **⬇ BibTeX** y **⬇ RIS**
+  exportan la biblioteca para Zotero, Mendeley o EndNote. El reporte académico agrega
+  la literatura codificada y la lista de **Referencias** del proyecto.
+- **Búsqueda en OpenAlex**: busca por conceptos (título, año, citas, enlace DOI); **＋ A LA
+  BIBLIOTECA** guarda la referencia con su ficha completa.
+- En la biblioteca, ⌘Z no deshace codificaciones del corpus: elimina la marca desde el panel.
+
+La búsqueda en OpenAlex y la consulta de metadatos por DOI son, con la descarga única del
+léxico de sentimiento, lo único que requiere internet; sin conexión, todo lo demás sigue
+igual.
 
 ## 16. ◷ Sesión de foco
 

@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.responses import Response
 
-from . import agreement, analysis, i18n, lexicons, qdpx, storage
+from . import agreement, analysis, i18n, lexicons, library, qdpx, storage
 from .export import codebook_to_csv, project_to_csv, project_to_zip
 from .extraction import ExtractionError, extract_document
 from .i18n import tr
@@ -42,8 +42,17 @@ from .models import (
     ConfirmPayload,
     CustomDomainCreate,
     Document,
+    AnnotationCreate,
+    AnnotationUpdate,
+    Annotation,
+    DoiLookup,
     LexiconOverrides,
     LexiconOverridesUpdate,
+    LibraryItem,
+    LitCoding,
+    LitCodingCreate,
+    LitItemUpdate,
+    LitMeta,
     Project,
     ProjectCreate,
     Relation,
@@ -254,11 +263,13 @@ class InterfaceMiddleware:
         except Exception:
             if mutating:
                 storage.invalidate_cache()
+                library.invalidate()
             raise
         finally:
             i18n.reset_lang(token)
         if mutating and status["code"] >= 400:
             storage.invalidate_cache()
+            library.invalidate()
 
 
 app.add_middleware(InterfaceMiddleware)
@@ -385,6 +396,8 @@ def reset_project(payload: ConfirmPayload) -> Project:
     project.general_board = Board(id=0)
     project.boards = []
     project.next_board_id = 1
+    project.lit_codings = []  # la biblioteca (común) no se toca
+    project.next_lit_id = 1
     storage.save_project(project)
     return project
 
@@ -519,6 +532,10 @@ def update_code(code_id: int, payload: CodeUpdate) -> Code:
             and code.name not in project.codebook
             and not any(c.name == old_name for c in project.codes)):
         project.codebook[code.name] = project.codebook.pop(old_name)
+    if code.name != old_name and not any(c.name == old_name for c in project.codes):
+        for lit in project.lit_codings:  # FR-091: los pasajes de literatura también
+            if lit.name == old_name:
+                lit.name = code.name
     _prune_relations(project)
     storage.save_project(project)
     return code
@@ -560,6 +577,11 @@ def merge_codes(payload: CodeMerge) -> dict:
 
     _remap_relations(project, payload.from_name, payload.to_name)
     _migrate_codebook(project, payload.from_name, payload.to_name)
+    for lit in project.lit_codings:  # la literatura codificada se fusiona igual
+        if lit.name == payload.from_name:
+            lit.name = payload.to_name
+        if target_domain is not None and lit.name == payload.to_name:
+            lit.domain = target_domain
     storage.save_project(project)
     return {"merged": len(sources), "name": payload.to_name, "domain": target_domain}
 
@@ -783,6 +805,312 @@ def delete_board(board_id: int, confirm: bool = False) -> dict:
     project.boards = [b for b in project.boards if b.id != board_id]
     storage.save_project(project)
     return {"deleted": board_id}
+
+
+# ----- Biblioteca de literatura (FR-089..092) -----
+
+LIBRARY_EXTENSIONS = {".pdf": "pdf", ".docx": "text", ".doc": "text", ".txt": "text"}
+
+
+def _item_or_404(lib, item_id: str) -> LibraryItem:
+    item = next((i for i in lib.items if i.id == item_id), None)
+    if item is None:
+        raise HTTPException(404, tr("library_item_not_found"))
+    return item
+
+
+def _item_view(item: LibraryItem, lib, project: Project | None = None) -> dict:
+    project = project or storage.get_active_project()
+    return {
+        **item.model_dump(),
+        "has_file": library.file_path(item) is not None,
+        "annotations": sum(1 for a in lib.annotations if a.item_id == item.id),
+        "codings": sum(1 for c in project.lit_codings if c.item_id == item.id),
+        "apa": library.apa(item.meta, i18n.current()),
+        "cite": library.short_cite(item.meta, i18n.current()),
+    }
+
+
+@app.get("/api/library")
+def get_library() -> dict:
+    lib = library.load()
+    project = storage.get_active_project()
+    items = sorted(lib.items, key=lambda i: library.sort_key(i.meta))
+    return {"items": [_item_view(i, lib, project) for i in items]}
+
+
+def _pdf_info(data: bytes) -> tuple[int, dict]:
+    import fitz
+
+    try:
+        with fitz.open(stream=data, filetype="pdf") as doc:
+            return doc.page_count, dict(doc.metadata or {})
+    except Exception:
+        return 0, {}
+
+
+@app.post("/api/library/items", status_code=201)
+async def add_library_item(file: UploadFile, response: Response) -> dict:
+    """Agrega un PDF, DOCX, DOC o TXT a la biblioteca. Si el mismo archivo ya
+    estaba, no se duplica: se responde con el existente (duplicate=True)."""
+    data = await file.read()
+    filename = Path(file.filename or "documento").name
+    extension = Path(filename).suffix.lower()
+    kind = LIBRARY_EXTENSIONS.get(extension)
+    if kind is None:
+        raise HTTPException(415, tr("library_unsupported"))
+    digest = library.sha1(data)
+    lib = library.load()
+    existing = next((i for i in lib.items if i.sha1 == digest), None)
+    if existing is not None:
+        response.status_code = 200
+        return {**_item_view(existing, lib), "duplicate": True}
+    try:
+        text, _ocr = await run_in_threadpool(extract_document, filename, data, None)
+    except ExtractionError as exc:
+        if kind == "pdf":  # un PDF escaneado sin texto igual se puede leer y anotar a mano
+            text = ""
+        else:
+            raise HTTPException(422, str(exc)) from exc
+    item = LibraryItem(kind=kind, filename=filename, sha1=digest)
+    meta = LitMeta(title=Path(filename).stem)
+    if kind == "pdf":
+        item.pages, info = await run_in_threadpool(_pdf_info, data)
+        if (info.get("title") or "").strip():
+            meta.title = info["title"].strip()
+    doi = library.find_doi(text[:20000])
+    if doi:
+        found = await run_in_threadpool(library.lookup_doi, doi)
+        meta = found or meta
+        meta.doi = meta.doi or doi
+    item.meta = meta
+    library.store_file(item, data, extension)
+    library.store_text(item.id, text)
+    lib = library.load()
+    lib.items.append(item)
+    library.save(lib)
+    return {**_item_view(item, lib), "duplicate": False, "doi_found": bool(doi)}
+
+
+@app.post("/api/library/refs", status_code=201)
+async def add_library_reference(payload: DoiLookup) -> dict:
+    """Agrega solo la referencia (sin archivo), p. ej. desde OpenAlex: los
+    metadatos salen del DOI."""
+    doi = library.normalize_doi(payload.doi)
+    if not doi:
+        raise HTTPException(422, tr("doi_missing"))
+    lib = library.load()
+    existing = next((i for i in lib.items
+                     if library.normalize_doi(i.meta.doi).lower() == doi.lower()), None)
+    if existing is not None:
+        return {**_item_view(existing, lib), "duplicate": True}
+    meta = await run_in_threadpool(library.lookup_doi, doi)
+    if meta is None:
+        raise HTTPException(502, tr("doi_lookup_failed"))
+    item = LibraryItem(kind="ref", meta=meta)
+    lib = library.load()
+    lib.items.append(item)
+    library.save(lib)
+    return {**_item_view(item, lib), "duplicate": False}
+
+
+@app.patch("/api/library/items/{item_id}")
+def update_library_item(item_id: str, payload: LitItemUpdate) -> dict:
+    lib = library.load()
+    item = _item_or_404(lib, item_id)
+    if payload.meta is not None:
+        item.meta = payload.meta
+    if payload.note is not None:
+        item.note = payload.note
+    library.save(lib)
+    return _item_view(item, lib)
+
+
+@app.post("/api/library/items/{item_id}/lookup")
+async def lookup_library_item(item_id: str, payload: DoiLookup) -> dict:
+    """Completa la ficha desde un DOI (el escrito, o el que trae el documento)."""
+    lib = library.load()
+    item = _item_or_404(lib, item_id)
+    doi = library.normalize_doi(payload.doi) or library.find_doi(library.read_text(item_id)[:20000])
+    if not doi:
+        raise HTTPException(422, tr("doi_missing"))
+    meta = await run_in_threadpool(library.lookup_doi, doi)
+    if meta is None:
+        raise HTTPException(502, tr("doi_lookup_failed"))
+    lib = library.load()
+    item = _item_or_404(lib, item_id)
+    item.meta = meta
+    library.save(lib)
+    return _item_view(item, lib)
+
+
+def _codings_by_project(item_id: str) -> list[tuple[Project, int]]:
+    out = []
+    for project in storage.list_projects():
+        n = sum(1 for c in project.lit_codings if c.item_id == item_id)
+        if n:
+            out.append((project, n))
+    return out
+
+
+@app.delete("/api/library/items/{item_id}")
+def delete_library_item(item_id: str, confirm: bool = False) -> dict:
+    """Elimina un documento de la biblioteca: su archivo va a la papelera y sus
+    anotaciones y pasajes codificados (en todos los proyectos) se retiran."""
+    lib = library.load()
+    item = _item_or_404(lib, item_id)
+    used = _codings_by_project(item_id)
+    total = sum(n for _, n in used)
+    if not confirm:
+        raise HTTPException(409, tr("library_delete_confirm", n=total, projects=len(used)),
+                            headers={"X-Coding-Count": str(total)})
+    for project, _ in used:
+        project.lit_codings = [c for c in project.lit_codings if c.item_id != item_id]
+        storage.save_project(project)
+    library.trash_files(item)
+    lib.items = [i for i in lib.items if i.id != item_id]
+    lib.annotations = [a for a in lib.annotations if a.item_id != item_id]
+    library.save(lib)
+    return {"deleted": item_id, "codings": total}
+
+
+@app.get("/api/library/items/{item_id}/file")
+def library_item_file(item_id: str) -> FileResponse:
+    lib = library.load()
+    item = _item_or_404(lib, item_id)
+    path = library.file_path(item)
+    if path is None:
+        raise HTTPException(404, tr("library_item_not_found"))
+    return FileResponse(path, media_type="application/pdf" if item.kind == "pdf" else None)
+
+
+@app.get("/api/library/items/{item_id}/text")
+def library_item_text(item_id: str) -> dict:
+    lib = library.load()
+    _item_or_404(lib, item_id)
+    return {"text": library.read_text(item_id)}
+
+
+@app.get("/api/library/items/{item_id}/annotations")
+def library_item_annotations(item_id: str) -> dict:
+    """Anotaciones de lectura del documento y pasajes codificados en el proyecto activo."""
+    lib = library.load()
+    _item_or_404(lib, item_id)
+    project = storage.get_active_project()
+    return {
+        "annotations": [a.model_dump() for a in lib.annotations if a.item_id == item_id],
+        "codings": [c.model_dump() for c in project.lit_codings if c.item_id == item_id],
+    }
+
+
+@app.post("/api/library/annotations", status_code=201)
+def create_annotation(payload: AnnotationCreate) -> Annotation:
+    lib = library.load()
+    _item_or_404(lib, payload.item_id)
+    annotation = Annotation(**payload.model_dump())
+    lib.annotations.append(annotation)
+    library.save(lib)
+    return annotation
+
+
+@app.patch("/api/library/annotations/{annotation_id}")
+def update_annotation(annotation_id: str, payload: AnnotationUpdate) -> Annotation:
+    lib = library.load()
+    annotation = next((a for a in lib.annotations if a.id == annotation_id), None)
+    if annotation is None:
+        raise HTTPException(404, tr("annotation_not_found"))
+    for field in ("kind", "color", "comment"):
+        value = getattr(payload, field)
+        if value is not None:
+            setattr(annotation, field, value)
+    library.save(lib)
+    return annotation
+
+
+@app.delete("/api/library/annotations/{annotation_id}", status_code=204)
+def delete_annotation(annotation_id: str) -> None:
+    lib = library.load()
+    if not any(a.id == annotation_id for a in lib.annotations):
+        raise HTTPException(404, tr("annotation_not_found"))
+    lib.annotations = [a for a in lib.annotations if a.id != annotation_id]
+    library.save(lib)
+
+
+# ----- Literatura codificada en el proyecto activo (FR-091) -----
+
+@app.post("/api/lit-codings", status_code=201)
+def create_lit_coding(payload: LitCodingCreate) -> LitCoding:
+    """Codifica un pasaje de la biblioteca con un código del proyecto activo.
+    El código debe existir en el proyecto (si es nuevo, la interfaz lo crea
+    antes como código manual)."""
+    project = storage.get_active_project()
+    _item_or_404(library.load(), payload.item_id)
+    if payload.domain not in _all_domains(project):
+        raise HTTPException(422, tr("invalid_domain", name=payload.domain))
+    if not any(c.name == payload.name for c in project.codes):
+        raise HTTPException(422, tr("no_code_named", name=payload.name))
+    coding = LitCoding(id=project.next_lit_id, **payload.model_dump())
+    project.next_lit_id += 1
+    project.lit_codings.append(coding)
+    storage.save_project(project)
+    return coding
+
+
+class LitCodingUpdate(BaseModel):
+    memo: str
+
+
+@app.patch("/api/lit-codings/{coding_id}")
+def update_lit_coding(coding_id: int, payload: LitCodingUpdate) -> LitCoding:
+    project = storage.get_active_project()
+    coding = next((c for c in project.lit_codings if c.id == coding_id), None)
+    if coding is None:
+        raise HTTPException(404, tr("lit_coding_not_found"))
+    coding.memo = payload.memo
+    storage.save_project(project)
+    return coding
+
+
+@app.delete("/api/lit-codings/{coding_id}", status_code=204)
+def delete_lit_coding(coding_id: int) -> None:
+    project = storage.get_active_project()
+    if not any(c.id == coding_id for c in project.lit_codings):
+        raise HTTPException(404, tr("lit_coding_not_found"))
+    project.lit_codings = [c for c in project.lit_codings if c.id != coding_id]
+    storage.save_project(project)
+
+
+def _bibliography_items(scope: str) -> list[LibraryItem]:
+    lib = library.load()
+    if scope == "project":
+        used = {c.item_id for c in storage.get_active_project().lit_codings}
+        items = [i for i in lib.items if i.id in used]
+    else:
+        items = list(lib.items)
+    return sorted(items, key=lambda i: library.sort_key(i.meta))
+
+
+@app.get("/api/library/bibliography")
+def bibliography(scope: str = "all") -> dict:
+    """Lista de referencias en APA 7 (scope=project: lo codificado en el proyecto)."""
+    lang = i18n.current()
+    return {"entries": [{"id": i.id, "html": library.apa(i.meta, lang),
+                         "text": library.apa(i.meta, lang, html=False)}
+                        for i in _bibliography_items(scope)]}
+
+
+@app.get("/api/library/export.{fmt}")
+def export_bibliography(fmt: str, scope: str = "all") -> Response:
+    """Biblioteca en BibTeX o RIS (para Zotero, Mendeley, EndNote…)."""
+    metas = [i.meta for i in _bibliography_items(scope)]
+    if fmt == "bib":
+        content, media = library.bibtex(metas), "application/x-bibtex"
+    elif fmt == "ris":
+        content, media = library.ris(metas), "application/x-research-info-systems"
+    else:
+        raise HTTPException(404)
+    return Response(content=content.encode("utf-8"), media_type=f"{media}; charset=utf-8",
+                    headers=_attachment(f"cualibre_{tr('library_file')}.{fmt}"))
 
 
 # ----- Categorías -----

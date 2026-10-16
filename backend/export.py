@@ -104,6 +104,19 @@ def codebook_text(entry: CodebookEntry) -> str:
     return "\n\n".join(parts)
 
 
+def _literature_json(project: Project) -> str:
+    import json
+
+    from . import library
+    from .i18n import current
+
+    used = {c.item_id for c in project.lit_codings}
+    items = [i for i in library.load().items if i.id in used]
+    return json.dumps([{"id": i.id, "filename": i.filename, "meta": i.meta.model_dump(),
+                        "apa": library.apa(i.meta, current(), html=False)} for i in items],
+                      ensure_ascii=False, indent=2)
+
+
 def project_to_zip(project: Project) -> bytes:
     """Respaldo autocontenido para reproducibilidad/depósito de datos: el
     proyecto completo (JSON, fidelidad total), el banco en CSV y el texto de
@@ -116,6 +129,8 @@ def project_to_zip(project: Project) -> bytes:
         zf.writestr("proyecto.json", project.model_dump_json(indent=2))
         zf.writestr(csv_name, project_to_csv(project))
         zf.writestr(book_name, codebook_to_csv(project))
+        if project.lit_codings:  # fichas de la literatura codificada (la biblioteca es común)
+            zf.writestr(tr("literature_json_name"), _literature_json(project))
         used_names: set[str] = set()
         for doc in project.documents:
             base = _safe_filename(doc.filename)

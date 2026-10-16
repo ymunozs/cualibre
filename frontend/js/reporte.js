@@ -36,6 +36,10 @@ const Reporte = {
       adjusted: "Para este corpus el investigador ajustó el léxico: {removed} palabra(s) descartada(s) y {added} sumada(s) en alguna emoción o polaridad (detalle en la sección 7). Las palabras sumadas se buscan por forma y por lema, con la misma regla de negación.",
       adjustments: "Ajustes del investigador al léxico", colCategory: "Emoción o polaridad", colRemoved: "Descartadas", colAdded: "Sumadas",
       positive: "positivas", negative: "negativas",
+      s8: "8. Literatura codificada",
+      litNote: "Pasajes de la literatura codificados con los códigos del proyecto. Se registran aparte del corpus: no entran en las frecuencias, la co-ocurrencia ni el análisis de sentimiento.",
+      litMethod: "La literatura se leyó y codificó en la biblioteca de Cua-libre, con los mismos códigos del proyecto pero registrada aparte del corpus.",
+      refs: "Referencias",
       footer: "Generado con CUA-LIBRE STUDIO · análisis 100% humano · {date}",
     },
     en: {
@@ -68,6 +72,10 @@ const Reporte = {
       adjusted: "For this corpus the researcher adjusted the lexicon: {removed} word(s) discarded and {added} added in some emotion or polarity (details in section 7). Added words are matched by form and by lemma, with the same negation rule.",
       adjustments: "Researcher’s adjustments to the lexicon", colCategory: "Emotion or polarity", colRemoved: "Discarded", colAdded: "Added",
       positive: "positive", negative: "negative",
+      s8: "8. Coded literature",
+      litNote: "Passages from the literature coded with the project's codes. They are recorded apart from the corpus: they do not enter frequencies, co-occurrence or sentiment analysis.",
+      litMethod: "The literature was read and coded in the Cua-libre library, with the project's own codes but recorded apart from the corpus.",
+      refs: "References",
       footer: "Generated with CUA-LIBRE STUDIO · 100% human analysis · {date}",
     },
     pt: {
@@ -100,6 +108,10 @@ const Reporte = {
       adjusted: "Para este corpus o pesquisador ajustou o léxico: {removed} palavra(s) descartada(s) e {added} somada(s) em alguma emoção ou polaridade (detalhe na seção 7). As palavras somadas são buscadas por forma e por lema, com a mesma regra de negação.",
       adjustments: "Ajustes do pesquisador ao léxico", colCategory: "Emoção ou polaridade", colRemoved: "Descartadas", colAdded: "Somadas",
       positive: "positivas", negative: "negativas",
+      s8: "8. Literatura codificada",
+      litNote: "Trechos da literatura codificados com os códigos do projeto. São registrados à parte do corpus: não entram nas frequências, na coocorrência nem na análise de sentimento.",
+      litMethod: "A literatura foi lida e codificada na biblioteca do Cua-libre, com os mesmos códigos do projeto, mas registrada à parte do corpus.",
+      refs: "Referências",
       footer: "Gerado com o CUA-LIBRE STUDIO · análise 100% humana · {date}",
     },
   },
@@ -227,6 +239,29 @@ const Reporte = {
             + (withTone ? `<p class="meta">${r("toneNote")}</p>` : "");
         }).join("");
 
+      // Literatura codificada y referencias (FR-091/092): aparte del corpus
+      const litCodings = project.lit_codings || [];
+      let litHtml = "", refsHtml = "";
+      if (litCodings.length) {
+        await Biblioteca.loadItems();
+        const byName = new Map();
+        for (const c of litCodings) {
+          if (!byName.has(c.name)) byName.set(c.name, []);
+          byName.get(c.name).push(c);
+        }
+        for (const [name, list] of [...byName].sort((a, b) => a[0].localeCompare(b[0], I18N.locale))) {
+          const chip = `<span class="chip" style="background:${State.domains[list[0].domain] || "#999"}"></span>`;
+          litHtml += `<h4>${chip} ${this.esc(name)} (${list.length})</h4>`;
+          for (const c of list) {
+            const item = Biblioteca.item(c.item_id);
+            const where = item ? `${item.cite}${c.page ? `, ${I18N.t("lib.page.short", { n: c.page })}` : ""}` : "?";
+            litHtml += `<blockquote>“${this.esc(c.quote)}”<footer>(${this.esc(where)})${c.memo ? ` · ✎ ${this.esc(c.memo)}` : ""}</footer></blockquote>`;
+          }
+        }
+        const { entries } = await API.bibliography("project");
+        refsHtml = entries.map(e => `<p class="ref">${e.html}</p>`).join("");
+      }
+
       // Ajustes del léxico (FR-086): transparencia sobre lo que el investigador cambió
       const catLabel = (c) => c === "positivo" ? r("positive") : c === "negativo" ? r("negative") : I18N.emotion(c);
       const adjCats = [...new Set([...Object.keys(overrides.removed || {}), ...Object.keys(overrides.added || {})])];
@@ -274,6 +309,7 @@ const Reporte = {
                 text-transform: uppercase; letter-spacing: 0.05em; color: #444; margin-top: 6px; }
   dl.libro dd { margin: 2px 0 0 0; }
   .memos { font-size: 0.85rem; color: #333; }
+  p.ref { padding-left: 2em; text-indent: -2em; margin: 4px 0; }
   .rel-legend-item { margin-right: 14px; }
   .leyenda .rel-legend-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
   .leyenda .rel-sample { flex-shrink: 0; }
@@ -290,7 +326,7 @@ const Reporte = {
 </header>
 
 <h2>${r("s1")}</h2>
-<p>${r("method", lexiconParams)}${adjustedNote}</p>
+<p>${r("method", lexiconParams)}${adjustedNote}${litCodings.length ? " " + r("litMethod") : ""}</p>
 
 <h2>${r("s2")}</h2>
 <p>${r("book")}</p>
@@ -323,6 +359,8 @@ ${arcsHtml || `<p>${r("noDocs")}</p>`}
   <div><h3>${r("emotions")}</h3><div class="grafico">${emotionsHtml}</div></div>
 </div>
 ${adjustmentsHtml}
+${litHtml ? `<h2>${r("s8")}</h2><p class="meta">${r("litNote")}</p>${litHtml}` : ""}
+${refsHtml ? `<h2>${r("refs")}</h2>${refsHtml}` : ""}
 
 <footer class="page"><hr>${r("footer", { date: today })}</footer>
 </body></html>`;

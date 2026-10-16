@@ -182,6 +182,10 @@ const Views = {
           this.toast(I18N.t("rel.undo.hint"));
           return;
         }
+        if (this.current === "literatura") { // tampoco en la biblioteca (FR-090)
+          this.toast(I18N.t("lib.undo.hint"));
+          return;
+        }
         this._undoLastCode();
       }
     });
@@ -405,6 +409,7 @@ const Views = {
     else if (this.current === "exportar") this.renderExport();
     else if (this.current === "relaciones") Relations.render();
     else if (this.current === "libro") Libro.render();
+    else if (this.current === "literatura") Biblioteca.render();
     else if (this.current === "sentimiento") this.renderSentiment();
     else if (this.current === "acuerdo") Acuerdo.render();
   },
@@ -1147,6 +1152,12 @@ const Views = {
           link.rel = "noopener";
           link.textContent = I18N.t("lit.doi");
           card.appendChild(link);
+          // Llevar la referencia a la biblioteca (FR-089)
+          const add = document.createElement("button");
+          add.className = "btn btn-small lit-add";
+          add.textContent = I18N.t("lib.ref.add");
+          add.addEventListener("click", () => Biblioteca.addReference(work.doi));
+          card.appendChild(add);
         }
         results.appendChild(card);
       }

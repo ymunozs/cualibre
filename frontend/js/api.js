@@ -126,6 +126,28 @@ const API = {
   setSentimentOverrides: (lang, removed, added) =>
     API._json("PUT", "/api/sentiment/overrides", { lang, removed, added }),
 
+  // Biblioteca de literatura (FR-089..092)
+  library: () => API._fetch("/api/library"),
+  addLibraryItem(file) {
+    const form = new FormData();
+    form.append("file", file);
+    return API._fetch("/api/library/items", { method: "POST", body: form });
+  },
+  addReference: (doi) => API._json("POST", "/api/library/refs", { doi }),
+  updateLibraryItem: (id, payload) => API._json("PATCH", `/api/library/items/${id}`, payload),
+  lookupLibraryItem: (id, doi) => API._json("POST", `/api/library/items/${id}/lookup`, { doi }),
+  deleteLibraryItem: (id, confirm = false) =>
+    API._fetch(`/api/library/items/${id}${confirm ? "?confirm=true" : ""}`, { method: "DELETE" }),
+  libraryText: (id) => API._fetch(`/api/library/items/${id}/text`),
+  libraryAnnotations: (id) => API._fetch(`/api/library/items/${id}/annotations`),
+  createAnnotation: (payload) => API._json("POST", "/api/library/annotations", payload),
+  updateAnnotation: (id, payload) => API._json("PATCH", `/api/library/annotations/${id}`, payload),
+  deleteAnnotation: (id) => API._fetch(`/api/library/annotations/${id}`, { method: "DELETE" }),
+  createLitCoding: (payload) => API._json("POST", "/api/lit-codings", payload),
+  updateLitCoding: (id, memo) => API._json("PATCH", `/api/lit-codings/${id}`, { memo }),
+  deleteLitCoding: (id) => API._fetch(`/api/lit-codings/${id}`, { method: "DELETE" }),
+  bibliography: (scope = "all") => API._fetch(`/api/library/bibliography?scope=${scope}`),
+
   // Música de foco (FR-040)
   music: () => API._fetch("/api/music"),
 

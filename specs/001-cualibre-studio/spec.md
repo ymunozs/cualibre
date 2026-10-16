@@ -666,6 +666,37 @@ que se listan resultados con título, año, citas y DOI clicable.
   existen en el proyecto (selector «＋ TRAER RELACIÓN»); crear desde ese cuadro una
   relación existente MUST traerla (sus dos extremos) en vez de dar error, sin duplicarla.
 
+### v2.0 — Biblioteca de literatura (2026-10-15, versión de prueba)
+
+- **FR-089**: Biblioteca común a todos los proyectos: importar PDF, DOCX, DOC y TXT (copia;
+  el original no se toca; sin duplicar el mismo archivo), fichas con metadatos (tipo,
+  autoría, año, fuente, volumen, número, páginas, editorial, DOI, URL, ISBN) completadas
+  desde el DOI del documento (Crossref, OpenAlex) o a mano; referencias sin archivo desde
+  OpenAlex. Eliminar MUST pedir confirmación, mover el archivo a la papelera y retirar sus
+  pasajes codificados en todos los proyectos.
+- **FR-090**: Lector integrado: PDF con páginas reales (PDF.js en la propia página, sin
+  iframes) y Word/TXT como texto continuo; anotaciones de lectura (resaltar en cuatro
+  colores, subrayar, tachar, nota) por página y rectángulos en fracciones de la página, o
+  por offsets en el texto; panel de anotaciones y cuaderno de lectura en CSV.
+- **FR-091**: Codificar pasajes de la literatura con los códigos y categorías del proyecto
+  activo (un nombre nuevo se crea como código manual). Los pasajes MUST registrarse aparte
+  del corpus (no entran en Analytics, co-ocurrencia, sentimiento, acuerdo, CSV ni
+  REFI-QDA), fusionarse y renombrarse con su código, y mostrarse en el libro de códigos
+  como «citas de la literatura».
+- **FR-092**: Referencias en APA 7 (sin cambiar la capitalización de los títulos), BibTeX y
+  RIS; el reporte académico agrega la literatura codificada y la lista de referencias del
+  proyecto; el respaldo .zip incluye las fichas de la literatura codificada.
+
+**Constitution Check (FR-089..092).** Principio II: el lector no es el Canvas del corpus;
+aun así no deja controles fijos sobre el texto: el menú de anotar y codificar es efímero
+(aparece al seleccionar y desaparece al confirmar o con Esc), como la Nube Negra, y las
+herramientas permanentes viven en el panel lateral. Principio III: codificar literatura
+sigue el mismo gesto (seleccionar, elegir categoría y nombre, Enter); la Nube Negra del
+Canvas no se modifica. Principio IV: PDF.js se usa directamente en el DOM (no el visor en
+iframe); toda comunicación es HTTP/JSON. Principio V: archivos copiados, eliminaciones a
+papelera con confirmación. Principio VIII: metadatos y referencias son consulta, nada se
+interpreta ni se escribe solo en el banco de códigos.
+
 ## Assumptions
 
 - Un solo usuario local (el investigador) por proyecto; no se requiere autenticación ni

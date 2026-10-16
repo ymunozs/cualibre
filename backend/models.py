@@ -153,6 +153,24 @@ class LexiconOverrides(BaseModel):
         return not any(self.removed.values()) and not any(self.added.values())
 
 
+class LitCoding(BaseModel):
+    """Pasaje de la biblioteca codificado con un código del proyecto (FR-091).
+    Vive aparte de los códigos del corpus: no entra en Analytics, co-ocurrencia,
+    sentimiento, acuerdo ni exportaciones del corpus (decisión del investigador)."""
+
+    id: int
+    item_id: str  # documento de la biblioteca (común a todos los proyectos)
+    name: str  # nombre de un código del proyecto
+    domain: str
+    quote: str = ""
+    memo: str = ""
+    page: Optional[int] = None  # PDF: página (desde 1) y rectángulos en fracciones
+    rects: list[list[float]] = Field(default_factory=list)
+    start: Optional[int] = None  # texto (Word/TXT): offsets UTF-16, como el Canvas
+    end: Optional[int] = None
+    created_at: str = Field(default_factory=now_iso)
+
+
 class Project(BaseModel):
     id: str = Field(default_factory=new_id)
     name: str
@@ -173,6 +191,8 @@ class Project(BaseModel):
     boards: list[Board] = Field(default_factory=list)
     next_board_id: int = 1
     sentiment_overrides: dict[str, LexiconOverrides] = Field(default_factory=dict)  # idioma
+    lit_codings: list[LitCoding] = Field(default_factory=list)  # literatura (FR-091)
+    next_lit_id: int = 1
 
     def summary(self) -> dict:
         return {
@@ -451,3 +471,170 @@ class LexiconOverridesUpdate(BaseModel):
 
 class ConfirmPayload(BaseModel):
     confirm: bool = False
+
+
+# ----- Biblioteca de literatura (FR-089..092) -----
+
+LIT_TYPES = ("article", "book", "chapter", "thesis", "report", "other")
+ANNOTATION_KINDS = ("highlight", "underline", "strike", "note")
+
+
+class Person(BaseModel):
+    family: str = Field(default="", max_length=200)
+    given: str = Field(default="", max_length=200)
+
+
+class LitMeta(BaseModel):
+    """Metadatos bibliográficos (para la lista de referencias en APA 7)."""
+
+    type: str = "article"
+    title: str = Field(default="", max_length=1000)
+    authors: list[Person] = Field(default_factory=list)
+    editors: list[Person] = Field(default_factory=list)  # capítulos de libro
+    year: str = Field(default="", max_length=20)
+    container: str = Field(default="", max_length=500)  # revista o libro
+    volume: str = Field(default="", max_length=40)
+    issue: str = Field(default="", max_length=40)
+    pages: str = Field(default="", max_length=40)
+    publisher: str = Field(default="", max_length=300)
+    doi: str = Field(default="", max_length=300)
+    url: str = Field(default="", max_length=1000)
+    isbn: str = Field(default="", max_length=40)
+
+    @field_validator("type")
+    @classmethod
+    def valid_type(cls, v: str) -> str:
+        return v if v in LIT_TYPES else "other"
+
+
+class LibraryItem(BaseModel):
+    id: str = Field(default_factory=new_id)
+    kind: str = "pdf"  # pdf | text (Word/TXT) | ref (solo la referencia, sin archivo)
+    filename: str = ""
+    file: str = ""  # nombre del archivo guardado en biblioteca/archivos/
+    sha1: str = ""
+    pages: int = 0
+    added_at: str = Field(default_factory=now_iso)
+    meta: LitMeta = Field(default_factory=LitMeta)
+    note: str = ""
+
+
+class Annotation(BaseModel):
+    """Anotación de lectura (de la persona, no de un proyecto): resaltar,
+    subrayar, tachar o nota, sobre un PDF (página + rectángulos) o un texto
+    (offsets UTF-16). El archivo original nunca se modifica."""
+
+    id: str = Field(default_factory=new_id)
+    item_id: str
+    kind: str = "highlight"
+    color: str = "#FFCC00"
+    page: Optional[int] = None
+    rects: list[list[float]] = Field(default_factory=list)
+    start: Optional[int] = None
+    end: Optional[int] = None
+    quote: str = ""
+    comment: str = ""
+    created_at: str = Field(default_factory=now_iso)
+
+
+class Library(BaseModel):
+    items: list[LibraryItem] = Field(default_factory=list)
+    annotations: list[Annotation] = Field(default_factory=list)
+
+
+def _clean_rects(v: list[list[float]]) -> list[list[float]]:
+    if len(v) > 400:
+        raise ValueError(tr("invalid_field", field="rects"))
+    out = []
+    for r in v:
+        if len(r) != 4 or not all(-0.01 <= x <= 1.01 for x in r):
+            raise ValueError(tr("invalid_field", field="rects"))
+        out.append([round(float(x), 5) for x in r])
+    return out
+
+
+class AnchorIn(BaseModel):
+    """Dónde está un pasaje: página + rectángulos (PDF) u offsets (texto)."""
+
+    item_id: str = Field(min_length=1, max_length=64)
+    quote: str = Field(default="", max_length=20000)
+    page: Optional[int] = Field(default=None, ge=1)
+    rects: list[list[float]] = Field(default_factory=list)
+    start: Optional[int] = Field(default=None, ge=0)
+    end: Optional[int] = Field(default=None, ge=0)
+
+    @field_validator("rects")
+    @classmethod
+    def valid_rects(cls, v):
+        return _clean_rects(v)
+
+    @model_validator(mode="after")
+    def anchored(self):
+        pdf = self.page is not None and bool(self.rects)
+        text = self.start is not None and self.end is not None and self.end > self.start
+        if not (pdf or text):
+            raise ValueError(tr("offsets_incoherent"))
+        return self
+
+
+class AnnotationCreate(AnchorIn):
+    kind: str = "highlight"
+    color: str = "#FFCC00"
+    comment: str = Field(default="", max_length=20000)
+
+    @field_validator("kind")
+    @classmethod
+    def valid_kind(cls, v: str) -> str:
+        if v not in ANNOTATION_KINDS:
+            raise ValueError(tr("invalid_field", field="kind"))
+        return v
+
+    @field_validator("color")
+    @classmethod
+    def valid_hex(cls, v: str) -> str:
+        if not HEX_COLOR_RE.match(v):
+            raise ValueError(tr("invalid_color", value=v))
+        return v.upper()
+
+
+class AnnotationUpdate(BaseModel):
+    kind: Optional[str] = None
+    color: Optional[str] = None
+    comment: Optional[str] = Field(default=None, max_length=20000)
+
+    @field_validator("kind")
+    @classmethod
+    def valid_kind(cls, v):
+        if v is not None and v not in ANNOTATION_KINDS:
+            raise ValueError(tr("invalid_field", field="kind"))
+        return v
+
+    @field_validator("color")
+    @classmethod
+    def valid_hex(cls, v):
+        if v is not None and not HEX_COLOR_RE.match(v):
+            raise ValueError(tr("invalid_color", value=v))
+        return v.upper() if v else v
+
+
+class LitCodingCreate(AnchorIn):
+    name: str = Field(min_length=1, max_length=200)
+    domain: str = Field(min_length=1)
+    memo: str = Field(default="", max_length=20000)
+
+    @field_validator("name", "domain")
+    @classmethod
+    def strip(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError(tr("code_name_empty"))
+        return v
+
+
+class LitItemUpdate(BaseModel):
+    meta: Optional[LitMeta] = None
+    note: Optional[str] = Field(default=None, max_length=20000)
+
+
+class DoiLookup(BaseModel):
+    doi: str = Field(default="", max_length=300)

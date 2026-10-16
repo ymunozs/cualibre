@@ -1114,3 +1114,89 @@ body.dark .rel-sample { color: #E8E8E2; }
 body.dark .rel-shape-select { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
 body.dark .btn-locked { background: #E8E8E2; color: #141412; }
 body.dark #rel-organizer.rel-expanded { background: #141412; }
+
+/* ---------- Biblioteca de literatura (FR-089..092) ---------- */
+
+#lib-search { flex: 1; min-width: 220px; }
+.lib-import { width: auto; }
+#lib-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; margin: 8px 0 22px; }
+.lib-card { border: var(--border-thin); background: #fff; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.lib-card-head { display: flex; align-items: flex-start; gap: 8px; }
+.lib-card-title { font-family: var(--serif); font-size: 15px; font-weight: 700; text-align: left;
+  background: none; border: none; padding: 0; color: inherit; cursor: default; overflow-wrap: anywhere; }
+button.lib-card-title { cursor: pointer; }
+button.lib-card-title:hover { color: var(--accent); }
+.lib-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; border: 1px solid var(--ink); padding: 1px 5px; flex-shrink: 0; margin-top: 2px; }
+.lib-card-meta { font-size: 12px; color: #555; }
+.lib-card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.lit-add { margin-left: 10px; }
+
+.lib-reader-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.lib-reader-title { font-family: var(--serif); font-size: 16px; font-weight: 700; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.lib-zoom { display: inline-flex; align-items: center; gap: 6px; }
+.lib-reader-hint { padding: 2px 0 8px; font-size: 11px; }
+#lib-reader-grid { display: grid; grid-template-columns: 1fr 340px; gap: 18px; align-items: start; }
+#lib-pages { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; padding-bottom: 40px; }
+.lib-page { position: relative; background: #fff; border: 2px solid var(--ink); box-shadow: var(--shadow); flex-shrink: 0; }
+.lib-page canvas { display: block; }
+.lib-page-number { position: absolute; top: -1px; right: -34px; font-size: 10px; color: #888; }
+.lib-marks { position: absolute; inset: 0; pointer-events: none; }
+.lib-mark { position: absolute; mix-blend-mode: multiply; }
+.lib-coding { mix-blend-mode: normal; }
+.lib-coding-tag { position: absolute; font: 700 9px var(--mono); white-space: nowrap; padding-left: 3px; background: rgba(253, 253, 247, 0.85); overflow: visible; width: auto !important; }
+.lib-note-pin { position: absolute; font-size: 11px; font-weight: 700; color: #000; }
+/* Capa de texto de PDF.js: invisible, solo para seleccionar */
+.textLayer { position: absolute; inset: 0; overflow: hidden; line-height: 1; text-align: initial; transform-origin: 0 0; }
+.textLayer span, .textLayer br { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0 0; }
+.textLayer ::selection { background: rgba(0, 102, 255, 0.28); color: transparent; }
+.lib-text { font-family: var(--serif); font-size: 17px; line-height: 1.7; white-space: pre-wrap; background: #FDFDF7;
+  border: var(--border); padding: 28px 34px; max-width: 760px; width: 100%; overflow-wrap: anywhere; }
+.lib-has-note { text-decoration-line: underline; text-decoration-style: dotted; }
+
+#lib-side { position: sticky; top: 12px; max-height: calc(100vh - 110px); display: flex; flex-direction: column; }
+.lib-side-tabs { display: flex; gap: 6px; margin-bottom: 6px; }
+.lib-side-tab { font: 700 11px var(--mono); border: var(--border-thin); background: #EEE; padding: 6px 10px; cursor: pointer; }
+.lib-side-tab.active { background: var(--accent); color: #fff; }
+#lib-side-notes, #lib-side-meta { overflow-y: auto; }
+.lib-notes-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.lib-note-card { border-bottom: 1px dashed #bbb; padding: 8px 0; }
+.lib-note-card .quote-meta { justify-content: space-between; }
+.lib-note-card.flash { animation: libflash 1.2s; }
+@keyframes libflash { 0%, 40% { background: #FFF1D6; } 100% { background: transparent; } }
+.lib-note-quote { font-family: var(--serif); font-size: 13px; line-height: 1.45; margin: 4px 0; cursor: pointer; }
+.lib-note-quote:hover { color: var(--accent); }
+.lib-note-comment { width: 100%; font: 12px var(--mono); border: 1px solid #bbb; padding: 4px 6px; resize: vertical; }
+.lib-field { display: block; margin: 6px 0; }
+.lib-field input, .lib-field select, .lib-field textarea { margin: 2px 0 0 !important; }
+.lib-meta-buttons { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+.lib-meta-buttons .btn-accent { width: auto; }
+.lib-apa { border-top: 2px solid var(--ink); padding-top: 8px; }
+.lib-apa-text { font-family: var(--serif); font-size: 14px; line-height: 1.5; padding-left: 1.6em; text-indent: -1.6em; margin-top: 4px; overflow-wrap: anywhere; }
+
+/* Menú efímero del lector: el mismo lenguaje visual que la Nube Negra */
+#lib-popup { position: fixed; z-index: 9999; width: 320px; background: var(--ink); color: #fff;
+  border: 2px solid var(--accent); box-shadow: var(--shadow-accent); padding: 10px 12px; }
+.lib-popup-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.lib-swatch { width: 24px; height: 24px; border: 2px solid #fff; cursor: pointer; }
+.lib-tool { min-width: 30px; height: 26px; font: 700 13px var(--mono); background: #fff; color: #000; border: 2px solid #fff; cursor: pointer; }
+.lib-tool:hover, .lib-swatch:hover { outline: 2px solid var(--accent); }
+.lib-code-btn { width: 100%; font: 700 11px var(--mono); background: var(--accent); color: #fff; border: 2px solid #fff; padding: 6px; cursor: pointer; }
+.lib-popup-input { width: 100%; font: 13px var(--mono); border: 2px solid #fff; padding: 6px 8px; margin: 4px 0; background: #fff; color: #000; }
+
+@media (max-width: 1100px) {
+  #lib-reader-grid { grid-template-columns: 1fr; }
+  #lib-side { position: static; max-height: none; }
+}
+
+body.dark .lib-card, body.dark .lib-side-tab { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
+body.dark .lib-side-tab.active { background: var(--accent); color: #fff; }
+body.dark .lib-card-meta { color: #aaa; }
+body.dark .lib-badge { border-color: #E8E8E2; }
+body.dark #lib-search { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
+body.dark .lib-page { border-color: #E8E8E2; box-shadow: 5px 5px 0 #E8E8E2; }
+body.dark .lib-text { background: #1B1B16; color: #E4E2D8; border-color: #E8E8E2; }
+body.dark .lib-note-card { border-bottom-color: #444; }
+body.dark .lib-note-comment { background: #1B1B16; color: #E8E8E2; border-color: #555; }
+body.dark .lib-apa { border-top-color: #E8E8E2; }
+body.dark .lib-note-card.flash { animation: libflashdark 1.2s; }
+@keyframes libflashdark { 0%, 40% { background: #3A3020; } 100% { background: transparent; } }

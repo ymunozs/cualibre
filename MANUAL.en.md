@@ -409,9 +409,38 @@ reopen it with **⤒ IMPORT**), `codes.csv`, `codebook.csv` and the text of ever
 Designed to be deposited as reproducibility evidence when publishing, or as a portable
 copy independent of the app.
 
-## 15. 📚 Literature
+## 15. 📚 Library
 
-Concept search in **OpenAlex** (title, year, citations, DOI link). Together with the one-off download of the sentiment lexicon, the only thing that needs the internet; without a connection, the rest of the app works as usual.
+Your literature, **shared by all your projects**: read it, annotate it and code it without
+leaving Cua-libre. Original files are never modified.
+
+- **Adding**: **📥 ADD PDF, DOCX, DOC or TXT** copies documents into the library (the same
+  file is never duplicated). If the document carries its **DOI**, the record fills itself
+  in with Crossref data; otherwise, complete it by hand in **RECORD**.
+- **Reading**: **OPEN** shows the PDF with its real pages (− / + to zoom). Word and TXT
+  files are read as continuous text. A scanned PDF with no text can be read, but not
+  annotated on its text.
+- **Annotating**: select a passage and a menu appears, vanishing when you finish: four
+  colours to **highlight**, **underline**, **strike through** and **✎ note**.
+  **ANNOTATIONS** lists them all with their page, to comment on or delete; clicking a mark
+  in the document highlights it in the panel. **⬇ CSV** downloads the reading notebook.
+- **Coding**: in the same menu, **◉ CODE** uses the codes and categories of the **active
+  project**. A new name is created as a manual code of the project. Literature passages are
+  recorded **apart from the corpus**: they do not count in Analytics, co-occurrence,
+  sentiment or agreement. In the **▥ CODEBOOK**, each entry shows its **quotes from the
+  literature**, with a button to open them in the reader.
+- **Record and references**: type (article, book, chapter, thesis, report), authors, year,
+  journal or book, pages, DOI… with its **APA 7** reference on view. **⟳ FILL IN FROM THE
+  DOI** completes it from the internet. **⬇ BibTeX** and **⬇ RIS** export the library for
+  Zotero, Mendeley or EndNote. The academic report adds the coded literature and the
+  project's **References** list.
+- **OpenAlex search**: concept search (title, year, citations, DOI link); **＋ TO THE
+  LIBRARY** saves the reference with its full record.
+- In the library, ⌘Z does not undo corpus coding: delete the mark from the panel.
+
+The OpenAlex search and the DOI metadata lookup are, with the one-off download of the
+sentiment lexicon, the only things that need the internet; without a connection,
+everything else works as usual.
 
 ## 16. ◷ Focus session
 

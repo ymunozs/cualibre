@@ -100,6 +100,17 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
 - Windows sin WebView2: pywebview NO lanza error, recurre al motor de Internet Explorer
   y deja la ventana en blanco. `run.py` lo detecta (`window_engine_ok`) y usa el navegador.
 
+- **Biblioteca de literatura (v2.0, FR-089..092):** `backend/library.py` (almacén global en
+  `<datos>/biblioteca/`: `biblioteca.json` con fichas y anotaciones, `archivos/`, `textos/`,
+  `papelera/`; metadatos por DOI con Crossref y luego OpenAlex, sin el correo del
+  investigador en las cabeceras; APA 7, BibTeX y RIS propios). Lector en
+  `frontend/js/biblioteca.js` con PDF.js 3.11.174 legacy (UMD, en `frontend/vendor/pdfjs/`,
+  compatible con WebKit antiguo; nunca el visor en iframe). Posiciones PDF = página +
+  rectángulos en fracciones de la página. `Project.lit_codings` vive APARTE de
+  `Project.codes` (decisión del investigador): no tocar Analytics, co-ocurrencia,
+  sentimiento, acuerdo, CSV ni QDPX con ellos; sí seguir fusiones, renombres y reinicio.
+  El menú del lector es propio: la Nube Negra del Canvas no se reutiliza ni se modifica.
+
 ## Licencia (decisión del investigador, 2026-10-15)
 
 Cua-libre es **AGPL-3.0-or-later** (`LICENSE`, `pyproject.toml`, README, «Acerca de»),

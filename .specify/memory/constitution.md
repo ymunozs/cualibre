@@ -207,7 +207,10 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   formas elegibles, selección múltiple, deshacer movimientos, bloqueo de nodos y cuadros,
   inversión de relaciones y vista ampliada) y ajustes del investigador al léxico
   de sentimiento (descartar y sumar palabras por emoción o polaridad, declarados en el
-  reporte).
+  reporte), biblioteca de literatura común a todos los proyectos (lector de PDF y
+  Word con resaltar, subrayar, tachar y notas; fichas con metadatos por DOI; pasajes
+  codificados con los códigos del proyecto, aparte del corpus; referencias APA 7,
+  BibTeX y RIS).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -240,7 +243,9 @@ investigador el 2026-10-15, junto con la lectura de que recolorear un nodo en un
 es un ajuste de vista compatible con el Principio VI (las 9 Categorías Básicas conservan
 su color en el resto de la app). El mismo día aprobó también FR-087 (simbología
 nativa como forma por defecto, formas elegibles, selección múltiple, bloqueo y vista
-ampliada del organizador) y FR-088 (traer a un cuadro propio relaciones que ya existen). -->
+ampliada del organizador) y FR-088 (traer a un cuadro propio relaciones que ya existen).
+También el 2026-10-15 pidió la biblioteca de literatura (FR-089..092), con la literatura
+codificada aparte del corpus. -->
 <!-- 1.14.0: inventario ampliado por pedido del investigador (2026-10-06): importación
 de Word 97-2003 (.doc), con notas y cuadros de texto también en .docx (FR-082), e
 instalación apta para quien no programa, con el instalador de Windows probado ya

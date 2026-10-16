@@ -53,6 +53,7 @@ const State = {
   Paleta.init();
   Relations.init();
   Libro.init();
+  Biblioteca.init();
   Acuerdo.init();
   Views.init();
   Musica.init();

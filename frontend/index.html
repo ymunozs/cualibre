@@ -359,14 +359,51 @@
     <div id="export-table" class="table-scroll"></div>
   </section>
 
-  <!-- LITERATURA -->
+  <!-- BIBLIOTECA (FR-089..092), con la búsqueda OpenAlex de siempre (FR-023/024) -->
   <section id="view-literatura" class="view hidden">
-    <div class="section-title" data-i18n="lit.title">BÚSQUEDA OPENALEX</div>
-    <div class="controls-row">
-      <input type="text" id="lit-query" data-i18n-placeholder="lit.placeholder">
-      <button id="btn-lit-search" class="btn btn-accent" style="width:auto" data-i18n="lit.search">BUSCAR</button>
+    <div id="lib-home">
+      <div class="section-title"><span data-i18n="lib.title">BIBLIOTECA DE LITERATURA</span>
+        <a class="btn-export-mini" data-download="/api/library/export.bib" href="/api/library/export.bib" download data-i18n-title="lib.bib.title">⬇ BibTeX</a>
+        <a class="btn-export-mini" data-download="/api/library/export.ris" href="/api/library/export.ris" download data-i18n-title="lib.ris.title">⬇ RIS</a>
+      </div>
+      <p class="empty-note" style="padding-top:0" data-i18n="lib.intro"></p>
+      <div class="controls-row">
+        <label for="lib-file" class="btn btn-accent lib-import" data-i18n="lib.import">📥 AÑADIR PDF, DOCX, DOC o TXT</label>
+        <input type="file" id="lib-file" class="visually-hidden" accept=".pdf,.docx,.doc,.txt" multiple>
+        <input type="text" id="lib-search" data-i18n-placeholder="lib.search.placeholder">
+        <span id="lib-status" class="mini-label"></span>
+      </div>
+      <div id="lib-list"></div>
+      <div class="section-title" data-i18n="lit.title">BÚSQUEDA OPENALEX</div>
+      <div class="controls-row">
+        <input type="text" id="lit-query" data-i18n-placeholder="lit.placeholder">
+        <button id="btn-lit-search" class="btn btn-accent" style="width:auto" data-i18n="lit.search">BUSCAR</button>
+      </div>
+      <div id="lit-results"></div>
     </div>
-    <div id="lit-results"></div>
+    <div id="lib-reader" class="hidden">
+      <div class="lib-reader-bar">
+        <button id="lib-back" class="btn btn-small" data-i18n="lib.back">◀ BIBLIOTECA</button>
+        <span id="lib-reader-title" class="lib-reader-title"></span>
+        <span class="lib-zoom">
+          <button id="lib-zoom-out" class="btn btn-small" data-i18n-title="lib.zoom.out">−</button>
+          <span id="lib-zoom-value" class="mini-label">100%</span>
+          <button id="lib-zoom-in" class="btn btn-small" data-i18n-title="lib.zoom.in">+</button>
+        </span>
+      </div>
+      <p class="empty-note lib-reader-hint" data-i18n="lib.reader.hint"></p>
+      <div id="lib-reader-grid">
+        <div id="lib-pages"></div>
+        <aside id="lib-side">
+          <div class="lib-side-tabs">
+            <button type="button" class="lib-side-tab active" data-side="notes" data-i18n="lib.side.notes">ANOTACIONES</button>
+            <button type="button" class="lib-side-tab" data-side="meta" data-i18n="lib.side.meta">FICHA</button>
+          </div>
+          <div id="lib-side-notes" class="panel"></div>
+          <div id="lib-side-meta" class="panel hidden"></div>
+        </aside>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -400,6 +437,10 @@
   <input type="text" id="nube-name" data-i18n-placeholder="nube.name.placeholder" maxlength="200" autocomplete="off">
   <div class="nube-hint" data-i18n="nube.hint"></div>
 </div>
+
+<!-- Menú efímero del lector de la biblioteca (FR-090/091): como la Nube Negra,
+     aparece al seleccionar un pasaje y desaparece al confirmar o cancelar -->
+<div id="lib-popup" class="hidden" role="dialog"></div>
 
 <!-- Barra de música de foco (FR-040): pistas locales del investigador -->
 <div id="music-bar">
@@ -517,6 +558,8 @@
 <script src="/static/js/paleta.js"></script>
 <script src="/static/js/relations.js"></script>
 <script src="/static/js/libro.js"></script>
+<script src="/static/vendor/pdfjs/pdf.min.js"></script>
+<script src="/static/js/biblioteca.js"></script>
 <script src="/static/js/acuerdo.js"></script>
 <script src="/static/js/musica.js"></script>
 <script src="/static/js/sesion.js"></script>

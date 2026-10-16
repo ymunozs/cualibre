@@ -240,7 +240,9 @@ const Libro = {
       const instances = State.project.codes.filter(c => c.name === sel.name);
       const docs = new Set(instances.filter(c => c.doc_id).map(c => c.doc_id)).size;
       const quotes = instances.filter(c => c.doc_id).length;
-      meta.textContent = I18N.t("book.code.meta", { quotes, docs });
+      const lit = (State.project.lit_codings || []).filter(c => c.name === sel.name).length;
+      meta.textContent = I18N.t("book.code.meta", { quotes, docs })
+        + (lit ? I18N.t("book.code.meta.lit", { n: lit }) : "");
       const chips = document.createElement("span");
       chips.className = "book-categories";
       for (const domain of model.categoriesOf.get(sel.name) || []) {
@@ -390,6 +392,32 @@ const Libro = {
       all.textContent = I18N.t("book.quotes.all", { n: quoted.length });
       all.addEventListener("click", () => Views.showQuotes(name));
       page.appendChild(all);
+    }
+    // Citas de la literatura (FR-091): aparte de las del corpus
+    const lit = (State.project.lit_codings || []).filter(c => c.name === name);
+    if (lit.length) {
+      if (!Biblioteca.items.length && !this._loadingLibrary) {
+        this._loadingLibrary = true; // las fichas llegan después: se redibuja la página
+        Biblioteca.loadItems().then(() => { this._loadingLibrary = false; if (Views.current === "libro") this.render(); });
+      }
+      this._section(page, I18N.t("book.lit", { n: lit.length }));
+      for (const c of lit) {
+        const row = document.createElement("div");
+        row.className = "book-lit";
+        const q = document.createElement("div");
+        q.className = "quote-text book-quote";
+        q.textContent = `“${c.quote.length > 280 ? c.quote.slice(0, 280) + "…" : c.quote}”`;
+        const item = Biblioteca.item(c.item_id);
+        const meta = document.createElement("div");
+        meta.className = "quote-meta";
+        meta.textContent = `${item ? `(${item.cite}${c.page ? `, ${I18N.t("lib.page.short", { n: c.page })}` : ""})` : ""}${c.memo ? ` · ✎ ${c.memo}` : ""}`;
+        const open = document.createElement("button");
+        open.className = "btn btn-small";
+        open.textContent = I18N.t("book.lit.open");
+        open.addEventListener("click", () => Biblioteca.openCoding(c));
+        row.append(q, meta, open);
+        page.appendChild(row);
+      }
     }
   },
 

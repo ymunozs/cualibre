@@ -255,6 +255,40 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "The general board cannot be deleted or renamed",
         "pt": "O quadro geral não pode ser excluído nem renomeado",
     },
+    "library_item_not_found": {
+        "es": "Documento no encontrado en la biblioteca",
+        "en": "Document not found in the library",
+        "pt": "Documento não encontrado na biblioteca",
+    },
+    "library_unsupported": {
+        "es": "La biblioteca acepta PDF, DOCX, DOC y TXT",
+        "en": "The library accepts PDF, DOCX, DOC and TXT",
+        "pt": "A biblioteca aceita PDF, DOCX, DOC e TXT",
+    },
+    "doi_missing": {
+        "es": "No hay un DOI para buscar: escríbelo en la ficha",
+        "en": "There is no DOI to look up: type it in the record",
+        "pt": "Não há um DOI para buscar: escreva-o na ficha",
+    },
+    "doi_lookup_failed": {
+        "es": "No se encontraron metadatos para ese DOI (revisa el DOI o la conexión a internet)",
+        "en": "No metadata found for that DOI (check the DOI or the internet connection)",
+        "pt": "Não foram encontrados metadados para esse DOI (confira o DOI ou a conexão com a internet)",
+    },
+    "library_delete_confirm": {
+        "es": "Eliminar este documento retira sus anotaciones y {n} pasaje(s) codificado(s) en {projects} proyecto(s). Repite la operación con confirmación.",
+        "en": "Deleting this document removes its annotations and {n} coded passage(s) in {projects} project(s). Repeat the operation with confirmation.",
+        "pt": "Excluir este documento retira suas anotações e {n} trecho(s) codificado(s) em {projects} projeto(s). Repita a operação com confirmação.",
+    },
+    "annotation_not_found": {
+        "es": "Anotación no encontrada", "en": "Annotation not found", "pt": "Anotação não encontrada",
+    },
+    "lit_coding_not_found": {
+        "es": "Pasaje codificado no encontrado", "en": "Coded passage not found",
+        "pt": "Trecho codificado não encontrado",
+    },
+    "library_file": {"es": "biblioteca", "en": "library", "pt": "biblioteca"},
+    "literature_json_name": {"es": "literatura.json", "en": "literature.json", "pt": "literatura.json"},
     "invalid_node_shape": {
         "es": "Forma inválida: «{value}»",
         "en": "Invalid shape: “{value}”",
