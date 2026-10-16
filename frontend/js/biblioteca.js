@@ -538,7 +538,7 @@ const Biblioteca = {
     if (!this.current) return;
     if (this.current.kind !== "pdf") {
       const span = event.target.closest && event.target.closest("[data-marks]");
-      if (span) this.focusMark(span.dataset.marks.split(" ")[0]);
+      if (span) this.focusMark(span.dataset.marks.split(" ")[0], false);
       return;
     }
     const pageEl = event.target.closest && event.target.closest(".lib-page");
@@ -549,8 +549,10 @@ const Biblioteca = {
     const inside = (r) => x >= r[0] && x <= r[0] + r[2] && y >= r[1] - 0.004 && y <= r[1] + r[3] + 0.004;
     const coding = this.codings.find(c => c.page === n && c.rects.some(inside));
     const annotation = this.annotations.find(a => a.page === n && a.rects.some(inside));
-    if (coding) this.focusMark(`cod:${coding.id}`);
-    else if (annotation) this.focusMark(`ann:${annotation.id}`);
+    // La marca está bajo el cursor: solo se destaca en el panel, sin mover la
+    // página (si se moviera, el segundo clic de un doble clic caería en otra palabra)
+    if (coding) this.focusMark(`cod:${coding.id}`, false);
+    else if (annotation) this.focusMark(`ann:${annotation.id}`, false);
   },
 
   _openPopup(rect) {
@@ -1000,21 +1002,26 @@ const Biblioteca = {
     return card;
   },
 
-  /* Lleva el lector a una marca y la destaca en el panel. */
-  focusMark(key) {
+  /* Destaca una marca en el panel y, si se pide, lleva el lector hasta ella. */
+  focusMark(key, scrollDocument = true) {
     const [type, id] = key.split(":");
     const list = type === "cod" ? this.codings : this.annotations;
     const mark = list.find(m => String(m.id) === id);
     if (!mark) return;
     this._showSide("notes");
-    const card = document.querySelector(`#lib-side-notes [data-mark="${type}:${id}"]`);
+    const panel = document.getElementById("lib-side-notes");
+    const card = panel.querySelector(`[data-mark="${type}:${id}"]`);
     if (card) {
-      card.scrollIntoView({ block: "nearest" });
+      // Solo se desplaza el panel (scrollIntoView movería también la página)
+      const top = card.offsetTop - panel.offsetTop;
+      if (top < panel.scrollTop || top + card.offsetHeight > panel.scrollTop + panel.clientHeight) {
+        panel.scrollTop = Math.max(0, top - 12);
+      }
       card.classList.remove("flash");
       void card.offsetWidth;
       card.classList.add("flash");
     }
-    this.scrollToMark(mark);
+    if (scrollDocument) this.scrollToMark(mark);
   },
 
   scrollToMark(m) {

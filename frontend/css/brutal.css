@@ -1157,7 +1157,7 @@ button.lib-card-title:hover { color: var(--accent); }
 .lib-side-tabs { display: flex; gap: 6px; margin-bottom: 6px; }
 .lib-side-tab { font: 700 11px var(--mono); border: var(--border-thin); background: #EEE; padding: 6px 10px; cursor: pointer; }
 .lib-side-tab.active { background: var(--accent); color: #fff; }
-#lib-side-notes, #lib-side-meta { overflow-y: auto; }
+#lib-side-notes, #lib-side-meta { overflow-y: auto; position: relative; }
 .lib-notes-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .lib-note-card { border-bottom: 1px dashed #bbb; padding: 8px 0; }
 .lib-note-card .quote-meta { justify-content: space-between; }
