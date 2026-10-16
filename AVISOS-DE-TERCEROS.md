@@ -9,6 +9,8 @@ licencia, todas compatibles con la AGPL-3.0.
 |---|---|---|
 | PyMuPDF (Artifex) | Lectura de PDF, OCR de páginas escaneadas | AGPL-3.0 (o comercial de Artifex) |
 | PDF.js 3.11.174 (Mozilla), en `frontend/vendor/pdfjs/` | Lector de PDF de la biblioteca | Apache-2.0 (`licencias/pdfjs-Apache-2.0.txt`) |
+| Fuentes estándar de PDF.js: Liberation Sans (Red Hat) | Dibujar PDF sin fuentes incrustadas | SIL Open Font License 1.1 (`frontend/vendor/pdfjs/standard_fonts/LICENSE_LIBERATION`) |
+| Fuentes estándar de PDF.js: Foxit (PDFium Authors) | Dibujar PDF sin fuentes incrustadas | BSD-3-Clause (`frontend/vendor/pdfjs/standard_fonts/LICENSE_FOXIT`) |
 | spaCy (Explosion) | Análisis lingüístico | MIT |
 | Modelo `es_core_news_sm` 3.8.0 (Explosion) | Castellano | GPL-3.0 |
 | Modelo `en_core_web_sm` 3.8.0 (Explosion) | Inglés | MIT |
@@ -33,4 +35,5 @@ licencia, todas compatibles con la AGPL-3.0.
 ## Servicios en línea opcionales
 
 OpenAlex (CC0) y Crossref (metadatos de uso libre) solo se consultan cuando la persona
-busca literatura o metadatos; todo lo demás funciona sin conexión.
+busca literatura o completa la ficha de un documento por su DOI; todo lo demás funciona
+sin conexión.
