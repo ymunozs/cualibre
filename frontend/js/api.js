@@ -147,6 +147,10 @@ const API = {
   createLitCoding: (payload) => API._json("POST", "/api/lit-codings", payload),
   updateLitCoding: (id, memo) => API._json("PATCH", `/api/lit-codings/${id}`, { memo }),
   deleteLitCoding: (id) => API._fetch(`/api/lit-codings/${id}`, { method: "DELETE" }),
+  dictionaryStatus: () => API._fetch("/api/dictionary/status"),
+  dictionaryDownload: () => API._fetch("/api/dictionary/download", { method: "POST" }),
+  dictionaryLookup: (word, lang = "", itemId = "") => API._fetch(
+    `/api/dictionary/lookup?word=${encodeURIComponent(word)}&lang=${lang}&item_id=${encodeURIComponent(itemId)}`),
   bibliography: (scope = "all") => API._fetch(`/api/library/bibliography?scope=${scope}`),
 
   // Música de foco (FR-040)

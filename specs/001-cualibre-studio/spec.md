@@ -687,6 +687,14 @@ que se listan resultados con título, año, citas y DOI clicable.
   RIS; el reporte académico agrega la literatura codificada y la lista de referencias del
   proyecto; el respaldo .zip incluye las fichas de la literatura codificada.
 
+- **FR-093**: Diccionario del lector de la biblioteca (castellano, inglés y portugués):
+  doble clic en una palabra muestra sus definiciones en un recuadro efímero, también por
+  su forma base si está flexionada, en el idioma del documento con cambio a mano. Los
+  datos MUST descargarse una sola vez desde fuentes abiertas (Wiktionary vía Wiktextract,
+  CC BY-SA; Open English WordNet, CC BY) y convertirse en el equipo, sin incluirse en el
+  repositorio ni en los instaladores; cada definición muestra fuente y licencia. Solo
+  consulta. El Canvas del Pentagrama MUST NOT cambiar (decisión del investigador).
+
 **Constitution Check (FR-089..092).** Principio II: el lector no es el Canvas del corpus;
 aun así no deja controles fijos sobre el texto: el menú de anotar y codificar es efímero
 (aparece al seleccionar y desaparece al confirmar o con Esc), como la Nube Negra, y las
@@ -695,7 +703,8 @@ sigue el mismo gesto (seleccionar, elegir categoría y nombre, Enter); la Nube N
 Canvas no se modifica. Principio IV: PDF.js se usa directamente en el DOM (no el visor en
 iframe); toda comunicación es HTTP/JSON. Principio V: archivos copiados, eliminaciones a
 papelera con confirmación. Principio VIII: metadatos y referencias son consulta, nada se
-interpreta ni se escribe solo en el banco de códigos.
+interpreta ni se escribe solo en el banco de códigos. FR-093: el diccionario vive solo en
+el lector (Principio II intacto: el Canvas no cambia) y es consulta pura (Principio VIII).
 
 ## Assumptions
 

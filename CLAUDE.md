@@ -110,6 +110,12 @@ sociales. Backend FastAPI (Python 3.11+) + SPA vanilla HTML/CSS/JS sin build ste
   `Project.codes` (decisión del investigador): no tocar Analytics, co-ocurrencia,
   sentimiento, acuerdo, CSV ni QDPX con ellos; sí seguir fusiones, renombres y reinicio.
   El menú del lector es propio: la Nube Negra del Canvas no se reutiliza ni se modifica.
+- **Diccionario del lector (FR-093):** `backend/dictionary.py`. Descarga única a pedido
+  (Wiktextract de es/pt.wiktionary en kaikki.org; Open English WordNet 2025) convertida en
+  `<datos>/diccionarios/<idioma>.sqlite` (~80/31/20 MB; lo descargado se borra). Las formas
+  flexionadas guardan solo su vínculo al lema y una plantilla de descripción (tabla
+  `descrs`). Nunca incluir estos datos en el repo ni en los instaladores. Gesto: doble clic
+  (`event.detail === 2`) SOLO en el lector de la biblioteca; el Canvas no lo tiene.
 
 ## Licencia (decisión del investigador, 2026-10-15)
 

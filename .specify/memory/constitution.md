@@ -210,7 +210,8 @@ interpretación a un modelo destruye la validez del método y la autoría del an
   reporte), biblioteca de literatura común a todos los proyectos (lector de PDF y
   Word con resaltar, subrayar, tachar y notas; fichas con metadatos por DOI; pasajes
   codificados con los códigos del proyecto, aparte del corpus; referencias APA 7,
-  BibTeX y RIS).
+  BibTeX y RIS) y diccionario del lector en castellano, inglés y portugués (descarga
+  única desde fuentes abiertas; solo consulta; el Canvas no cambia).
 
 ## Flujo de Desarrollo y Puertas de Calidad
 
@@ -245,7 +246,7 @@ su color en el resto de la app). El mismo día aprobó también FR-087 (simbolog
 nativa como forma por defecto, formas elegibles, selección múltiple, bloqueo y vista
 ampliada del organizador) y FR-088 (traer a un cuadro propio relaciones que ya existen).
 También el 2026-10-15 pidió la biblioteca de literatura (FR-089..092), con la literatura
-codificada aparte del corpus. -->
+codificada aparte del corpus, y el diccionario del lector (FR-093), solo en la biblioteca. -->
 <!-- 1.14.0: inventario ampliado por pedido del investigador (2026-10-06): importación
 de Word 97-2003 (.doc), con notas y cuadros de texto también en .docx (FR-082), e
 instalación apta para quien no programa, con el instalador de Windows probado ya

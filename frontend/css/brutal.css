@@ -1200,3 +1200,29 @@ body.dark .lib-note-comment { background: #1B1B16; color: #E8E8E2; border-color:
 body.dark .lib-apa { border-top-color: #E8E8E2; }
 body.dark .lib-note-card.flash { animation: libflashdark 1.2s; }
 @keyframes libflashdark { 0%, 40% { background: #3A3020; } 100% { background: transparent; } }
+
+/* ---------- Diccionario del lector (FR-093) ---------- */
+
+.lib-dict-status { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12px;
+  border-left: 4px solid var(--accent); padding: 4px 10px; margin: 0 0 10px; }
+#lib-dict-popup { position: fixed; z-index: 9999; width: 380px; max-height: 60vh; overflow-y: auto;
+  background: #FDFDF7; color: #111; border: var(--border); box-shadow: var(--shadow); padding: 12px 14px; }
+.lib-dict-head { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  border-bottom: 2px solid var(--ink); padding-bottom: 6px; margin-bottom: 6px; }
+.lib-dict-word { font-family: var(--display); font-size: 20px; font-weight: 700; overflow-wrap: anywhere; }
+.lib-dict-langs { display: inline-flex; gap: 4px; flex-shrink: 0; }
+.lib-dict-lang { font: 700 10px var(--mono); border: 1px solid var(--ink); background: #fff; padding: 2px 6px; cursor: pointer; }
+.lib-dict-lang.active { background: var(--ink); color: #fff; }
+.lib-dict-note { font-family: var(--serif); font-style: italic; font-size: 13px; color: #444; margin: 2px 0 6px; }
+.lib-dict-lemma { font: 700 13px var(--mono); margin-top: 6px; }
+.lib-dict-pos { font: 700 10px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: #666; margin-top: 8px; }
+.lib-dict-senses { font-family: var(--serif); font-size: 14px; line-height: 1.45; padding-left: 20px; margin: 3px 0; }
+.lib-dict-senses li { margin: 2px 0; }
+.lib-dict-more { font: 11px var(--mono); background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; }
+.lib-dict-source { font: 9px var(--mono); color: #888; border-top: 1px dashed #bbb; padding-top: 4px; margin-top: 8px; }
+.lib-dict-body p { font-size: 13px; margin: 4px 0 8px; }
+body.dark #lib-dict-popup { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; box-shadow: 5px 5px 0 #E8E8E2; }
+body.dark .lib-dict-head { border-bottom-color: #E8E8E2; }
+body.dark .lib-dict-lang { background: #1E1E1A; color: #E8E8E2; border-color: #E8E8E2; }
+body.dark .lib-dict-lang.active { background: #E8E8E2; color: #141412; }
+body.dark .lib-dict-note, body.dark .lib-dict-pos { color: #aaa; }

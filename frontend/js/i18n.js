@@ -385,7 +385,7 @@ const I18N = {
       "docs.ocr": "OCR",
       "docs.ocr.title": "Texto leído por OCR (página(s) {pages}): revisa la transcripción contra el original",
       "import.ocr.hint": " Los PDF escaneados se leen con OCR ({engine}); puede tardar unos segundos por página.",
-      "about.credits": "<p class=\"about-credits\">Cua-libre utiliza el <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, creado por Saif M. Mohammad y Peter Turney en el National Research Council Canada, y los modelos lingüísticos de spaCy (Explosion).</p> <p class=\"about-credits\">Cua-libre es software libre: se distribuye bajo la <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, versión 3 o posterior</a>, sin ninguna garantía. Su código fuente está en el <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">github del proyecto</a>, junto con los avisos de los componentes de terceros (AVISOS-DE-TERCEROS.md).</p>",
+      "about.credits": "<p class=\"about-credits\">Cua-libre utiliza el <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, creado por Saif M. Mohammad y Peter Turney en el National Research Council Canada, y los modelos lingüísticos de spaCy (Explosion).</p> <p class=\"about-credits\">Cua-libre es software libre: se distribuye bajo la <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, versión 3 o posterior</a>, sin ninguna garantía. Su código fuente está en el <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">github del proyecto</a>, junto con los avisos de los componentes de terceros (AVISOS-DE-TERCEROS.md).</p> <p class=\"about-credits\">El diccionario del lector usa Wiktionary en castellano y en portugués (extracción de Wiktextract en kaikki.org, CC BY-SA 4.0) y Open English WordNet (CC BY 4.0), descargados una vez en cada equipo.</p>",
 
       // v2.0: libro de códigos, cuadros organizadores y ajustes del léxico
       "tab.libro": "▥ LIBRO",
@@ -554,7 +554,7 @@ const I18N = {
       "lib.back": "◀ BIBLIOTECA",
       "lib.zoom.out": "Alejar",
       "lib.zoom.in": "Acercar",
-      "lib.reader.hint": "Selecciona un pasaje para resaltar, subrayar, tachar, anotar o codificar. Clic en una marca para verla en el panel.",
+      "lib.reader.hint": "Selecciona un pasaje para resaltar, subrayar, tachar, anotar o codificar. Doble clic en una palabra: diccionario. Clic en una marca para verla en el panel.",
       "lib.side.notes": "ANOTACIONES",
       "lib.side.meta": "FICHA",
       "lib.empty": "La biblioteca está vacía. Añade tus PDF o documentos, o trae referencias desde la búsqueda en OpenAlex.",
@@ -642,6 +642,19 @@ const I18N = {
       "book.lit": "CITAS DE LA LITERATURA ({n})",
       "book.lit.open": "📚 ABRIR EN EL LECTOR",
       "bank.delete.literature": "«{name}» tiene {n} pasaje(s) de literatura codificado(s). Al eliminar su última instancia también se retiran. ¿Continuar?",
+
+      // Diccionario del lector (FR-093)
+      "dict.ready": "📖 Diccionario instalado (castellano, inglés y portugués): doble clic en una palabra del lector para ver su definición.",
+      "dict.missing": "📖 Diccionario: doble clic en una palabra del lector muestra su definición. Se descarga una sola vez (unos 145 MB; queda en tu equipo).",
+      "dict.failed": "📖 La descarga del diccionario no se completó (¿sin internet?). Puedes intentarlo de nuevo.",
+      "dict.working": "📖 Instalando el diccionario: {detail}",
+      "dict.building": "preparando…",
+      "dict.download": "⬇ DESCARGAR DICCIONARIOS",
+      "dict.downloading": "DESCARGANDO…",
+      "dict.lang.title": "Buscar en el diccionario en {language}",
+      "dict.none": "Sin definición para esta palabra en este idioma. Prueba otro idioma arriba.",
+      "dict.more": "+ {n} acepción(es) más",
+      "dict.searching": "Buscando en el diccionario…",
     },
 
     en: {
@@ -996,7 +1009,7 @@ const I18N = {
       "docs.ocr": "OCR",
       "docs.ocr.title": "Text read by OCR (page(s) {pages}): check the transcription against the original",
       "import.ocr.hint": " Scanned PDFs are read with OCR ({engine}); this may take a few seconds per page.",
-      "about.credits": "<p class=\"about-credits\">This application makes use of the <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, created by Saif M. Mohammad and Peter Turney at the National Research Council Canada, and the spaCy language models (Explosion).</p> <p class=\"about-credits\">Cua-libre is free software: it is distributed under the <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, version 3 or later</a>, without any warranty. Its source code is on the <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">project’s GitHub</a>, together with the third-party notices (AVISOS-DE-TERCEROS.md).</p>",
+      "about.credits": "<p class=\"about-credits\">This application makes use of the <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, created by Saif M. Mohammad and Peter Turney at the National Research Council Canada, and the spaCy language models (Explosion).</p> <p class=\"about-credits\">Cua-libre is free software: it is distributed under the <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, version 3 or later</a>, without any warranty. Its source code is on the <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">project’s GitHub</a>, together with the third-party notices (AVISOS-DE-TERCEROS.md).</p> <p class=\"about-credits\">The reader dictionary uses Spanish and Portuguese Wiktionary (Wiktextract extraction on kaikki.org, CC BY-SA 4.0) and Open English WordNet (CC BY 4.0), downloaded once on each computer.</p>",
 
       // v2.0: libro de códigos, cuadros organizadores y ajustes del léxico
       "tab.libro": "▥ CODEBOOK",
@@ -1165,7 +1178,7 @@ const I18N = {
       "lib.back": "◀ LIBRARY",
       "lib.zoom.out": "Zoom out",
       "lib.zoom.in": "Zoom in",
-      "lib.reader.hint": "Select a passage to highlight, underline, strike through, annotate or code. Click a mark to see it in the panel.",
+      "lib.reader.hint": "Select a passage to highlight, underline, strike through, annotate or code. Double-click a word: dictionary. Click a mark to see it in the panel.",
       "lib.side.notes": "ANNOTATIONS",
       "lib.side.meta": "RECORD",
       "lib.empty": "The library is empty. Add your PDFs or documents, or bring references from the OpenAlex search.",
@@ -1253,6 +1266,19 @@ const I18N = {
       "book.lit": "QUOTES FROM THE LITERATURE ({n})",
       "book.lit.open": "📚 OPEN IN THE READER",
       "bank.delete.literature": "“{name}” has {n} coded literature passage(s). Deleting its last instance removes them too. Continue?",
+
+      // Diccionario del lector (FR-093)
+      "dict.ready": "📖 Dictionary installed (Spanish, English and Portuguese): double-click a word in the reader to see its definition.",
+      "dict.missing": "📖 Dictionary: double-clicking a word in the reader shows its definition. It is downloaded only once (about 145 MB; it stays on your computer).",
+      "dict.failed": "📖 The dictionary download did not finish (no internet?). You can try again.",
+      "dict.working": "📖 Installing the dictionary: {detail}",
+      "dict.building": "preparing…",
+      "dict.download": "⬇ DOWNLOAD DICTIONARIES",
+      "dict.downloading": "DOWNLOADING…",
+      "dict.lang.title": "Look up in the {language} dictionary",
+      "dict.none": "No definition for this word in this language. Try another language above.",
+      "dict.more": "+ {n} more sense(s)",
+      "dict.searching": "Looking it up in the dictionary…",
     },
 
     pt: {
@@ -1607,7 +1633,7 @@ const I18N = {
       "docs.ocr": "OCR",
       "docs.ocr.title": "Texto lido por OCR (página(s) {pages}): confira a transcrição com o original",
       "import.ocr.hint": " PDFs digitalizados são lidos com OCR ({engine}); pode levar alguns segundos por página.",
-      "about.credits": "<p class=\"about-credits\">O Cua-libre utiliza o <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, criado por Saif M. Mohammad e Peter Turney no National Research Council Canada, e os modelos linguísticos do spaCy (Explosion).</p> <p class=\"about-credits\">O Cua-libre é software livre: é distribuído sob a <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, versão 3 ou posterior</a>, sem nenhuma garantia. Seu código-fonte está no <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">GitHub do projeto</a>, junto com os avisos dos componentes de terceiros (AVISOS-DE-TERCEROS.md).</p>",
+      "about.credits": "<p class=\"about-credits\">O Cua-libre utiliza o <a href=\"https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm\" target=\"_blank\" rel=\"noopener\">NRC Word-Emotion Association Lexicon (EmoLex)</a>, criado por Saif M. Mohammad e Peter Turney no National Research Council Canada, e os modelos linguísticos do spaCy (Explosion).</p> <p class=\"about-credits\">O Cua-libre é software livre: é distribuído sob a <a href=\"https://www.gnu.org/licenses/agpl-3.0.html\" target=\"_blank\" rel=\"noopener\">GNU Affero General Public License, versão 3 ou posterior</a>, sem nenhuma garantia. Seu código-fonte está no <a href=\"https://github.com/ymunozs/cualibre\" target=\"_blank\" rel=\"noopener\">GitHub do projeto</a>, junto com os avisos dos componentes de terceiros (AVISOS-DE-TERCEROS.md).</p> <p class=\"about-credits\">O dicionário do leitor usa o Wiktionary em espanhol e em português (extração do Wiktextract no kaikki.org, CC BY-SA 4.0) e o Open English WordNet (CC BY 4.0), baixados uma vez em cada computador.</p>",
 
       // v2.0: libro de códigos, cuadros organizadores y ajustes del léxico
       "tab.libro": "▥ LIVRO",
@@ -1776,7 +1802,7 @@ const I18N = {
       "lib.back": "◀ BIBLIOTECA",
       "lib.zoom.out": "Afastar",
       "lib.zoom.in": "Aproximar",
-      "lib.reader.hint": "Selecione um trecho para destacar, sublinhar, riscar, anotar ou codificar. Clique em uma marca para vê-la no painel.",
+      "lib.reader.hint": "Selecione um trecho para destacar, sublinhar, riscar, anotar ou codificar. Clique duas vezes em uma palavra: dicionário. Clique em uma marca para vê-la no painel.",
       "lib.side.notes": "ANOTAÇÕES",
       "lib.side.meta": "FICHA",
       "lib.empty": "A biblioteca está vazia. Adicione seus PDFs ou documentos, ou traga referências da busca no OpenAlex.",
@@ -1864,6 +1890,19 @@ const I18N = {
       "book.lit": "CITAÇÕES DA LITERATURA ({n})",
       "book.lit.open": "📚 ABRIR NO LEITOR",
       "bank.delete.literature": "“{name}” tem {n} trecho(s) de literatura codificado(s). Ao excluir sua última instância, eles também são retirados. Continuar?",
+
+      // Diccionario del lector (FR-093)
+      "dict.ready": "📖 Dicionário instalado (espanhol, inglês e português): clique duas vezes em uma palavra do leitor para ver sua definição.",
+      "dict.missing": "📖 Dicionário: clicar duas vezes em uma palavra do leitor mostra sua definição. É baixado uma única vez (cerca de 145 MB; fica no seu computador).",
+      "dict.failed": "📖 O download do dicionário não terminou (sem internet?). Você pode tentar de novo.",
+      "dict.working": "📖 Instalando o dicionário: {detail}",
+      "dict.building": "preparando…",
+      "dict.download": "⬇ BAIXAR DICIONÁRIOS",
+      "dict.downloading": "BAIXANDO…",
+      "dict.lang.title": "Buscar no dicionário em {language}",
+      "dict.none": "Sem definição para esta palavra neste idioma. Tente outro idioma acima.",
+      "dict.more": "+ {n} acepção(ões) a mais",
+      "dict.searching": "Buscando no dicionário…",
     },
   },
 

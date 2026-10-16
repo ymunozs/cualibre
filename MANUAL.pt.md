@@ -429,6 +429,14 @@ Cua-libre. Os arquivos originais nunca são modificados.
   a lista de **Referências** do projeto.
 - **Busca no OpenAlex**: busca por conceitos (título, ano, citações, link DOI); **＋ À
   BIBLIOTECA** salva a referência com sua ficha completa.
+- **Dicionário**: no leitor, **clique duas vezes em uma palavra** para abrir sua definição
+  em um quadro que fecha com Esc ou um clique fora. Se a palavra está conjugada ou no
+  plural, mostra também sua forma base («brigavam» → *brigar*). Usa o idioma do documento;
+  **ES / EN / PT** trocam de dicionário. É baixado uma única vez (cerca de 145 MB, com o
+  botão **⬇ BAIXAR DICIONÁRIOS** da biblioteca) e depois funciona sem internet. Fontes:
+  Wiktionary em espanhol e em português e Open English WordNet. Para anotar uma só
+  palavra, selecione-a arrastando (o clique duplo é para o dicionário). O dicionário é só
+  do leitor: o Canvas da Pauta não muda.
 - Na biblioteca, ⌘Z não desfaz codificações do corpus: exclua a marca pelo painel.
 
 A busca no OpenAlex e a consulta de metadados por DOI são, com o download único do léxico

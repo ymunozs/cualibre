@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.responses import Response
 
-from . import agreement, analysis, i18n, lexicons, library, qdpx, storage
+from . import agreement, analysis, dictionary, i18n, lexicons, library, qdpx, storage
 from .export import codebook_to_csv, project_to_csv, project_to_zip
 from .extraction import ExtractionError, extract_document
 from .i18n import tr
@@ -1032,6 +1032,42 @@ def delete_annotation(annotation_id: str) -> None:
         raise HTTPException(404, tr("annotation_not_found"))
     lib.annotations = [a for a in lib.annotations if a.id != annotation_id]
     library.save(lib)
+
+
+# ----- Diccionario del lector (FR-093) -----
+
+_item_langs: dict[str, str] = {}
+
+
+def _item_lang(item_id: str) -> str:
+    """Idioma de un documento de la biblioteca (por su texto; se recuerda)."""
+    if item_id not in _item_langs:
+        text = library.read_text(item_id)[:6000]
+        _item_langs[item_id] = detect_language(text) if text.strip() else i18n.current()
+    return _item_langs[item_id]
+
+
+@app.get("/api/dictionary/status")
+def dictionary_status() -> dict:
+    return {"languages": dictionary.status()}
+
+
+@app.post("/api/dictionary/download")
+def dictionary_download() -> dict:
+    """Descarga única (en segundo plano) de los diccionarios que falten."""
+    missing = [lang for lang in dictionary.LANGS if not dictionary.installed(lang)]
+    started = dictionary.install_all(missing) if missing else False
+    return {"started": started, "languages": dictionary.status()}
+
+
+@app.get("/api/dictionary/lookup")
+def dictionary_lookup(word: str, lang: str = "", item_id: str = "") -> dict:
+    """Definiciones de una palabra. Sin idioma explícito, el del documento."""
+    if lang not in dictionary.LANGS:
+        lang = _item_lang(item_id) if item_id else i18n.current()
+    if lang not in dictionary.LANGS:
+        lang = "es"
+    return {**dictionary.lookup(lang, word), "installed": dictionary.installed(lang)}
 
 
 # ----- Literatura codificada en el proyecto activo (FR-091) -----

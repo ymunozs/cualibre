@@ -47,14 +47,21 @@ const Biblioteca = {
     pages.addEventListener("mouseup", (e) => setTimeout(() => this._onMouseUp(e), 0));
     // Esc cierra el menú; un clic fuera también
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !document.getElementById("lib-popup").classList.contains("hidden")) {
+      if (e.key !== "Escape") return;
+      if (!document.getElementById("lib-popup").classList.contains("hidden")) {
         e.preventDefault();
         this._closePopup();
+      }
+      if (!document.getElementById("lib-dict-popup").classList.contains("hidden")) {
+        e.preventDefault();
+        this._closeDict();
       }
     });
     document.addEventListener("mousedown", (e) => {
       const popup = document.getElementById("lib-popup");
       if (!popup.classList.contains("hidden") && !popup.contains(e.target)) this._closePopup();
+      const dict = document.getElementById("lib-dict-popup");
+      if (!dict.classList.contains("hidden") && !dict.contains(e.target)) this._closeDict();
     });
   },
 
@@ -69,6 +76,7 @@ const Biblioteca = {
     }
     await this.loadItems();
     this._renderList();
+    this._renderDictStatus();
   },
 
   async loadItems() {
@@ -452,6 +460,17 @@ const Biblioteca = {
   _onMouseUp(event) {
     if (!this.current) return;
     const selection = window.getSelection();
+    if (event.detail === 2 && selection.rangeCount && !selection.isCollapsed) {
+      // Doble clic sobre una palabra: diccionario (FR-093). Para anotar una sola
+      // palabra, basta con seleccionarla arrastrando.
+      const word = selection.toString().trim();
+      const rect = selection.getRangeAt(0).getBoundingClientRect();
+      if (word && !/\s/.test(word)) {
+        this._closePopup();
+        this.lookup(word, rect);
+        return;
+      }
+    }
     if (!selection.rangeCount || selection.isCollapsed) {
       this._hitTest(event);
       return;
@@ -696,6 +715,192 @@ const Biblioteca = {
       item.annotations = this.annotations.length;
       item.codings = this.codings.length;
     }
+  },
+
+  /* ---------- Diccionario (FR-093): solo consulta ---------- */
+
+  _dictTimer: null,
+
+  async _renderDictStatus() {
+    const box = document.getElementById("lib-dict");
+    let languages;
+    try {
+      ({ languages } = await API.dictionaryStatus());
+    } catch (error) {
+      return;
+    }
+    box.textContent = "";
+    const langs = Object.entries(languages);
+    const ready = langs.every(([, v]) => v.installed);
+    const working = langs.filter(([, v]) => v.progress && ["queued", "downloading", "building"].includes(v.progress.state));
+    const text = document.createElement("span");
+    if (ready) {
+      text.textContent = I18N.t("dict.ready");
+    } else if (working.length) {
+      text.textContent = I18N.t("dict.working", { detail: langs.map(([lang, v]) => this._dictProgress(lang, v)).join(" · ") });
+    } else {
+      const failed = langs.some(([, v]) => v.progress && v.progress.state === "error");
+      text.textContent = I18N.t(failed ? "dict.failed" : "dict.missing");
+      const button = document.createElement("button");
+      button.className = "btn btn-small";
+      button.textContent = I18N.t("dict.download");
+      button.addEventListener("click", async () => {
+        try {
+          await API.dictionaryDownload();
+          this._renderDictStatus();
+        } catch (error) {
+          Views.toast(error.message, true);
+        }
+      });
+      box.append(text, button);
+      return;
+    }
+    box.appendChild(text);
+    clearTimeout(this._dictTimer);
+    if (working.length) {
+      this._dictTimer = setTimeout(() => {
+        if (Views.current === "literatura") this._renderDictStatus();
+        const popup = document.getElementById("lib-dict-popup");
+        if (!popup.classList.contains("hidden") && this._dictLast) this.lookup(...this._dictLast);
+      }, 1500);
+    }
+  },
+
+  _dictProgress(lang, v) {
+    const name = lang.toUpperCase();
+    if (v.installed) return `${name} ✓`;
+    const p = v.progress || {};
+    if (p.state === "downloading" && p.total) return `${name} ${Math.round((p.done / p.total) * 100)}%`;
+    if (p.state === "building") return `${name} ${I18N.t("dict.building")}`;
+    if (p.state === "queued") return `${name} …`;
+    if (p.state === "error") return `${name} ✕`;
+    return `${name} —`;
+  },
+
+  async lookup(word, rect, lang = "") {
+    this._dictLast = [word, rect, lang];
+    const popup = document.getElementById("lib-dict-popup");
+    // Respuesta inmediata: la primera consulta carga el modelo lingüístico y tarda un poco
+    if (popup.classList.contains("hidden") || popup.dataset.word !== word) {
+      popup.textContent = "";
+      const wait = document.createElement("div");
+      wait.className = "lib-dict-word";
+      wait.textContent = word;
+      const note = document.createElement("p");
+      note.className = "empty-note";
+      note.textContent = I18N.t("dict.searching");
+      popup.append(wait, note);
+      popup.classList.remove("hidden");
+      popup.style.left = `${Math.min(window.innerWidth - 392, Math.max(12, rect.left))}px`;
+      popup.style.top = `${rect.bottom + 8}px`;
+    }
+    popup.dataset.word = word;
+    let data;
+    try {
+      data = await API.dictionaryLookup(word, lang, this.current ? this.current.id : "");
+    } catch (error) {
+      Views.toast(error.message, true);
+      return;
+    }
+    popup.textContent = "";
+    const head = document.createElement("div");
+    head.className = "lib-dict-head";
+    const title = document.createElement("span");
+    title.className = "lib-dict-word";
+    title.textContent = data.word;
+    const chips = document.createElement("span");
+    chips.className = "lib-dict-langs";
+    for (const code of ["es", "en", "pt"]) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "lib-dict-lang" + (code === data.lang ? " active" : "");
+      chip.textContent = code.toUpperCase();
+      chip.title = I18N.t("dict.lang.title", { language: I18N.t(`langname.${code}`) });
+      chip.addEventListener("click", () => this.lookup(word, rect, code));
+      chips.appendChild(chip);
+    }
+    head.append(title, chips);
+    popup.appendChild(head);
+    const body = document.createElement("div");
+    body.className = "lib-dict-body";
+    if (!data.installed) {
+      const p = document.createElement("p");
+      p.textContent = I18N.t("dict.missing");
+      body.appendChild(p);
+      const status = document.createElement("div");
+      status.id = "lib-dict-popup-status";
+      body.appendChild(status);
+      const button = document.createElement("button");
+      button.className = "btn btn-small";
+      button.textContent = I18N.t("dict.download");
+      button.addEventListener("click", async () => {
+        await API.dictionaryDownload();
+        this._renderDictStatus();
+        button.disabled = true;
+        button.textContent = I18N.t("dict.downloading");
+      });
+      body.appendChild(button);
+    } else if (!data.groups.length) {
+      const p = document.createElement("p");
+      p.textContent = I18N.t("dict.none");
+      body.appendChild(p);
+    } else {
+      for (const note of data.form_notes || []) {
+        const p = document.createElement("p");
+        p.className = "lib-dict-note";
+        p.textContent = note;
+        body.appendChild(p);
+      }
+      for (const group of data.groups) {
+        if (group.is_lemma) {
+          const lemma = document.createElement("div");
+          lemma.className = "lib-dict-lemma";
+          lemma.textContent = `→ ${group.headword}`;
+          body.appendChild(lemma);
+        }
+        for (const entry of group.entries) {
+          const pos = document.createElement("div");
+          pos.className = "lib-dict-pos";
+          pos.textContent = entry.pos;
+          const list = document.createElement("ol");
+          list.className = "lib-dict-senses";
+          entry.senses.forEach((sense, i) => {
+            const li = document.createElement("li");
+            li.textContent = sense;
+            if (i >= 4) li.classList.add("lib-dict-extra", "hidden");
+            list.appendChild(li);
+          });
+          body.append(pos, list);
+          if (entry.senses.length > 4) {
+            const more = document.createElement("button");
+            more.type = "button";
+            more.className = "lib-dict-more";
+            more.textContent = I18N.t("dict.more", { n: entry.senses.length - 4 });
+            more.addEventListener("click", () => {
+              list.querySelectorAll(".lib-dict-extra").forEach(li => li.classList.remove("hidden"));
+              more.remove();
+            });
+            body.appendChild(more);
+          }
+        }
+      }
+    }
+    popup.appendChild(body);
+    const source = document.createElement("div");
+    source.className = "lib-dict-source";
+    source.textContent = `${data.source} · ${data.license}`;
+    popup.appendChild(source);
+    popup.classList.remove("hidden");
+    const width = popup.offsetWidth || 360;
+    popup.style.left = `${Math.min(window.innerWidth - width - 12, Math.max(12, rect.left))}px`;
+    const below = rect.bottom + 8;
+    popup.style.top = `${below + popup.offsetHeight > window.innerHeight
+      ? Math.max(12, rect.top - popup.offsetHeight - 8) : below}px`;
+  },
+
+  _closeDict() {
+    document.getElementById("lib-dict-popup").classList.add("hidden");
+    this._dictLast = null;
   },
 
   /* ---------- Panel lateral ---------- */

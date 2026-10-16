@@ -436,6 +436,14 @@ de Cua-libre. Los archivos originales nunca se modifican.
   la literatura codificada y la lista de **Referencias** del proyecto.
 - **Búsqueda en OpenAlex**: busca por conceptos (título, año, citas, enlace DOI); **＋ A LA
   BIBLIOTECA** guarda la referencia con su ficha completa.
+- **Diccionario**: en el lector, **doble clic en una palabra** abre su definición en un
+  recuadro que se cierra con Esc o con un clic fuera. Si la palabra está conjugada o en
+  plural, también muestra su forma base («peleaban» → *pelear*). Usa el idioma del
+  documento; **ES / EN / PT** cambian de diccionario. Se descarga una sola vez (unos
+  145 MB, con el botón **⬇ DESCARGAR DICCIONARIOS** de la biblioteca) y después funciona
+  sin internet. Fuentes: Wiktionary en castellano y en portugués, y Open English WordNet.
+  Para anotar una sola palabra, selecciónala arrastrando (el doble clic es para el
+  diccionario). El diccionario es solo del lector: el Canvas del Pentagrama no cambia.
 - En la biblioteca, ⌘Z no deshace codificaciones del corpus: elimina la marca desde el panel.
 
 La búsqueda en OpenAlex y la consulta de metadatos por DOI son, con la descarga única del

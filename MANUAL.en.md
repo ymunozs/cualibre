@@ -436,6 +436,14 @@ leaving Cua-libre. Original files are never modified.
   project's **References** list.
 - **OpenAlex search**: concept search (title, year, citations, DOI link); **＋ TO THE
   LIBRARY** saves the reference with its full record.
+- **Dictionary**: in the reader, **double-click a word** to open its definition in a box
+  that closes with Esc or a click outside. If the word is inflected or plural, it also
+  shows its base form ("ran" → *run*). It uses the document's language; **ES / EN / PT**
+  switch dictionaries. It is downloaded only once (about 145 MB, with the library's
+  **⬇ DOWNLOAD DICTIONARIES** button) and then works offline. Sources: Spanish and
+  Portuguese Wiktionary and Open English WordNet. To annotate a single word, select it by
+  dragging (double-click is for the dictionary). The dictionary belongs to the reader
+  only: the Stave Canvas does not change.
 - In the library, ⌘Z does not undo corpus coding: delete the mark from the panel.
 
 The OpenAlex search and the DOI metadata lookup are, with the one-off download of the

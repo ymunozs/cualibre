@@ -32,6 +32,11 @@ licencia, todas compatibles con la AGPL-3.0.
   (National Research Council Canada). Sus términos de uso no permiten redistribuirlo:
   cada equipo lo descarga una vez desde el sitio oficial y se rige por esos términos.
 
+- **Diccionarios del lector de la biblioteca** (se descargan una vez, a pedido, y se
+  convierten en el propio equipo): Wiktionary en castellano y en portugués, en la
+  extracción de Wiktextract publicada por kaikki.org (CC BY-SA 4.0 y GFDL), y Open
+  English WordNet 2025 (CC BY 4.0). Cada definición muestra su fuente y su licencia.
+
 ## Servicios en línea opcionales
 
 OpenAlex (CC0) y Crossref (metadatos de uso libre) solo se consultan cuando la persona

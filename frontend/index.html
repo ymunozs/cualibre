@@ -367,6 +367,7 @@
         <a class="btn-export-mini" data-download="/api/library/export.ris" href="/api/library/export.ris" download data-i18n-title="lib.ris.title">⬇ RIS</a>
       </div>
       <p class="empty-note" style="padding-top:0" data-i18n="lib.intro"></p>
+      <div id="lib-dict" class="lib-dict-status"></div>
       <div class="controls-row">
         <label for="lib-file" class="btn btn-accent lib-import" data-i18n="lib.import">📥 AÑADIR PDF, DOCX, DOC o TXT</label>
         <input type="file" id="lib-file" class="visually-hidden" accept=".pdf,.docx,.doc,.txt" multiple>
@@ -441,6 +442,8 @@
 <!-- Menú efímero del lector de la biblioteca (FR-090/091): como la Nube Negra,
      aparece al seleccionar un pasaje y desaparece al confirmar o cancelar -->
 <div id="lib-popup" class="hidden" role="dialog"></div>
+<!-- Diccionario del lector (FR-093): doble clic en una palabra; solo consulta -->
+<div id="lib-dict-popup" class="hidden" role="dialog"></div>
 
 <!-- Barra de música de foco (FR-040): pistas locales del investigador -->
 <div id="music-bar">
